@@ -1,0 +1,16 @@
+{
+  "name": "vikiclowbot",
+  "version": "2026.2.12",
+  "description": "Compatibility shim that forwards to vikiclow",
+  "bin": {
+    "vikiclowbot": "./bin/vikiclowbot.js"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./cli-entry": "./bin/vikiclowbot.js"
+  },
+  "dependencies": {
+    "vikiclow": "workspace:*"
+  }
+}

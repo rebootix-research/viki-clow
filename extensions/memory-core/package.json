@@ -1,0 +1,23 @@
+{
+  "name": "@vikiclow/memory-core",
+  "version": "2026.3.9",
+  "private": true,
+  "description": "VikiClow core memory search plugin",
+  "type": "module",
+  "devDependencies": {
+    "vikiclow": "workspace:*"
+  },
+  "peerDependencies": {
+    "vikiclow": ">=2026.3.7"
+  },
+  "peerDependenciesMeta": {
+    "vikiclow": {
+      "optional": true
+    }
+  },
+  "vikiclow": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

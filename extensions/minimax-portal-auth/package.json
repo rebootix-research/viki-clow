@@ -1,0 +1,12 @@
+{
+  "name": "@vikiclow/minimax-portal-auth",
+  "version": "2026.3.9",
+  "private": true,
+  "description": "VikiClow MiniMax Portal OAuth provider plugin",
+  "type": "module",
+  "vikiclow": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

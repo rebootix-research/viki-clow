@@ -1,0 +1,12 @@
+{
+  "name": "@vikiclow/imessage",
+  "version": "2026.3.9",
+  "private": true,
+  "description": "VikiClow iMessage channel plugin",
+  "type": "module",
+  "vikiclow": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

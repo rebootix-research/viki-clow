@@ -1,0 +1,324 @@
+name: VikiClow
+options:
+  bundleIdPrefix: ai.vikiclow
+  deploymentTarget:
+    iOS: "18.0"
+  xcodeVersion: "16.0"
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    ENABLE_APP_INTENTS_METADATA_GENERATION: NO
+
+packages:
+  VikiClowKit:
+    path: ../shared/VikiClowKit
+  Swabble:
+    path: ../../Swabble
+
+schemes:
+  VikiClow:
+    shared: true
+    build:
+      targets:
+        VikiClow: all
+    test:
+      targets:
+        - VikiClowTests
+        - VikiClowLogicTests
+  VikiClowLogicTests:
+    shared: true
+    build:
+      targets:
+        VikiClowLogicTests: all
+    test:
+      targets:
+        - VikiClowLogicTests
+
+targets:
+  VikiClow:
+    type: application
+    platform: iOS
+    configFiles:
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
+    sources:
+      - path: Sources
+    dependencies:
+      - target: VikiClowShareExtension
+        embed: true
+      - target: VikiClowActivityWidget
+        embed: true
+      - target: VikiClowWatchApp
+      - package: VikiClowKit
+      - package: VikiClowKit
+        product: VikiClowChatUI
+      - package: VikiClowKit
+        product: VikiClowProtocol
+      - package: Swabble
+        product: SwabbleKit
+      - sdk: AppIntents.framework
+    preBuildScripts:
+      - name: SwiftFormat (lint)
+        basedOnDependencyAnalysis: false
+        inputFileLists:
+          - $(SRCROOT)/SwiftSources.input.xcfilelist
+        script: |
+          set -euo pipefail
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+          if ! command -v swiftformat >/dev/null 2>&1; then
+            echo "error: swiftformat not found (brew install swiftformat)" >&2
+            exit 1
+          fi
+          swiftformat --lint --config "$SRCROOT/../../.swiftformat" \
+            --filelist "$SRCROOT/SwiftSources.input.xcfilelist"
+      - name: SwiftLint
+        basedOnDependencyAnalysis: false
+        inputFileLists:
+          - $(SRCROOT)/SwiftSources.input.xcfilelist
+        script: |
+          set -euo pipefail
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+          if ! command -v swiftlint >/dev/null 2>&1; then
+            echo "error: swiftlint not found (brew install swiftlint)" >&2
+            exit 1
+          fi
+          swiftlint lint --config "$SRCROOT/.swiftlint.yml" --use-script-input-file-lists
+    settings:
+      base:
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_ENTITLEMENTS: Sources/VikiClow.entitlements
+        CODE_SIGN_STYLE: "$(VIKICLOW_CODE_SIGN_STYLE)"
+        DEVELOPMENT_TEAM: "$(VIKICLOW_DEVELOPMENT_TEAM)"
+        PRODUCT_BUNDLE_IDENTIFIER: "$(VIKICLOW_APP_BUNDLE_ID)"
+        PROVISIONING_PROFILE_SPECIFIER: "$(VIKICLOW_APP_PROFILE)"
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        SUPPORTS_LIVE_ACTIVITIES: YES
+        ENABLE_APPINTENTS_METADATA: NO
+        ENABLE_APP_INTENTS_METADATA_GENERATION: NO
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: VikiClow
+        CFBundleIconName: AppIcon
+        CFBundleURLTypes:
+          - CFBundleURLName: ai.vikiclow.ios
+            CFBundleURLSchemes:
+              - vikiclow
+        CFBundleShortVersionString: "$(VIKICLOW_MARKETING_VERSION)"
+        CFBundleVersion: "$(VIKICLOW_BUILD_VERSION)"
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UIBackgroundModes:
+          - audio
+          - remote-notification
+        BGTaskSchedulerPermittedIdentifiers:
+          - ai.vikiclow.ios.bgrefresh
+        NSLocalNetworkUsageDescription: VikiClow discovers and connects to your VikiClow gateway on the local network.
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoadsInWebContent: true
+        NSBonjourServices:
+          - _vikiclow-gw._tcp
+        NSCameraUsageDescription: VikiClow can capture photos or short video clips when requested via the gateway.
+        NSLocationWhenInUseUsageDescription: VikiClow uses your location when you allow location sharing.
+        NSLocationAlwaysAndWhenInUseUsageDescription: VikiClow can share your location in the background when you enable Always.
+        NSMicrophoneUsageDescription: VikiClow needs microphone access for voice wake.
+        NSMotionUsageDescription: VikiClow may use motion data to support device-aware interactions and automations.
+        NSPhotoLibraryUsageDescription: VikiClow needs photo library access when you choose existing photos to share with your assistant.
+        NSSpeechRecognitionUsageDescription: VikiClow uses on-device speech recognition for voice wake.
+        NSSupportsLiveActivities: true
+        ITSAppUsesNonExemptEncryption: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+
+  VikiClowShareExtension:
+    type: app-extension
+    platform: iOS
+    configFiles:
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
+    sources:
+      - path: ShareExtension
+    dependencies:
+      - package: VikiClowKit
+      - sdk: AppIntents.framework
+    settings:
+      base:
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: "$(VIKICLOW_CODE_SIGN_STYLE)"
+        DEVELOPMENT_TEAM: "$(VIKICLOW_DEVELOPMENT_TEAM)"
+        ENABLE_APPINTENTS_METADATA: NO
+        ENABLE_APP_INTENTS_METADATA_GENERATION: NO
+        PRODUCT_BUNDLE_IDENTIFIER: "$(VIKICLOW_SHARE_BUNDLE_ID)"
+        PROVISIONING_PROFILE_SPECIFIER: "$(VIKICLOW_SHARE_PROFILE)"
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+    info:
+      path: ShareExtension/Info.plist
+      properties:
+        CFBundleDisplayName: VikiClow Share
+        CFBundleShortVersionString: "$(VIKICLOW_MARKETING_VERSION)"
+        CFBundleVersion: "$(VIKICLOW_BUILD_VERSION)"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).ShareViewController"
+          NSExtensionAttributes:
+            NSExtensionActivationRule:
+              NSExtensionActivationSupportsText: true
+              NSExtensionActivationSupportsWebURLWithMaxCount: 1
+              NSExtensionActivationSupportsImageWithMaxCount: 10
+              NSExtensionActivationSupportsMovieWithMaxCount: 1
+
+  VikiClowActivityWidget:
+    type: app-extension
+    platform: iOS
+    configFiles:
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
+    sources:
+      - path: ActivityWidget
+      - path: Sources/LiveActivity/VikiClowActivityAttributes.swift
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: ActivityKit.framework
+    settings:
+      base:
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: "$(VIKICLOW_CODE_SIGN_STYLE)"
+        DEVELOPMENT_TEAM: "$(VIKICLOW_DEVELOPMENT_TEAM)"
+        PRODUCT_BUNDLE_IDENTIFIER: "$(VIKICLOW_ACTIVITY_WIDGET_BUNDLE_ID)"
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        SUPPORTS_LIVE_ACTIVITIES: YES
+    info:
+      path: ActivityWidget/Info.plist
+      properties:
+        CFBundleDisplayName: VikiClow Activity
+        CFBundleShortVersionString: "$(VIKICLOW_MARKETING_VERSION)"
+        CFBundleVersion: "$(VIKICLOW_BUILD_VERSION)"
+        NSSupportsLiveActivities: true
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+
+  VikiClowWatchApp:
+    type: application.watchapp2
+    platform: watchOS
+    deploymentTarget: "11.0"
+    sources:
+      - path: WatchApp
+    dependencies:
+      - target: VikiClowWatchExtension
+    configFiles:
+      Debug: Config/Signing.xcconfig
+      Release: Config/Signing.xcconfig
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_APPINTENTS_METADATA: NO
+        ENABLE_APP_INTENTS_METADATA_GENERATION: NO
+        PRODUCT_BUNDLE_IDENTIFIER: "$(VIKICLOW_WATCH_APP_BUNDLE_ID)"
+    info:
+      path: WatchApp/Info.plist
+      properties:
+        CFBundleDisplayName: VikiClow
+        CFBundleShortVersionString: "$(VIKICLOW_MARKETING_VERSION)"
+        CFBundleVersion: "$(VIKICLOW_BUILD_VERSION)"
+        WKCompanionAppBundleIdentifier: "$(VIKICLOW_APP_BUNDLE_ID)"
+        WKWatchKitApp: true
+
+  VikiClowWatchExtension:
+    type: watchkit2-extension
+    platform: watchOS
+    deploymentTarget: "11.0"
+    sources:
+      - path: WatchExtension/Sources
+    dependencies:
+      - sdk: AppIntents.framework
+      - sdk: WatchConnectivity.framework
+      - sdk: UserNotifications.framework
+    configFiles:
+      Debug: Config/Signing.xcconfig
+      Release: Config/Signing.xcconfig
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: "$(VIKICLOW_WATCH_EXTENSION_BUNDLE_ID)"
+    info:
+      path: WatchExtension/Info.plist
+      properties:
+        CFBundleDisplayName: VikiClow
+        CFBundleShortVersionString: "$(VIKICLOW_MARKETING_VERSION)"
+        CFBundleVersion: "$(VIKICLOW_BUILD_VERSION)"
+        NSExtension:
+          NSExtensionAttributes:
+            WKAppBundleIdentifier: "$(VIKICLOW_WATCH_APP_BUNDLE_ID)"
+          NSExtensionPointIdentifier: com.apple.watchkit
+
+  VikiClowTests:
+    type: bundle.unit-test
+    platform: iOS
+    configFiles:
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
+    sources:
+      - path: Tests
+        excludes:
+          - Logic
+    dependencies:
+      - target: VikiClow
+      - package: Swabble
+        product: SwabbleKit
+      - sdk: AppIntents.framework
+    settings:
+      base:
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: "$(VIKICLOW_CODE_SIGN_STYLE)"
+        DEVELOPMENT_TEAM: "$(VIKICLOW_DEVELOPMENT_TEAM)"
+        PRODUCT_BUNDLE_IDENTIFIER: ai.vikiclow.ios.tests
+        ENABLE_APP_INTENTS_METADATA_GENERATION: NO
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/VikiClow.app/VikiClow"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+    info:
+      path: Tests/Info.plist
+      properties:
+        CFBundleDisplayName: VikiClowTests
+        CFBundleShortVersionString: "$(VIKICLOW_MARKETING_VERSION)"
+        CFBundleVersion: "$(VIKICLOW_BUILD_VERSION)"
+
+  VikiClowLogicTests:
+    type: bundle.unit-test
+    platform: iOS
+    configFiles:
+      Debug: Signing.xcconfig
+      Release: Signing.xcconfig
+    sources:
+      - path: Tests/Logic
+    dependencies:
+      - package: VikiClowKit
+    settings:
+      base:
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: "$(VIKICLOW_CODE_SIGN_STYLE)"
+        DEVELOPMENT_TEAM: "$(VIKICLOW_DEVELOPMENT_TEAM)"
+        PRODUCT_BUNDLE_IDENTIFIER: ai.vikiclow.ios.logic-tests
+        ENABLE_APP_INTENTS_METADATA_GENERATION: NO
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+    info:
+      path: Tests/Info.plist
+      properties:
+        CFBundleDisplayName: VikiClowLogicTests
+        CFBundleShortVersionString: "$(VIKICLOW_MARKETING_VERSION)"
+        CFBundleVersion: "$(VIKICLOW_BUILD_VERSION)"

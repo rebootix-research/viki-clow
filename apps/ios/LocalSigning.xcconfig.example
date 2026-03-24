@@ -1,0 +1,15 @@
+// Copy to LocalSigning.xcconfig for personal local signing overrides.
+// This file is only an example and should stay committed.
+
+VIKICLOW_CODE_SIGN_STYLE = Automatic
+VIKICLOW_DEVELOPMENT_TEAM = YOUR_TEAM_ID
+
+VIKICLOW_APP_BUNDLE_ID = ai.vikiclow.client
+VIKICLOW_SHARE_BUNDLE_ID = ai.vikiclow.client.share
+VIKICLOW_ACTIVITY_WIDGET_BUNDLE_ID = ai.vikiclow.client.activitywidget
+VIKICLOW_WATCH_APP_BUNDLE_ID = ai.vikiclow.client.watchkitapp
+VIKICLOW_WATCH_EXTENSION_BUNDLE_ID = ai.vikiclow.client.watchkitapp.extension
+
+// Leave empty with automatic signing.
+VIKICLOW_APP_PROFILE =
+VIKICLOW_SHARE_PROFILE =

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Onboarding
+    url: https://discord.gg/vikid
+    about: "New to VikiClow? Join Discord for setup guidance in #help."
+  - name: Support
+    url: https://discord.gg/vikid
+    about: "Get help from the VikiClow community on Discord in #help."

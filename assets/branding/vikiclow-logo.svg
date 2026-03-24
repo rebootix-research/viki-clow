@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">VikiClow logo</title>
+  <desc id="desc">A teal and navy emblem with a bright V and three golden signal streaks.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b132b" />
+      <stop offset="100%" stop-color="#11847e" />
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)" />
+  <circle cx="512" cy="512" r="322" fill="none" stroke="#70ffdd" stroke-opacity=".9" stroke-width="58" />
+  <path d="M310 292 512 714 714 292" fill="none" stroke="#faf6ea" stroke-linecap="round" stroke-linejoin="round" stroke-width="86" />
+  <path d="M640 250 792 142M702 382 854 274M764 514 916 406" fill="none" stroke="#ffc757" stroke-linecap="round" stroke-width="30" />
+</svg>

@@ -1,0 +1,51 @@
+---
+title: Deploy on Railway
+---
+
+Deploy VikiClow on Railway when you want a hosted gateway and control surface while keeping the local mission/browser/voice model under your control.
+
+## Recommended deployment shape
+
+Railway is best for:
+
+- hosted gateway access
+- durable state volume
+- remote setup and control UI
+- channel-connected use cases
+
+It is not the preferred place to validate deep local browser or native voice tooling.
+
+## Deploy from GitHub
+
+After publishing the repository, create a new Railway project from:
+
+- `rebootix-research/viki-clow`
+
+Then configure:
+
+- **HTTP Proxy** on port `8080`
+- a persistent **Volume** mounted at `/data`
+- environment variables:
+  - `PORT=8080`
+  - `SETUP_PASSWORD=<strong password>`
+  - `VIKICLOW_STATE_DIR=/data/.vikiclow`
+  - `VIKICLOW_WORKSPACE_DIR=/data/workspace`
+  - `VIKICLOW_GATEWAY_TOKEN=<admin secret>`
+
+## First boot
+
+Open:
+
+- `https://<your-domain>/setup`
+- `https://<your-domain>/vikiclow`
+
+Use the setup flow to:
+
+- choose a provider
+- configure credentials
+- provision bundled capabilities
+- verify the gateway state
+
+## Important note
+
+Railway is a strong hosted gateway option, but the full VikiClow experience is still best when you also own at least one local browser/device/voice runtime.

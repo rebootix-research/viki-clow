@@ -1,0 +1,24 @@
+services:
+  temporal:
+    image: temporalio/temporal:latest
+    command: ["server", "start-dev", "--ip", "0.0.0.0", "--namespace", "vikiclow"]
+    ports:
+      - "17233:7233"
+      - "18233:8233"
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'echo > /dev/tcp/127.0.0.1/7233'"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  neo4j:
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: neo4j/vikiclow-dev-password
+    ports:
+      - "17687:7687"
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'echo > /dev/tcp/127.0.0.1/7687'"]
+      interval: 10s
+      timeout: 5s
+      retries: 18

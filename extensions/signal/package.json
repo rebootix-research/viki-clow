@@ -1,0 +1,12 @@
+{
+  "name": "@vikiclow/signal",
+  "version": "2026.3.9",
+  "private": true,
+  "description": "VikiClow Signal channel plugin",
+  "type": "module",
+  "vikiclow": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

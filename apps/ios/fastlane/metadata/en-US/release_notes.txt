@@ -1,0 +1,1 @@
+First App Store release of VikiClow for iPhone. Pair with your VikiClow Gateway to use chat, voice, sharing, and device actions from iOS.

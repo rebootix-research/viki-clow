@@ -1,0 +1,12 @@
+{
+  "name": "@vikiclow/telegram",
+  "version": "2026.3.9",
+  "private": true,
+  "description": "VikiClow Telegram channel plugin",
+  "type": "module",
+  "vikiclow": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

@@ -1,0 +1,76 @@
+services:
+  vikiclow-gateway:
+    image: ${VIKICLOW_IMAGE:-vikiclow:local}
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      VIKICLOW_GATEWAY_TOKEN: ${VIKICLOW_GATEWAY_TOKEN:-}
+      VIKICLOW_ALLOW_INSECURE_PRIVATE_WS: ${VIKICLOW_ALLOW_INSECURE_PRIVATE_WS:-}
+      CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY:-}
+      CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY:-}
+      CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE:-}
+    volumes:
+      - ${VIKICLOW_CONFIG_DIR}:/home/node/.vikiclow
+      - ${VIKICLOW_WORKSPACE_DIR}:/home/node/.vikiclow/workspace
+      ## Uncomment the lines below to enable sandbox isolation
+      ## (agents.defaults.sandbox). Requires Docker CLI in the image
+      ## (build with --build-arg VIKICLOW_INSTALL_DOCKER_CLI=1) or use
+      ## docker-setup.sh with VIKICLOW_SANDBOX=1 for automated setup.
+      ## Set DOCKER_GID to the host's docker group GID (run: stat -c '%g' /var/run/docker.sock).
+      # - /var/run/docker.sock:/var/run/docker.sock
+    # group_add:
+    #   - "${DOCKER_GID:-999}"
+    ports:
+      - "${VIKICLOW_GATEWAY_PORT:-18789}:18789"
+      - "${VIKICLOW_BRIDGE_PORT:-18790}:18790"
+    init: true
+    restart: unless-stopped
+    command:
+      [
+        "node",
+        "dist/index.js",
+        "gateway",
+        "--bind",
+        "${VIKICLOW_GATEWAY_BIND:-lan}",
+        "--port",
+        "18789",
+      ]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  vikiclow-cli:
+    image: ${VIKICLOW_IMAGE:-vikiclow:local}
+    network_mode: "service:vikiclow-gateway"
+    cap_drop:
+      - NET_RAW
+      - NET_ADMIN
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      VIKICLOW_GATEWAY_TOKEN: ${VIKICLOW_GATEWAY_TOKEN:-}
+      VIKICLOW_ALLOW_INSECURE_PRIVATE_WS: ${VIKICLOW_ALLOW_INSECURE_PRIVATE_WS:-}
+      BROWSER: echo
+      CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY:-}
+      CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY:-}
+      CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE:-}
+    volumes:
+      - ${VIKICLOW_CONFIG_DIR}:/home/node/.vikiclow
+      - ${VIKICLOW_WORKSPACE_DIR}:/home/node/.vikiclow/workspace
+    stdin_open: true
+    tty: true
+    init: true
+    entrypoint: ["node", "dist/index.js"]
+    depends_on:
+      - vikiclow-gateway

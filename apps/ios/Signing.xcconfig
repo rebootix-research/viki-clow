@@ -1,0 +1,22 @@
+// Default signing values for shared/repo builds.
+// Auto-selected local team overrides live in .local-signing.xcconfig (git-ignored).
+// Manual local overrides can go in LocalSigning.xcconfig (git-ignored).
+
+#include "Config/Version.xcconfig"
+
+VIKICLOW_CODE_SIGN_STYLE = Manual
+VIKICLOW_DEVELOPMENT_TEAM = Y5PE65HELJ
+
+VIKICLOW_APP_BUNDLE_ID = ai.vikiclow.client
+VIKICLOW_SHARE_BUNDLE_ID = ai.vikiclow.client.share
+VIKICLOW_WATCH_APP_BUNDLE_ID = ai.vikiclow.client.watchkitapp
+VIKICLOW_WATCH_EXTENSION_BUNDLE_ID = ai.vikiclow.client.watchkitapp.extension
+VIKICLOW_ACTIVITY_WIDGET_BUNDLE_ID = ai.vikiclow.client.activitywidget
+
+VIKICLOW_APP_PROFILE = ai.vikiclow.client Development
+VIKICLOW_SHARE_PROFILE = ai.vikiclow.client.share Development
+
+// Keep local includes after defaults: xcconfig is evaluated top-to-bottom,
+// so later assignments in local files override the defaults above.
+#include? ".local-signing.xcconfig"
+#include? "LocalSigning.xcconfig"
