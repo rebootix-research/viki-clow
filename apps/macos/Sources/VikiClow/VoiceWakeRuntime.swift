@@ -203,8 +203,18 @@ actor VoiceWakeRuntime {
                 guard let self else { return }
                 let transcript = result?.bestTranscription.formattedString
                 let segments = result.flatMap { result in
-                    transcript
-                        .map { WakeWordSpeechSegments.from(transcription: result.bestTranscription, transcript: $0) }
+                    transcript.map {
+                        WakeWordSpeechSegments.from(
+                            snapshots: result.bestTranscription.segments.map { segment in
+                                WakeWordSpeechSegmentSnapshot(
+                                    text: segment.substring,
+                                    start: segment.timestamp,
+                                    duration: segment.duration,
+                                    rangeLocation: segment.substringRange.location,
+                                    rangeLength: segment.substringRange.length)
+                            },
+                            transcript: $0)
+                    }
                 } ?? []
                 let isFinal = result?.isFinal ?? false
                 Task { await self.noteRecognitionCallback(transcript: transcript, isFinal: isFinal, error: error) }

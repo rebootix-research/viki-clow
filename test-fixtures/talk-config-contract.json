@@ -1,0 +1,105 @@
+{
+  "selectionCases": [
+    {
+      "id": "resolved-provider-payload",
+      "defaultProvider": "elevenlabs",
+      "payloadValid": true,
+      "expectedSelection": {
+        "provider": "elevenlabs",
+        "normalizedPayload": true,
+        "voiceId": "voice-resolved"
+      },
+      "talk": {
+        "resolved": {
+          "provider": "elevenlabs",
+          "config": {
+            "voiceId": "voice-resolved"
+          }
+        },
+        "provider": "elevenlabs",
+        "providers": {
+          "elevenlabs": {
+            "voiceId": "voice-normalized"
+          }
+        },
+        "voiceId": "voice-legacy"
+      }
+    },
+    {
+      "id": "normalized-payload-without-resolved",
+      "defaultProvider": "elevenlabs",
+      "payloadValid": false,
+      "expectedSelection": null,
+      "talk": {
+        "provider": "elevenlabs",
+        "providers": {
+          "elevenlabs": {
+            "voiceId": "voice-normalized"
+          }
+        },
+        "voiceId": "voice-legacy"
+      }
+    },
+    {
+      "id": "normalized-provider-missing-from-map",
+      "defaultProvider": "elevenlabs",
+      "payloadValid": false,
+      "expectedSelection": null,
+      "talk": {
+        "provider": "acme",
+        "providers": {
+          "elevenlabs": {
+            "voiceId": "voice-normalized"
+          }
+        }
+      }
+    },
+    {
+      "id": "legacy-provider-fallback",
+      "defaultProvider": "elevenlabs",
+      "payloadValid": true,
+      "expectedSelection": {
+        "provider": "elevenlabs",
+        "normalizedPayload": false,
+        "voiceId": "voice-legacy",
+        "apiKey": "legacy-key"
+      },
+      "talk": {
+        "voiceId": "voice-legacy",
+        "apiKey": "legacy-key"
+      }
+    }
+  ],
+  "timeoutCases": [
+    {
+      "id": "valid-silence-timeout",
+      "fallback": 700,
+      "expectedTimeoutMs": 1500,
+      "talk": {
+        "silenceTimeoutMs": 1500
+      }
+    },
+    {
+      "id": "missing-silence-timeout",
+      "fallback": 700,
+      "expectedTimeoutMs": 700,
+      "talk": {}
+    },
+    {
+      "id": "zero-silence-timeout-falls-back",
+      "fallback": 700,
+      "expectedTimeoutMs": 700,
+      "talk": {
+        "silenceTimeoutMs": 0
+      }
+    },
+    {
+      "id": "string-silence-timeout-falls-back",
+      "fallback": 700,
+      "expectedTimeoutMs": 700,
+      "talk": {
+        "silenceTimeoutMs": "1500"
+      }
+    }
+  ]
+}

@@ -1,7 +1,4 @@
 import Foundation
-#if canImport(Speech)
-import Speech
-#endif
 
 public struct WakeWordSegment: Equatable, Sendable {
     public let text: String
@@ -164,19 +161,42 @@ public enum WakeWordGate {
     }
 }
 
+public struct WakeWordSpeechSegmentSnapshot: Equatable, Sendable {
+    public let text: String
+    public let start: TimeInterval
+    public let duration: TimeInterval
+    public let rangeLocation: Int
+    public let rangeLength: Int
+
+    public init(
+        text: String,
+        start: TimeInterval,
+        duration: TimeInterval,
+        rangeLocation: Int,
+        rangeLength: Int)
+    {
+        self.text = text
+        self.start = start
+        self.duration = duration
+        self.rangeLocation = rangeLocation
+        self.rangeLength = rangeLength
+    }
+}
+
 public enum WakeWordSpeechSegments {
-    #if canImport(Speech)
-    public static func from(transcription: SFSpeechTranscription, transcript: String) -> [WakeWordSegment] {
-        transcription.segments.map { segment in
-            let nsRange = NSRange(location: segment.substringRange.location, length: segment.substringRange.length)
+    public static func from(
+        snapshots: [WakeWordSpeechSegmentSnapshot],
+        transcript: String) -> [WakeWordSegment]
+    {
+        snapshots.map { segment in
+            let nsRange = NSRange(location: segment.rangeLocation, length: segment.rangeLength)
             let range = Range(nsRange, in: transcript)
             return WakeWordSegment(
-                text: segment.substring,
-                start: segment.timestamp,
+                text: segment.text,
+                start: segment.start,
                 duration: segment.duration,
-                range: range,
+                range: range
             )
         }
     }
-    #endif
 }

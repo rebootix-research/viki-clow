@@ -133,9 +133,18 @@ final class VoiceWakeTester {
         self.recognitionTask = recognizer.recognitionTask(with: request) { [weak self] result, error in
             guard let self, !self.isStopping else { return }
             let text = result?.bestTranscription.formattedString ?? ""
-            let segments = result.map { WakeWordSpeechSegments.from(
-                transcription: $0.bestTranscription,
-                transcript: text) } ?? []
+            let segments = result.map {
+                WakeWordSpeechSegments.from(
+                    snapshots: $0.bestTranscription.segments.map { segment in
+                        WakeWordSpeechSegmentSnapshot(
+                            text: segment.substring,
+                            start: segment.timestamp,
+                            duration: segment.duration,
+                            rangeLocation: segment.substringRange.location,
+                            rangeLength: segment.substringRange.length)
+                    },
+                    transcript: text)
+            } ?? []
             let isFinal = result?.isFinal ?? false
             let gateConfig = WakeWordGateConfig(triggers: triggers)
             var match = WakeWordGate.match(transcript: text, segments: segments, config: gateConfig)

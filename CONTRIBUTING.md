@@ -9,8 +9,6 @@ Welcome to the VikiClow contributor hub.
 - **Discord:** https://discord.gg/qkhbAGHRBT
 - **X/Twitter:** [@vikiclow](https://x.com/vikiclow)
 
-
-
 ## How to Contribute
 
 1. **Bugs & small fixes** -> Open a PR.
