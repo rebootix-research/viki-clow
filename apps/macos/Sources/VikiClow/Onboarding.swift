@@ -134,10 +134,14 @@ struct OnboardingView: View {
     }
 
     var buttonTitle: String {
-        if self.currentPage == self.pageCount - 1, !self.state.voiceWakeValidationComplete {
+        self.buttonTitle(forPage: self.currentPage)
+    }
+
+    func buttonTitle(forPage page: Int) -> String {
+        if page == self.pageCount - 1, !self.state.voiceWakeValidationComplete {
             return "Validate Voice"
         }
-        return self.currentPage == self.pageCount - 1 ? "Finish" : "Next"
+        return page == self.pageCount - 1 ? "Finish" : "Next"
     }
 
     var wizardPageOrderIndex: Int? {
@@ -145,15 +149,27 @@ struct OnboardingView: View {
     }
 
     var isWizardBlocking: Bool {
-        self.activePageIndex == self.wizardPageIndex && !self.onboardingWizard.isComplete
+        self.isWizardBlocking(forPage: self.currentPage)
+    }
+
+    func isWizardBlocking(forPage page: Int) -> Bool {
+        self.activePageIndex(for: page) == self.wizardPageIndex && !self.onboardingWizard.isComplete
     }
 
     var voiceValidationBlocking: Bool {
-        self.currentPage == self.pageCount - 1 && !self.state.voiceWakeValidationComplete
+        self.isVoiceValidationBlocking(forPage: self.currentPage)
+    }
+
+    func isVoiceValidationBlocking(forPage page: Int) -> Bool {
+        page == self.pageCount - 1 && !self.state.voiceWakeValidationComplete
     }
 
     var canAdvance: Bool {
-        !self.isWizardBlocking && !self.voiceValidationBlocking
+        self.canAdvance(forPage: self.currentPage)
+    }
+
+    func canAdvance(forPage page: Int) -> Bool {
+        !self.isWizardBlocking(forPage: page) && !self.isVoiceValidationBlocking(forPage: page)
     }
 
     var devLinkCommand: String {

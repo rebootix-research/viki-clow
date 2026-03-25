@@ -13,20 +13,19 @@ struct OnboardingVoiceValidationTests {
         ]) {
             let state = AppState(preview: true)
             state.voiceWakeValidationComplete = false
-            var view = OnboardingView(
+            let view = OnboardingView(
                 state: state,
                 permissionMonitor: PermissionMonitor.shared,
                 discoveryModel: GatewayDiscoveryModel(localDisplayName: InstanceIdentity.displayName))
+            let finalPage = view.pageCount - 1
 
-            view.currentPage = view.pageCount - 1
-
-            #expect(view.buttonTitle == "Validate Voice")
-            #expect(view.canAdvance == false)
+            #expect(view.buttonTitle(forPage: finalPage) == "Validate Voice")
+            #expect(view.canAdvance(forPage: finalPage) == false)
 
             state.voiceWakeValidationComplete = true
 
-            #expect(view.buttonTitle == "Finish")
-            #expect(view.canAdvance)
+            #expect(view.buttonTitle(forPage: finalPage) == "Finish")
+            #expect(view.canAdvance(forPage: finalPage))
         }
     }
 

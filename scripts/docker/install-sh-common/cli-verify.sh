@@ -102,6 +102,20 @@ print_cli_debug_info() {
   find /usr/local /usr "$HOME/.npm-global" -maxdepth 4 \( -iname "${package_name}*" -o -iname ".${package_name}-*" \) 2>/dev/null >&2 || true
 }
 
+capture_cli_version() {
+  local mode="$1"
+  local target="$2"
+  local raw=""
+
+  if [[ "$mode" == "cmd" ]]; then
+    raw="$("$target" --version 2>/dev/null | head -n 1 | tr -d '\r' || true)"
+  else
+    raw="$(node "$target" --version 2>/dev/null | head -n 1 | tr -d '\r' || true)"
+  fi
+
+  extract_vikiclow_semver "$raw"
+}
+
 verify_installed_cli() {
   local package_name="$1"
   local expected_version="$2"
@@ -114,8 +128,7 @@ verify_installed_cli() {
 
   cmd_path="$(command -v "$cli_name" || true)"
   if [[ -n "$cmd_path" && -x "$cmd_path" ]]; then
-    candidate_version="$("$cmd_path" --version 2>/dev/null | head -n 1 | tr -d '\r')"
-    candidate_version="$(extract_vikiclow_semver "$candidate_version")"
+    candidate_version="$(capture_cli_version cmd "$cmd_path")"
     if [[ -n "$candidate_version" ]]; then
       matched_cmd_path="$cmd_path"
       installed_version="$candidate_version"
@@ -126,8 +139,7 @@ verify_installed_cli() {
     [[ -n "$candidate" ]] || continue
 
     if [[ -z "$installed_version" && -x "$candidate" && "${candidate##*/}" == "$package_name" ]]; then
-      candidate_version="$("$candidate" --version 2>/dev/null | head -n 1 | tr -d '\r')"
-      candidate_version="$(extract_vikiclow_semver "$candidate_version")"
+      candidate_version="$(capture_cli_version cmd "$candidate")"
       if [[ -n "$candidate_version" ]]; then
         matched_cmd_path="$candidate"
         installed_version="$candidate_version"
@@ -136,8 +148,7 @@ verify_installed_cli() {
     fi
 
     if [[ -z "$installed_version" && -f "$candidate" && ( "${candidate##*/}" == "entry.js" || "${candidate##*/}" == "entry.mjs" || "${candidate##*/}" == "index.js" || "${candidate##*/}" == "vikiclow.mjs" ) ]]; then
-      candidate_version="$(node "$candidate" --version 2>/dev/null | head -n 1 | tr -d '\r')"
-      candidate_version="$(extract_vikiclow_semver "$candidate_version")"
+      candidate_version="$(capture_cli_version entry "$candidate")"
       if [[ -n "$candidate_version" ]]; then
         matched_entry_path="$candidate"
         installed_version="$candidate_version"
@@ -147,8 +158,7 @@ verify_installed_cli() {
     if [[ -z "$installed_version" && -d "$candidate" ]]; then
       for entrypoint in "$candidate/vikiclow.mjs" "$candidate/dist/entry.js" "$candidate/dist/entry.mjs" "$candidate/dist/index.js"; do
         [[ -f "$entrypoint" ]] || continue
-        candidate_version="$(node "$entrypoint" --version 2>/dev/null | head -n 1 | tr -d '\r')"
-        candidate_version="$(extract_vikiclow_semver "$candidate_version")"
+        candidate_version="$(capture_cli_version entry "$entrypoint")"
         if [[ -n "$candidate_version" ]]; then
           matched_entry_path="$entrypoint"
           installed_version="$candidate_version"
