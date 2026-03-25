@@ -359,7 +359,7 @@ final class VoiceWakeTester {
     }
 
     private static func normalizeSegments(_ segments: [WakeWordSegment]) -> [DebugToken] {
-        segments.compactMap { segment in
+        segments.compactMap { segment -> DebugToken? in
             let normalized = VoiceWakeTextUtils.normalizeToken(segment.text)
             guard !normalized.isEmpty else { return nil }
             return DebugToken(

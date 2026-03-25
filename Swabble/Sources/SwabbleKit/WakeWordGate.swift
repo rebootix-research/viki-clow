@@ -5,6 +5,7 @@ public struct WakeWordSegment: Equatable, Sendable {
     public let start: TimeInterval
     public let duration: TimeInterval
     public let range: Range<String.Index>?
+    public var end: TimeInterval { self.start + self.duration }
 
     public init(text: String, start: TimeInterval, duration: TimeInterval, range: Range<String.Index>?) {
         self.text = text

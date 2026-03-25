@@ -835,11 +835,11 @@ extension OnboardingView {
                 {
                     self.openSettings(tab: .channels)
                 }
-                self.featureActionRow(
+                    self.featureActionRow(
                     title: "Validate Voice Wake",
-                    subtitle: "Open Settings \u2192 Voice Wake and run the mic + speech test before finishing setup.",
+                    subtitle: "Open Settings \u{2192} Voice Wake and run the mic + speech test before finishing setup.",
                     systemImage: "waveform.circle",
-                    buttonTitle: "Open Settings \u2192 Voice Wake")
+                    buttonTitle: "Open Settings \u{2192} Voice Wake")
                 {
                     self.openSettings(tab: .voiceWake)
                 }

@@ -107,6 +107,7 @@ enum VoiceWakeReadinessEvaluator {
         return isEnabled ? .ready : .disabled
     }
 
+    @MainActor
     static func current(for state: AppState) -> VoiceWakeReadiness {
         let speechStatus = SFSpeechRecognizer.authorizationStatus()
         let micStatus = AVCaptureDevice.authorizationStatus(for: .audio)

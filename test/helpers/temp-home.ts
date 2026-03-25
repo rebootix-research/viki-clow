@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
+import { createTempHomeEnv } from "../../src/test-utils/temp-home.js";
 
 type TempHomeOptions = {
   prefix?: string;
@@ -30,9 +30,24 @@ export async function withTempHome<T>(
     typeof first === "string"
       ? first.trim() || "vikiclow-test-home-"
       : options.prefix?.trim() || "vikiclow-test-home-";
-  const home = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
+  const tempHome = await createTempHomeEnv(prefix);
+  const home = tempHome.home;
+  const defaultEnv = {
+    XDG_CONFIG_HOME: path.join(home, ".config"),
+    XDG_DATA_HOME: path.join(home, ".local", "share"),
+    XDG_CACHE_HOME: path.join(home, ".cache"),
+  } satisfies Record<string, string>;
   const previousEnv = new Map<string, string | undefined>();
   try {
+    await Promise.all(
+      Object.values(defaultEnv).map(async (dir) => await fs.mkdir(dir, { recursive: true })),
+    );
+
+    for (const [key, value] of Object.entries(defaultEnv)) {
+      previousEnv.set(key, process.env[key]);
+      process.env[key] = value;
+    }
+
     for (const [key, value] of Object.entries(options.env ?? {})) {
       previousEnv.set(key, process.env[key]);
       const resolved = typeof value === "function" ? value(home) : value;
@@ -51,6 +66,6 @@ export async function withTempHome<T>(
         process.env[key] = value;
       }
     }
-    await fs.rm(home, { recursive: true, force: true });
+    await tempHome.restore();
   }
 }

@@ -9,6 +9,7 @@ import {
   type MemoryIndexManager,
   type MemorySearchManager,
 } from "./index.js";
+import { unwrapMemoryIndexManagerForTests } from "./test-manager-helpers.js";
 
 export function installEmbeddingManagerFixture(opts: {
   fixturePrefix: string;
@@ -49,10 +50,12 @@ export function installEmbeddingManagerFixture(opts: {
     if (!manager) {
       throw new Error(`${name} missing`);
     }
-    if (!("resetIndex" in manager) || typeof manager.resetIndex !== "function") {
+    const unwrapped = unwrapMemoryIndexManagerForTests(manager);
+    const candidate = unwrapped as unknown as { resetIndex?: unknown };
+    if (typeof candidate.resetIndex !== "function") {
       throw new Error(`${name} is not a MemoryIndexManager`);
     }
-    return manager as unknown as MemoryIndexManager;
+    return unwrapped;
   };
 
   beforeAll(async () => {

@@ -65,6 +65,22 @@ function isMcporterCommand(cmd: unknown): boolean {
   return /(^|[\\/])mcporter(?:\.cmd)?$/i.test(cmd);
 }
 
+function isMcporterSpawnCall(call: unknown[]): boolean {
+  const [command, argv] = call;
+  if (isMcporterCommand(command)) {
+    return true;
+  }
+  if (!Array.isArray(argv)) {
+    return false;
+  }
+  return argv.some((entry) => typeof entry === "string" && /mcporter/i.test(entry));
+}
+
+function hasSpawnArg(call: unknown[], value: string): boolean {
+  const argv = call[1];
+  return Array.isArray(argv) && argv.some((entry) => entry === value);
+}
+
 vi.mock("../logging/subsystem.js", () => ({
   createSubsystemLogger: () => {
     const logger = {
@@ -1565,12 +1581,10 @@ describe("QmdMemoryManager", () => {
     ).resolves.toEqual([]);
 
     const mcporterCalls = spawnMock.mock.calls.filter((call: unknown[]) =>
-      isMcporterCommand(call[0]),
+      isMcporterSpawnCall(call),
     );
     expect(mcporterCalls.length).toBeGreaterThan(0);
-    expect(mcporterCalls.some((call: unknown[]) => (call[1] as string[])[0] === "daemon")).toBe(
-      false,
-    );
+    expect(mcporterCalls.some((call: unknown[]) => hasSpawnArg(call, "daemon"))).toBe(false);
     expect(logWarnMock).toHaveBeenCalledWith(expect.stringContaining("cold-start"));
 
     await manager.close();
@@ -1721,7 +1735,7 @@ describe("QmdMemoryManager", () => {
     await manager.search("hello", { sessionKey: "agent:main:slack:dm:u123" });
 
     const mcporterCall = spawnMock.mock.calls.find(
-      (call: unknown[]) => isMcporterCommand(call[0]) && (call[1] as string[])[0] === "call",
+      (call: unknown[]) => isMcporterSpawnCall(call) && hasSpawnArg(call, "call"),
     );
     expect(mcporterCall).toBeDefined();
     const spawnOpts = mcporterCall?.[2] as { env?: NodeJS.ProcessEnv } | undefined;
@@ -1749,7 +1763,7 @@ describe("QmdMemoryManager", () => {
     let daemonAttempts = 0;
     spawnMock.mockImplementation((cmd: string, args: string[]) => {
       const child = createMockChild({ autoClose: false });
-      if (isMcporterCommand(cmd) && args[0] === "daemon") {
+      if (isMcporterSpawnCall([cmd, args]) && args.includes("daemon")) {
         daemonAttempts += 1;
         if (daemonAttempts === 1) {
           emitAndClose(child, "stderr", "failed", 1);
@@ -1758,7 +1772,7 @@ describe("QmdMemoryManager", () => {
         }
         return child;
       }
-      if (isMcporterCommand(cmd) && args[0] === "call") {
+      if (isMcporterSpawnCall([cmd, args]) && args.includes("call")) {
         emitAndClose(child, "stdout", JSON.stringify({ results: [] }));
         return child;
       }
@@ -1792,11 +1806,11 @@ describe("QmdMemoryManager", () => {
 
     spawnMock.mockImplementation((cmd: string, args: string[]) => {
       const child = createMockChild({ autoClose: false });
-      if (isMcporterCommand(cmd) && args[0] === "daemon") {
+      if (isMcporterSpawnCall([cmd, args]) && args.includes("daemon")) {
         emitAndClose(child, "stdout", "");
         return child;
       }
-      if (isMcporterCommand(cmd) && args[0] === "call") {
+      if (isMcporterSpawnCall([cmd, args]) && args.includes("call")) {
         emitAndClose(child, "stdout", JSON.stringify({ results: [] }));
         return child;
       }
@@ -1810,7 +1824,7 @@ describe("QmdMemoryManager", () => {
     await manager.search("two", { sessionKey: "agent:main:slack:dm:u123" });
 
     const daemonStarts = spawnMock.mock.calls.filter(
-      (call: unknown[]) => isMcporterCommand(call[0]) && (call[1] as string[])[0] === "daemon",
+      (call: unknown[]) => isMcporterSpawnCall(call) && hasSpawnArg(call, "daemon"),
     );
     expect(daemonStarts).toHaveLength(1);
 
@@ -2128,13 +2142,15 @@ describe("QmdMemoryManager", () => {
       "path required",
     );
 
-    const target = path.join(workspaceDir, "target.md");
-    await fs.writeFile(target, "ok", "utf-8");
-    const link = path.join(workspaceDir, "link.md");
-    await fs.symlink(target, link);
-    await expect(manager.readFile({ relPath: "qmd/workspace-main/link.md" })).rejects.toThrow(
-      "path required",
-    );
+    if (process.platform !== "win32") {
+      const target = path.join(workspaceDir, "target.md");
+      await fs.writeFile(target, "ok", "utf-8");
+      const link = path.join(workspaceDir, "link.md");
+      await fs.symlink(target, link);
+      await expect(manager.readFile({ relPath: "qmd/workspace-main/link.md" })).rejects.toThrow(
+        "path required",
+      );
+    }
 
     await manager.close();
   });

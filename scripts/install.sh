@@ -1946,8 +1946,9 @@ EOF
 
 # Install VikiClow
 resolve_beta_version() {
+    local package_name="${VIKICLOW_INSTALL_PACKAGE:-vikiclow}"
     local beta=""
-    beta="$(npm view vikiclow dist-tags.beta 2>/dev/null || true)"
+    beta="$(npm view "$package_name" dist-tags.beta 2>/dev/null || true)"
     if [[ -z "$beta" || "$beta" == "undefined" || "$beta" == "null" ]]; then
         return 1
     fi
@@ -1955,14 +1956,14 @@ resolve_beta_version() {
 }
 
 install_vikiclow() {
-    local package_name="vikiclow"
+    local package_name="${VIKICLOW_INSTALL_PACKAGE:-vikiclow}"
+    local install_spec_override="${VIKICLOW_INSTALL_SPEC:-}"
     if [[ "$USE_BETA" == "1" ]]; then
         local beta_version=""
         beta_version="$(resolve_beta_version || true)"
         if [[ -n "$beta_version" ]]; then
             VIKICLOW_VERSION="$beta_version"
             ui_info "Beta tag detected (${beta_version})"
-            package_name="vikiclow"
         else
             VIKICLOW_VERSION="latest"
             ui_info "No beta tag found; using latest"
@@ -1974,14 +1975,20 @@ install_vikiclow() {
     fi
 
     local resolved_version=""
-    resolved_version="$(npm view "${package_name}@${VIKICLOW_VERSION}" version 2>/dev/null || true)"
+    if [[ -z "$install_spec_override" ]]; then
+        resolved_version="$(npm view "${package_name}@${VIKICLOW_VERSION}" version 2>/dev/null || true)"
+    fi
     if [[ -n "$resolved_version" ]]; then
         ui_info "Installing VikiClow v${resolved_version}"
+    elif [[ -n "$install_spec_override" ]]; then
+        ui_info "Installing VikiClow from ${install_spec_override}"
     else
         ui_info "Installing VikiClow (${VIKICLOW_VERSION})"
     fi
     local install_spec=""
-    if [[ "${VIKICLOW_VERSION}" == "latest" ]]; then
+    if [[ -n "$install_spec_override" ]]; then
+        install_spec="${install_spec_override}"
+    elif [[ "${VIKICLOW_VERSION}" == "latest" ]]; then
         install_spec="${package_name}@latest"
     else
         install_spec="${package_name}@${VIKICLOW_VERSION}"
@@ -1993,7 +2000,7 @@ install_vikiclow() {
         install_vikiclow_npm "${install_spec}"
     fi
 
-    if [[ "${VIKICLOW_VERSION}" == "latest" && "${package_name}" == "vikiclow" ]]; then
+    if [[ -z "$install_spec_override" && "${VIKICLOW_VERSION}" == "latest" && "${package_name}" == "vikiclow" ]]; then
         if ! resolve_vikiclow_bin &> /dev/null; then
             ui_warn "npm install vikiclow@latest failed; retrying vikiclow@next"
             cleanup_npm_vikiclow_paths

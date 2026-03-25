@@ -7,6 +7,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 const getMemorySearchManager = vi.fn();
 const loadConfig = vi.fn(() => ({}));
 const resolveDefaultAgentId = vi.fn(() => "main");
+const resolveAgentWorkspaceDir = vi.fn(() => "/workspace");
 const resolveCommandSecretRefsViaGateway = vi.fn(async ({ config }: { config: unknown }) => ({
   resolvedConfig: config,
   diagnostics: [] as string[],
@@ -24,6 +25,7 @@ vi.mock("../config/config.js", () => ({
 
 vi.mock("../agents/agent-scope.js", () => ({
   resolveDefaultAgentId,
+  resolveAgentWorkspaceDir,
 }));
 
 vi.mock("./command-secret-gateway.js", () => ({

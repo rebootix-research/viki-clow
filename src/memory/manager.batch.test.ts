@@ -6,6 +6,7 @@ import { useFastShortTimeouts } from "../../test/helpers/fast-short-timeouts.js"
 import type { VikiClowConfig } from "../config/config.js";
 import { getMemorySearchManager, type MemoryIndexManager } from "./index.js";
 import { createOpenAIEmbeddingProviderMock } from "./test-embeddings-mock.js";
+import { unwrapMemoryIndexManagerForTests } from "./test-manager-helpers.js";
 import "./test-runtime-mocks.js";
 
 const embedBatch = vi.fn(async (_texts: string[]) => [] as number[][]);
@@ -128,7 +129,7 @@ describe("memory indexing with OpenAI batches", () => {
     if (!result.manager) {
       throw new Error("manager missing");
     }
-    manager = result.manager as unknown as MemoryIndexManager;
+    manager = unwrapMemoryIndexManagerForTests(result.manager);
   });
 
   afterAll(async () => {

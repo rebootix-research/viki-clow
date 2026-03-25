@@ -210,9 +210,9 @@ jobs:
         if: (github.event_name != 'push' || matrix.runtime != 'bun') && matrix.task == 'test' && matrix.runtime == 'node'
         run: |
           # `pnpm test` runs `scripts/test-parallel.mjs`, which spawns multiple Node processes.
-          # Default heap limits have been too low on Linux CI (V8 OOM near 4GB).
+          # Default heap limits have been too low on Linux CI (V8 OOM near 6GB).
           echo "VIKICLOW_TEST_WORKERS=2" >> "$GITHUB_ENV"
-          echo "VIKICLOW_TEST_MAX_OLD_SPACE_SIZE_MB=6144" >> "$GITHUB_ENV"
+          echo "VIKICLOW_TEST_MAX_OLD_SPACE_SIZE_MB=8192" >> "$GITHUB_ENV"
 
       - name: Run ${{ matrix.task }} (${{ matrix.runtime }})
         if: matrix.runtime != 'bun' || github.event_name != 'push'
@@ -837,7 +837,9 @@ jobs:
 
       - name: Run Android ${{ matrix.task }}
         working-directory: apps/android
-        run: ${{ matrix.command }}
+        run: |
+          chmod +x gradlew
+          ${{ matrix.command }}
 
       - name: Upload Android unit test reports
         if: always() && matrix.task == 'test'

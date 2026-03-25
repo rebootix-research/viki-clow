@@ -1,5 +1,6 @@
 import type { VikiClowConfig } from "../config/config.js";
 import { getMemorySearchManager, type MemoryIndexManager } from "./index.js";
+import { unwrapMemoryIndexManagerForTests } from "./test-manager-helpers.js";
 
 export async function createMemoryManagerOrThrow(
   cfg: VikiClowConfig,
@@ -9,5 +10,5 @@ export async function createMemoryManagerOrThrow(
   if (!result.manager) {
     throw new Error("manager missing");
   }
-  return result.manager as unknown as MemoryIndexManager;
+  return unwrapMemoryIndexManagerForTests(result.manager);
 }

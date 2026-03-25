@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import type { Command } from "commander";
-import { resolveDefaultAgentId } from "../agents/agent-scope.js";
+import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { loadConfig } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
 import { resolveSessionTranscriptsDirForAgent } from "../config/sessions/paths.js";
@@ -422,7 +422,7 @@ export async function runMemoryStatus(opts: MemoryCommandOptions) {
         const sources = (
           status.sources?.length ? status.sources : ["memory"]
         ) as MemorySourceName[];
-        const workspaceDir = status.workspaceDir;
+        const workspaceDir = status.workspaceDir ?? resolveAgentWorkspaceDir(cfg, agentId);
         const latestWriteback = workspaceDir
           ? await readLatestMemoryWritebackSummary({ workspaceDir })
           : undefined;

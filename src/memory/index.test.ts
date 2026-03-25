@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { getMemorySearchManager, type MemoryIndexManager } from "./index.js";
+import { unwrapMemoryIndexManagerForTests } from "./test-manager-helpers.js";
 import "./test-runtime-mocks.js";
 
 let embedBatchCalls = 0;
@@ -189,7 +190,7 @@ describe("memory index", () => {
     if (!result.manager) {
       throw new Error(missingMessage);
     }
-    return result.manager as MemoryIndexManager;
+    return unwrapMemoryIndexManagerForTests(result.manager);
   }
 
   async function getPersistentManager(cfg: TestCfg): Promise<MemoryIndexManager> {

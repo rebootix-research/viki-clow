@@ -70,10 +70,29 @@ function resolveVersionFromPackage(command: string, cwd: string): string | null 
     }
     const parent = path.dirname(current);
     if (parent === current) {
-      return null;
+      break;
     }
     current = parent;
   }
+
+  const commandName = path.parse(commandPath).name;
+  const binDir = path.dirname(commandPath);
+  if (path.basename(binDir) === ".bin" && commandName) {
+    const packageJsonPath = path.join(path.dirname(binDir), commandName, "package.json");
+    try {
+      const parsed = JSON.parse(fs.readFileSync(packageJsonPath, "utf8")) as {
+        name?: unknown;
+        version?: unknown;
+      };
+      if (parsed.name === "acpx" && typeof parsed.version === "string" && parsed.version.trim()) {
+        return parsed.version.trim();
+      }
+    } catch {
+      // no-op; fall through
+    }
+  }
+
+  return null;
 }
 
 function resolveVersionCheckResult(params: {

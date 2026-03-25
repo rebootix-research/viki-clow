@@ -25,7 +25,7 @@ export type FindExtraGatewayServicesOptions = {
 const joinLegacyToken = (...parts: string[]) => parts.join("");
 const LEGACY_VIKICLOWBOT_MARKER = joinLegacyToken("viki", "clow", "bot");
 const LEGACY_MOLTBOT_MARKER = joinLegacyToken("molt", "bot");
-const EXTRA_MARKERS = ["vikiclow", LEGACY_VIKICLOWBOT_MARKER, LEGACY_MOLTBOT_MARKER] as const;
+const EXTRA_MARKERS = [LEGACY_VIKICLOWBOT_MARKER, LEGACY_MOLTBOT_MARKER, "vikiclow"] as const;
 
 export function renderGatewayServiceCleanupHints(
   env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
