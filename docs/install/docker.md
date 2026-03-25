@@ -58,7 +58,7 @@ This script:
 
 Optional env vars:
 
-- `VIKICLOW_IMAGE` — use a remote image instead of building locally (e.g. `ghcr.io/vikiclow/vikiclow:latest`)
+- `VIKICLOW_IMAGE` — use a remote image instead of building locally (e.g. `ghcr.io/rebootix-research/viki-clow:latest`)
 - `VIKICLOW_DOCKER_APT_PACKAGES` — install extra apt packages during build
 - `VIKICLOW_EXTENSIONS` — pre-install extension dependencies at build time (space-separated extension names, e.g. `diagnostics-otel matrix`)
 - `VIKICLOW_EXTRA_MOUNTS` — add extra host bind mounts
@@ -152,7 +152,7 @@ Official pre-built images are published at:
 
 - [GitHub Container Registry package](https://github.com/rebootix-research/viki-clow/pkgs/container/vikiclow)
 
-Use image name `ghcr.io/vikiclow/vikiclow` (not similarly named Docker Hub
+Use image name `ghcr.io/rebootix-research/viki-clow` (not similarly named Docker Hub
 images).
 
 Common tags:
@@ -191,7 +191,7 @@ By default the setup script builds the image from source. To pull a pre-built
 image instead, set `VIKICLOW_IMAGE` before running the script:
 
 ```bash
-export VIKICLOW_IMAGE="ghcr.io/vikiclow/vikiclow:latest"
+export VIKICLOW_IMAGE="ghcr.io/rebootix-research/viki-clow:latest"
 ./docker-setup.sh
 ```
 

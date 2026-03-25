@@ -356,8 +356,8 @@ VikiClow 连接到 Jira，然后即时生成一个新的 skill（在它出现在
   通过自然语言控制和自动化 Home Assistant 设备。
 </Card>
 
-<Card title="Nix 打包" icon="snowflake" href="https://github.com/vikiclow/nix-vikiclow">
-  **@vikiclow** • `nix` `packaging` `deployment`
+<Card title="Nix 打包" icon="snowflake" href="/zh-CN/install/nix">
+  **VikiClow** • `nix` `packaging` `deployment`
   
   开箱即用的 nixified VikiClow 配置，用于可复现的部署。
 </Card>

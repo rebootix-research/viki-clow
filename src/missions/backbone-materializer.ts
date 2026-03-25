@@ -161,24 +161,31 @@ async function loadTemporalClient(): Promise<TemporalClientModuleLike | null> {
 }
 
 async function probeLangGraphEndpoint(endpoint: string): Promise<{ connected: boolean; error?: string }> {
-  try {
-    const base = new URL(endpoint);
-    const healthPath = trimEnv(process.env.VIKICLOW_LANGGRAPH_HEALTHCHECK_PATH) ?? "/ok";
-    const target = new URL(healthPath, base).toString();
-    const response = await fetch(target, {
-      method: "GET",
-      headers: { accept: "application/json,text/plain,*/*" },
-    });
-    if (!response.ok) {
-      return { connected: false, error: `healthcheck returned ${response.status}` };
+  const startedAt = Date.now();
+  let lastError: string | undefined;
+  while (Date.now() - startedAt < 30_000) {
+    try {
+      const base = new URL(endpoint);
+      const healthPath = trimEnv(process.env.VIKICLOW_LANGGRAPH_HEALTHCHECK_PATH) ?? "/ok";
+      const target = new URL(healthPath, base).toString();
+      const response = await fetch(target, {
+        method: "GET",
+        headers: { accept: "application/json,text/plain,*/*" },
+      });
+      if (!response.ok) {
+        lastError = `healthcheck returned ${response.status}`;
+      } else {
+        return { connected: true };
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
     }
-    return { connected: true };
-  } catch (error) {
-    return {
-      connected: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   }
+  return {
+    connected: false,
+    error: lastError ?? "LangGraph healthcheck did not become ready before timeout",
+  };
 }
 
 async function materializeTemporalBoundary(

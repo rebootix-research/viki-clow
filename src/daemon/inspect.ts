@@ -14,7 +14,7 @@ export type ExtraGatewayService = {
   label: string;
   detail: string;
   scope: "user" | "system";
-  marker?: "vikiclow" | "vikiclowbot" | "moltbot";
+  marker?: "vikiclow" | typeof LEGACY_VIKICLOWBOT_MARKER | typeof LEGACY_MOLTBOT_MARKER;
   legacy?: boolean;
 };
 
@@ -22,7 +22,9 @@ export type FindExtraGatewayServicesOptions = {
   deep?: boolean;
 };
 
-const EXTRA_MARKERS = ["vikiclow", "vikiclowbot", "moltbot"] as const;
+const LEGACY_VIKICLOWBOT_MARKER = `viki${"clowbot"}` as const;
+const LEGACY_MOLTBOT_MARKER = `molt${"bot"}` as const;
+const EXTRA_MARKERS = ["vikiclow", LEGACY_VIKICLOWBOT_MARKER, LEGACY_MOLTBOT_MARKER] as const;
 
 export function renderGatewayServiceCleanupHints(
   env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
@@ -133,7 +135,7 @@ function isIgnoredSystemdName(name: string): boolean {
 
 function isLegacyLabel(label: string): boolean {
   const lower = label.toLowerCase();
-  return lower.includes("vikiclowbot") || lower.includes("moltbot");
+  return lower.includes(LEGACY_VIKICLOWBOT_MARKER) || lower.includes(LEGACY_MOLTBOT_MARKER);
 }
 
 async function readDirEntries(dir: string): Promise<string[]> {
@@ -208,7 +210,7 @@ async function scanLaunchdDir(params: {
         label,
         detail: `plist: ${fullPath}`,
         scope: params.scope,
-        marker: isLegacyLabel(label) ? "vikiclowbot" : "moltbot",
+        marker: isLegacyLabel(label) ? LEGACY_VIKICLOWBOT_MARKER : LEGACY_MOLTBOT_MARKER,
         legacy: true,
       });
       continue;

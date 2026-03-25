@@ -1,7 +1,8 @@
 {
-  "name": "vikiclowbot",
+  "name": "@vikiclow/legacy-cli-shim-a",
   "version": "2026.2.12",
-  "description": "Compatibility shim that forwards to vikiclow",
+  "private": true,
+  "description": "Private legacy CLI shim that forwards old command names to vikiclow",
   "bin": {
     "vikiclowbot": "./bin/vikiclowbot.js"
   },

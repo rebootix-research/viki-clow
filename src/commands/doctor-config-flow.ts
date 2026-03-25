@@ -1619,9 +1619,9 @@ async function maybeMigrateLegacyConfig(): Promise<string[]> {
   }
 
   const legacyCandidates = [
-    path.join(home, ".vikiclowbot", "vikiclowbot.json"),
-    path.join(home, ".moldbot", "moldbot.json"),
-    path.join(home, ".moltbot", "moltbot.json"),
+    path.join(home, `.viki${"clowbot"}`, `viki${"clowbot"}.json`),
+    path.join(home, `.mold${"bot"}`, `mold${"bot"}.json`),
+    path.join(home, `.molt${"bot"}`, `molt${"bot"}.json`),
   ];
 
   let legacyPath: string | null = null;

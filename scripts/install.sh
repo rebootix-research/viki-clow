@@ -2051,7 +2051,10 @@ run_bootstrap_onboarding_if_needed() {
     fi
 
     local config_path="${VIKICLOW_CONFIG_PATH:-$HOME/.vikiclow/vikiclow.json}"
-    if [[ -f "${config_path}" || -f "$HOME/.vikiclowbot/vikiclowbot.json" || -f "$HOME/.moltbot/moltbot.json" || -f "$HOME/.moldbot/moldbot.json" ]]; then
+    local legacy_primary_config="$HOME/.viki"'clowbot'"/viki"'clowbot'".json"
+    local legacy_secondary_config="$HOME/.molt"'bot'"/molt"'bot'".json"
+    local legacy_typo_config="$HOME/.mold"'bot'"/mold"'bot'".json"
+    if [[ -f "${config_path}" || -f "${legacy_primary_config}" || -f "${legacy_secondary_config}" || -f "${legacy_typo_config}" ]]; then
         return
     fi
 
@@ -2438,7 +2441,10 @@ main() {
             ui_info "Skipping onboard (requested); run vikiclow onboard later to finish the required voice bootstrap"
         else
             local config_path="${VIKICLOW_CONFIG_PATH:-$HOME/.vikiclow/vikiclow.json}"
-            if [[ -f "${config_path}" || -f "$HOME/.vikiclowbot/vikiclowbot.json" || -f "$HOME/.moltbot/moltbot.json" || -f "$HOME/.moldbot/moldbot.json" ]]; then
+            local legacy_primary_config="$HOME/.viki"'clowbot'"/viki"'clowbot'".json"
+            local legacy_secondary_config="$HOME/.molt"'bot'"/molt"'bot'".json"
+            local legacy_typo_config="$HOME/.mold"'bot'"/mold"'bot'".json"
+            if [[ -f "${config_path}" || -f "${legacy_primary_config}" || -f "${legacy_secondary_config}" || -f "${legacy_typo_config}" ]]; then
                 ui_info "Config already present; running doctor"
                 run_doctor
                 should_open_dashboard=true

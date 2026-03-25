@@ -249,7 +249,7 @@ class SandboxFsBridgeImpl implements SandboxFsBridge {
       "sh",
       "-c",
       script,
-      "moltbot-sandbox-fs",
+      "vikiclow-sandbox-fs",
     ];
     if (options.args?.length) {
       dockerArgs.push(...options.args);

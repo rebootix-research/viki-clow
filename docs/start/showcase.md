@@ -352,8 +352,8 @@ Multi-lingual audio transcription via OpenRouter (Gemini, etc). Available on Vik
   Control and automate Home Assistant devices via natural language.
 </Card>
 
-<Card title="Nix Packaging" icon="snowflake" href="https://github.com/vikiclow/nix-vikiclow">
-  **@vikiclow** • `nix` `packaging` `deployment`
+<Card title="Nix Packaging" icon="snowflake" href="/install/nix">
+  **VikiClow** • `nix` `packaging` `deployment`
   
   Batteries-included nixified VikiClow configuration for reproducible deployments.
 </Card>

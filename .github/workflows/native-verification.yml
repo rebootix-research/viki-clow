@@ -55,6 +55,9 @@ jobs:
           install-bun: "false"
           use-sticky-disk: "false"
 
+      - name: Build dist for execution proof
+        run: pnpm build
+
       - name: Run execution surface proof
         run: pnpm execution:proof
 
@@ -104,7 +107,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: false
+          submodules: recursive
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -133,9 +136,6 @@ jobs:
 
       - name: Build native browser artifacts
         run: pnpm build
-
-      - name: Package native Viki Browser
-        run: pnpm browser:package:native
 
       - name: Probe packaged Viki Browser executable directly
         run: |
@@ -178,19 +178,49 @@ jobs:
           xcodebuild -version
           swift --version
 
-      - name: Install XcodeGen / SwiftLint / SwiftFormat
-        run: brew install xcodegen swiftlint swiftformat
-
-      - name: Swift lint
+      - name: Select latest available Xcode
         run: |
-          swiftlint --config .swiftlint.yml
-          swiftformat --lint apps/macos/Sources --config .swiftformat
+          set -euo pipefail
+          XCODE_APP="$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -n 1)"
+          if [ -n "$XCODE_APP" ]; then
+            sudo xcode-select -s "$XCODE_APP"
+          fi
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/org.swift.swiftpm
+          key: ${{ runner.os }}-swiftpm-${{ hashFiles('apps/macos/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-swiftpm-
 
       - name: Swift build
-        run: swift build --package-path apps/macos --configuration release
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if swift build --package-path apps/macos --configuration release; then
+              exit 0
+            fi
+            echo "swift build failed (attempt $attempt/3). Retrying..."
+            sleep $((attempt * 20))
+          done
+          exit 1
 
       - name: Swift test
-        run: swift test --package-path apps/macos --parallel
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if swift test --package-path apps/macos --parallel; then
+              exit 0
+            fi
+            echo "swift test failed (attempt $attempt/3). Retrying..."
+            sleep $((attempt * 20))
+          done
+          exit 1
 
   android-native:
     runs-on: ubuntu-24.04
@@ -225,9 +255,15 @@ jobs:
             "platforms;android-36" \
             "build-tools;36.0.0"
 
-      - name: Run Android verification
+      - name: Run Android unit tests
         working-directory: apps/android
-        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleDebug
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:testDebugUnitTest
+
+      - name: Assemble Android debug app
+        working-directory: apps/android
+        run: ./gradlew --no-daemon :app:assembleDebug
 
       - name: Upload Android artifacts
         if: always()

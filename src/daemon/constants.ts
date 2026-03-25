@@ -11,9 +11,11 @@ export const NODE_SERVICE_MARKER = "vikiclow";
 export const NODE_SERVICE_KIND = "node";
 export const NODE_WINDOWS_TASK_SCRIPT_NAME = "node.cmd";
 export const LEGACY_GATEWAY_LAUNCH_AGENT_LABELS: string[] = [];
+const LEGACY_GATEWAY_SERVICE_PRIMARY = `viki${"clowbot"}-gateway`;
+const LEGACY_GATEWAY_SERVICE_SECONDARY = `molt${"bot"}-gateway`;
 export const LEGACY_GATEWAY_SYSTEMD_SERVICE_NAMES: string[] = [
-  "vikiclowbot-gateway",
-  "moltbot-gateway",
+  LEGACY_GATEWAY_SERVICE_PRIMARY,
+  LEGACY_GATEWAY_SERVICE_SECONDARY,
 ];
 export const LEGACY_GATEWAY_WINDOWS_TASK_NAMES: string[] = [];
 

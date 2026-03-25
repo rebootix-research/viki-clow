@@ -9,15 +9,15 @@ title: "Nix"
 
 # Nix Installation
 
-The recommended way to run VikiClow with Nix is via **[nix-vikiclow](https://github.com/vikiclow/nix-vikiclow)** — a batteries-included Home Manager module.
+The recommended way to run VikiClow with Nix is through the maintained VikiClow Nix guide in this repository.
 
 ## Quick Start
 
 Paste this to your AI agent (Claude, Cursor, etc.):
 
 ```text
-I want to set up nix-vikiclow on my Mac.
-Repository: github:vikiclow/nix-vikiclow
+I want to set up VikiClow with Nix on my Mac.
+Guide: https://github.com/rebootix-research/viki-clow/blob/main/docs/install/nix.md
 
 What I need you to do:
 1. Check if Determinate Nix is installed (if not, install it)
@@ -27,12 +27,12 @@ What I need you to do:
 5. Fill in the template placeholders and run home-manager switch
 6. Verify: launchd running, bot responds to messages
 
-Reference the nix-vikiclow README for module options.
+Reference the VikiClow Nix guide for module options.
 ```
 
-> **📦 Full guide: [github.com/vikiclow/nix-vikiclow](https://github.com/vikiclow/nix-vikiclow)**
+> **📦 Full guide: [rebootix-research/viki-clow/docs/install/nix.md](https://github.com/rebootix-research/viki-clow/blob/main/docs/install/nix.md)**
 >
-> The nix-vikiclow repo is the source of truth for Nix installation. This page is just a quick overview.
+> This page is the source of truth for Nix installation in the public VikiClow repo.
 
 ## What you get
 
@@ -45,7 +45,7 @@ Reference the nix-vikiclow README for module options.
 
 ## Nix Mode Runtime Behavior
 
-When `VIKICLOW_NIX_MODE=1` is set (automatic with nix-vikiclow):
+When `VIKICLOW_NIX_MODE=1` is set:
 
 VikiClow supports a **Nix mode** that makes configuration deterministic and disables auto-install flows.
 Enable it by exporting:
@@ -93,6 +93,6 @@ packaging and Nix builds (which do not rely on a full Xcode toolchain).
 
 ## Related
 
-- [nix-vikiclow](https://github.com/vikiclow/nix-vikiclow) — full setup guide
+- [This Nix guide](https://github.com/rebootix-research/viki-clow/blob/main/docs/install/nix.md) — full setup guide
 - [Wizard](/start/wizard) — non-Nix CLI setup
 - [Docker](/install/docker) — containerized setup

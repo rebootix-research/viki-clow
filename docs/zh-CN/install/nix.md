@@ -16,15 +16,15 @@ x-i18n:
 
 # Nix å®‰è£…
 
-ä½¿ç”¨ Nix è¿è¡Œ VikiClow çš„æŽ¨èæ–¹å¼æ˜¯é€šè¿‡ **[nix-vikiclow](https://github.com/vikiclow/nix-vikiclow)** â€” ä¸€ä¸ªå¼€ç®±å³ç”¨çš„ Home Manager æ¨¡å—ã€‚
+ä½¿ç”¨ Nix è¿è¡Œ VikiClow çš„æŽ¨èæ–¹å¼æ˜¯é€šè¿‡æœ¬ä»“åº“çš„ VikiClow Nix æŒ‡å—ã€‚
 
 ## å¿«é€Ÿå¼€å§‹
 
 å°†æ­¤ç²˜è´´ç»™ä½ çš„ AI æ™ºèƒ½ä½“ï¼ˆClaudeã€Cursor ç­‰ï¼‰ï¼š
 
 ```text
-I want to set up nix-vikiclow on my Mac.
-Repository: github:vikiclow/nix-vikiclow
+I want to set up VikiClow with Nix on my Mac.
+Guide: https://github.com/rebootix-research/viki-clow/blob/main/docs/zh-CN/install/nix.md
 
 What I need you to do:
 1. Check if Determinate Nix is installed (if not, install it)
@@ -34,12 +34,12 @@ What I need you to do:
 5. Fill in the template placeholders and run home-manager switch
 6. Verify: launchd running, bot responds to messages
 
-Reference the nix-vikiclow README for module options.
+Reference the VikiClow Nix guide for module options.
 ```
 
-> **ðŸ“¦ å®Œæ•´æŒ‡å—ï¼š[github.com/vikiclow/nix-vikiclow](https://github.com/vikiclow/nix-vikiclow)**
+> **ðŸ“¦ å®Œæ•´æŒ‡å—ï¼š[rebootix-research/viki-clow/docs/zh-CN/install/nix.md](https://github.com/rebootix-research/viki-clow/blob/main/docs/zh-CN/install/nix.md)**
 >
-> nix-vikiclow ä»“åº“æ˜¯ Nix å®‰è£…çš„æƒå¨æ¥æºã€‚æœ¬é¡µåªæ˜¯ä¸€ä¸ªå¿«é€Ÿæ¦‚è¿°ã€‚
+> æœ¬é¡µæ˜¯å…¬å¼€ VikiClow ä»“åº“ä¸­çš„ Nix å®‰è£…æƒå¨æŒ‡å—ã€‚
 
 ## ä½ å°†èŽ·å¾—
 
@@ -52,7 +52,7 @@ Reference the nix-vikiclow README for module options.
 
 ## Nix æ¨¡å¼è¿è¡Œæ—¶è¡Œä¸º
 
-å½“è®¾ç½® `VIKICLOW_NIX_MODE=1` æ—¶ï¼ˆnix-vikiclow ä¼šè‡ªåŠ¨è®¾ç½®ï¼‰ï¼š
+å½“è®¾ç½® `VIKICLOW_NIX_MODE=1` æ—¶ï¼š
 
 VikiClow æ”¯æŒ **Nix æ¨¡å¼**ï¼Œä½¿é…ç½®ç¡®å®šæ€§å¹¶ç¦ç”¨è‡ªåŠ¨å®‰è£…æµç¨‹ã€‚
 é€šè¿‡å¯¼å‡ºä»¥ä¸‹çŽ¯å¢ƒå˜é‡å¯ç”¨ï¼š
@@ -94,6 +94,6 @@ apps/macos/Sources/VikiClow/Resources/Info.plist
 
 ## ç›¸å…³å†…å®¹
 
-- [nix-vikiclow](https://github.com/vikiclow/nix-vikiclow) â€” å®Œæ•´è®¾ç½®æŒ‡å—
+- [æœ¬ Nix æŒ‡å—](https://github.com/rebootix-research/viki-clow/blob/main/docs/zh-CN/install/nix.md) â€” å®Œæ•´è®¾ç½®æŒ‡å—
 - [å‘å¯¼](/start/wizard) â€” éž Nix CLI è®¾ç½®
 - [Docker](/install/docker) â€” å®¹å™¨åŒ–è®¾ç½®

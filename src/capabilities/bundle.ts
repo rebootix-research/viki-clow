@@ -254,7 +254,7 @@ async function collectBundledSkillInventory(params: {
   const sourceRepos: CapabilityBundleInventory["sourceRepos"] = [];
 
   for (const skill of report.skills.filter((entry) => entry.bundled)) {
-    const repoId = skill.name === "vikiclow-skills" ? "clawhub" : skill.name;
+    const repoId = skill.name;
     const sourceRepo = repoUrlFor("skill", repoId);
     sourceRepos.push({
       kind: "skill",

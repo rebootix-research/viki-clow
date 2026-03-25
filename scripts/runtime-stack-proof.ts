@@ -41,6 +41,32 @@ async function waitForPort(host: string, port: number, timeoutMs: number): Promi
   throw new Error(`Timed out waiting for ${host}:${port}`);
 }
 
+async function fetchJsonWithRetry<T>(
+  url: string,
+  init: RequestInit,
+  timeoutMs: number,
+  label: string,
+): Promise<T> {
+  const startedAt = Date.now();
+  let lastError: unknown = null;
+  while (Date.now() - startedAt < timeoutMs) {
+    try {
+      const response = await fetch(url, init);
+      if (!response.ok) {
+        lastError = new Error(`${label} returned ${response.status}`);
+      } else {
+        return (await response.json()) as T;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error(`${label} did not become ready before timeout`);
+}
+
 async function writeJson(filePath: string, value: unknown) {
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
@@ -227,21 +253,21 @@ try {
     config: memoryConfig,
     env: process.env,
   });
-  const langGraphMetadataResponse = await fetch(`http://127.0.0.1:${langGraphHostPort}/metadata`, {
-    method: "GET",
-    headers: { accept: "application/json" },
-  });
-  if (!langGraphMetadataResponse.ok) {
-    throw new Error(`LangGraph metadata probe returned ${langGraphMetadataResponse.status}`);
-  }
-  const langGraphMetadata = (await langGraphMetadataResponse.json()) as {
+  const langGraphMetadata = await fetchJsonWithRetry<{
     service?: string;
     langgraph_version?: string;
     runtime?: string;
     graph_id?: string;
     nodes?: string[];
-  };
-  const langGraphInvokeResponse = await fetch(`http://127.0.0.1:${langGraphHostPort}/invoke`, {
+  }>(`http://127.0.0.1:${langGraphHostPort}/metadata`, {
+    method: "GET",
+    headers: { accept: "application/json" },
+  }, 30_000, "LangGraph metadata probe");
+  const langGraphInvoke = await fetchJsonWithRetry<{
+    ok?: boolean;
+    result?: { trace?: string[] };
+    graph_id?: string;
+  }>(`http://127.0.0.1:${langGraphHostPort}/invoke`, {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -251,15 +277,7 @@ try {
       mission_id: stored.id,
       trace: ["proof-start"],
     }),
-  });
-  if (!langGraphInvokeResponse.ok) {
-    throw new Error(`LangGraph invoke probe returned ${langGraphInvokeResponse.status}`);
-  }
-  const langGraphInvoke = (await langGraphInvokeResponse.json()) as {
-    ok?: boolean;
-    result?: { trace?: string[] };
-    graph_id?: string;
-  };
+  }, 30_000, "LangGraph invoke probe");
   if (langGraphInvoke.ok !== true) {
     throw new Error("LangGraph invoke probe returned an invalid payload");
   }

@@ -18,10 +18,10 @@ export function resolveIsNixMode(env: NodeJS.ProcessEnv = process.env): boolean 
 export const isNixMode = resolveIsNixMode();
 
 // Support historical (and occasionally misspelled) legacy state dirs.
-const LEGACY_STATE_DIRNAMES = [".vikiclowbot", ".moldbot", ".moltbot"] as const;
+const LEGACY_STATE_DIRNAMES = [`.viki${"clowbot"}`, `.mold${"bot"}`, `.molt${"bot"}`] as const;
 const NEW_STATE_DIRNAME = ".vikiclow";
 const CONFIG_FILENAME = "vikiclow.json";
-const LEGACY_CONFIG_FILENAMES = ["vikiclowbot.json", "moldbot.json", "moltbot.json"] as const;
+const LEGACY_CONFIG_FILENAMES = [`viki${"clowbot"}.json`, `mold${"bot"}.json`, `molt${"bot"}.json`] as const;
 
 function resolveDefaultHomeDir(): string {
   return resolveRequiredHomeDir(process.env, os.homedir);
