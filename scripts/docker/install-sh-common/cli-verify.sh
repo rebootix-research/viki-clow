@@ -86,48 +86,65 @@ verify_installed_cli() {
   local expected_version="$2"
   local cli_name="$package_name"
   local cmd_path=""
-  local entry_path=""
-  local npm_root=""
+  local matched_cmd_path=""
+  local matched_entry_path=""
   local installed_version=""
+  local candidate_version=""
 
   cmd_path="$(command -v "$cli_name" || true)"
-  if [[ -z "$cmd_path" || ! -x "$cmd_path" ]]; then
-    while IFS= read -r candidate; do
-      [[ -n "$candidate" ]] || continue
-      if [[ -x "$candidate" && "${candidate##*/}" == "$package_name" ]]; then
-        cmd_path="$candidate"
-        break
-      fi
-      if [[ -z "$entry_path" && -f "$candidate" && ( "${candidate##*/}" == "entry.js" || "${candidate##*/}" == "vikiclow.mjs" ) ]]; then
-        entry_path="$candidate"
-      fi
-    done < <(collect_cli_candidate_paths "$package_name")
+  if [[ -n "$cmd_path" && -x "$cmd_path" ]]; then
+    candidate_version="$("$cmd_path" --version 2>/dev/null | head -n 1 | tr -d '\r')"
+    candidate_version="$(extract_vikiclow_semver "$candidate_version")"
+    if [[ -n "$candidate_version" ]]; then
+      matched_cmd_path="$cmd_path"
+      installed_version="$candidate_version"
+    fi
   fi
 
-  if [[ -z "$cmd_path" && -z "$entry_path" ]]; then
-    echo "ERROR: $package_name is not on PATH" >&2
+  while IFS= read -r candidate; do
+    [[ -n "$candidate" ]] || continue
+
+    if [[ -z "$installed_version" && -x "$candidate" && "${candidate##*/}" == "$package_name" ]]; then
+      candidate_version="$("$candidate" --version 2>/dev/null | head -n 1 | tr -d '\r')"
+      candidate_version="$(extract_vikiclow_semver "$candidate_version")"
+      if [[ -n "$candidate_version" ]]; then
+        matched_cmd_path="$candidate"
+        installed_version="$candidate_version"
+        continue
+      fi
+    fi
+
+    if [[ -z "$installed_version" && -f "$candidate" && ( "${candidate##*/}" == "entry.js" || "${candidate##*/}" == "vikiclow.mjs" ) ]]; then
+      candidate_version="$(node "$candidate" --version 2>/dev/null | head -n 1 | tr -d '\r')"
+      candidate_version="$(extract_vikiclow_semver "$candidate_version")"
+      if [[ -n "$candidate_version" ]]; then
+        matched_entry_path="$candidate"
+        installed_version="$candidate_version"
+      fi
+    fi
+  done < <(collect_cli_candidate_paths "$package_name")
+
+  if [[ -z "$matched_cmd_path" && -z "$matched_entry_path" ]]; then
+    echo "ERROR: $package_name did not produce a runnable installed CLI candidate" >&2
     print_cli_debug_info "$package_name"
     return 1
   fi
 
-  if [[ -n "$cmd_path" ]]; then
-    installed_version="$("$cmd_path" --version 2>/dev/null | head -n 1 | tr -d '\r')"
+  if [[ -n "$matched_cmd_path" ]]; then
+    echo "cli=$cli_name path=$matched_cmd_path installed=$installed_version expected=$expected_version"
   else
-    installed_version="$(node "$entry_path" --version 2>/dev/null | head -n 1 | tr -d '\r')"
+    echo "cli=$cli_name entry=$matched_entry_path installed=$installed_version expected=$expected_version"
   fi
-
-  installed_version="$(extract_vikiclow_semver "$installed_version")"
-
-  echo "cli=$cli_name installed=$installed_version expected=$expected_version"
   if [[ "$installed_version" != "$expected_version" ]]; then
     echo "ERROR: expected ${cli_name}@${expected_version}, got ${cli_name}@${installed_version}" >&2
+    print_cli_debug_info "$package_name"
     return 1
   fi
 
   echo "==> Sanity: CLI runs"
-  if [[ -n "$cmd_path" ]]; then
-    "$cmd_path" --help >/dev/null
+  if [[ -n "$matched_cmd_path" ]]; then
+    "$matched_cmd_path" --help >/dev/null
   else
-    node "$entry_path" --help >/dev/null
+    node "$matched_entry_path" --help >/dev/null
   fi
 }

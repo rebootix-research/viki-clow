@@ -146,6 +146,12 @@ export function resolveConfigPathCandidate(
   if (env.VIKICLOW_TEST_FAST === "1") {
     return resolveCanonicalConfigPath(env, resolveStateDir(env, homedir));
   }
+  if (env.VIKICLOW_CONFIG_PATH?.trim() || env.VIKICLOWBOT_CONFIG_PATH?.trim()) {
+    return resolveCanonicalConfigPath(env, resolveStateDir(env, homedir));
+  }
+  if (env.VIKICLOW_STATE_DIR?.trim() || env.VIKICLOWBOT_STATE_DIR?.trim()) {
+    return resolveCanonicalConfigPath(env, resolveStateDir(env, homedir));
+  }
   const candidates = resolveDefaultConfigCandidates(env, homedir);
   const existing = candidates.find((candidate) => {
     try {

@@ -1,4 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { telegramOutbound } from "../../channels/plugins/outbound/telegram.js";
+import { whatsappOutbound } from "../../channels/plugins/outbound/whatsapp.js";
+import { setActivePluginRegistry } from "../../plugins/runtime.js";
+import { createOutboundTestPlugin, createTestRegistry } from "../../test-utils/channel-plugins.js";
 import type { VikiClowConfig } from "../../config/config.js";
 
 vi.mock("../../config/sessions.js", () => ({
@@ -22,6 +26,7 @@ vi.mock("../../pairing/pairing-store.js", () => ({
 }));
 
 vi.mock("../../web/accounts.js", () => ({
+  hasAnyWhatsAppAuth: vi.fn(() => false),
   resolveWhatsAppAccount: vi.fn(() => ({ allowFrom: [] })),
 }));
 
@@ -87,6 +92,27 @@ async function resolveForAgent(params: {
 }
 
 describe("resolveDeliveryTarget", () => {
+  beforeEach(() => {
+    setActivePluginRegistry(
+      createTestRegistry([
+        {
+          pluginId: "telegram",
+          plugin: createOutboundTestPlugin({ id: "telegram", outbound: telegramOutbound }),
+          source: "test",
+        },
+        {
+          pluginId: "whatsapp",
+          plugin: createOutboundTestPlugin({ id: "whatsapp", outbound: whatsappOutbound }),
+          source: "test",
+        },
+      ]),
+    );
+  });
+
+  afterEach(() => {
+    setActivePluginRegistry(createTestRegistry([]));
+  });
+
   it("reroutes implicit whatsapp delivery to authorized allowFrom recipient", async () => {
     setMainSessionEntry({
       sessionId: "sess-w1",

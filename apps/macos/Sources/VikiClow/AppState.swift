@@ -249,8 +249,8 @@ final class AppState {
 
     private var earBoostTask: Task<Void, Never>?
 
-    init(preview: Bool = false) {
-        let isPreview = preview || ProcessInfo.processInfo.isRunningTests
+    init(preview: Bool = false, treatTestsAsPreview: Bool = true) {
+        let isPreview = preview || (treatTestsAsPreview && ProcessInfo.processInfo.isRunningTests)
         self.isPreview = isPreview
         if !isPreview {
             migrateLegacyDefaults()

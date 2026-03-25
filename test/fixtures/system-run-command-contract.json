@@ -1,0 +1,38 @@
+{
+  "cases": [
+    {
+      "name": "empty command is accepted",
+      "command": [],
+      "expected": {
+        "valid": true,
+        "displayCommand": ""
+      }
+    },
+    {
+      "name": "legacy shell payload is accepted",
+      "command": ["/bin/sh", "-lc", "echo hi"],
+      "rawCommand": "echo hi",
+      "expected": {
+        "valid": true,
+        "displayCommand": "/bin/sh -lc \"echo hi\""
+      }
+    },
+    {
+      "name": "argv formatting wins",
+      "command": ["/usr/bin/printf", "ok"],
+      "expected": {
+        "valid": true,
+        "displayCommand": "/usr/bin/printf ok"
+      }
+    },
+    {
+      "name": "mismatched raw command is rejected",
+      "command": ["/usr/bin/printf", "ok"],
+      "rawCommand": "echo nope",
+      "expected": {
+        "valid": false,
+        "errorContains": "rawCommand does not match command"
+      }
+    }
+  ]
+}

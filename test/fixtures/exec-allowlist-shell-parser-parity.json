@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "id": "shell-chain",
+      "command": "echo allowlisted && /usr/bin/touch /tmp/vikiclow-allowlist-test",
+      "ok": true,
+      "executables": ["echo", "touch"]
+    },
+    {
+      "id": "quoted-operators",
+      "command": "echo \"a && b\"",
+      "ok": true,
+      "executables": ["echo"]
+    },
+    {
+      "id": "command-substitution",
+      "command": "echo $(/usr/bin/touch /tmp/vikiclow-allowlist-test-subst)",
+      "ok": false,
+      "executables": []
+    },
+    {
+      "id": "quoted-backticks",
+      "command": "echo \"ok `/usr/bin/id`\"",
+      "ok": false,
+      "executables": []
+    }
+  ]
+}

@@ -178,7 +178,7 @@ export async function resolveDeliveryTarget(
     cfg,
     accountId,
     mode,
-    allowFrom: allowFromOverride,
+    allowFrom: mode === "implicit" ? allowFromOverride : undefined,
   });
   if (!docked.ok) {
     return {

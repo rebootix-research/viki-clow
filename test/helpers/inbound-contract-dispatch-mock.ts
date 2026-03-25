@@ -11,8 +11,12 @@ export function buildInboundDispatchCaptureMock<T extends Record<string, unknown
   return {
     ...actual,
     dispatchInboundMessage: vi.fn(async (ctx: unknown, ...rest: unknown[]) => {
-      capture(ctx);
-      inboundCtxCapture.ctx = ctx;
+      const captured =
+        ctx && typeof ctx === "object" && "ctx" in ctx
+          ? (ctx as { ctx?: unknown }).ctx
+          : ctx;
+      capture(captured);
+      inboundCtxCapture.ctx = captured;
       const dispatch = actual.dispatchInboundMessage;
       if (typeof dispatch === "function") {
         return await (dispatch as (...args: unknown[]) => unknown)(ctx, ...rest);

@@ -7,22 +7,27 @@ import Testing
 @Suite(.serialized)
 @MainActor
 struct OnboardingVoiceValidationTests {
-    @Test func `final onboarding step is blocked until voice validation completes`() {
-        let state = AppState(preview: true)
-        let view = OnboardingView(
-            state: state,
-            permissionMonitor: PermissionMonitor.shared,
-            discoveryModel: GatewayDiscoveryModel(localDisplayName: InstanceIdentity.displayName))
+    @Test func `final onboarding step is blocked until voice validation completes`() async {
+        await TestIsolation.withUserDefaultsValues([
+            voiceWakeValidationCompleteKey: false,
+        ]) {
+            let state = AppState(preview: true)
+            state.voiceWakeValidationComplete = false
+            let view = OnboardingView(
+                state: state,
+                permissionMonitor: PermissionMonitor.shared,
+                discoveryModel: GatewayDiscoveryModel(localDisplayName: InstanceIdentity.displayName))
 
-        view.currentPage = view.pageCount - 1
+            view.currentPage = view.pageCount - 1
 
-        #expect(view.buttonTitle == "Validate Voice")
-        #expect(view.canAdvance == false)
+            #expect(view.buttonTitle == "Validate Voice")
+            #expect(view.canAdvance == false)
 
-        state.voiceWakeValidationComplete = true
+            state.voiceWakeValidationComplete = true
 
-        #expect(view.buttonTitle == "Finish")
-        #expect(view.canAdvance)
+            #expect(view.buttonTitle == "Finish")
+            #expect(view.canAdvance)
+        }
     }
 
     @Test func `voice validation resets after critical voice setup changes`() async {
@@ -30,9 +35,9 @@ struct OnboardingVoiceValidationTests {
             voiceWakeValidationCompleteKey: true,
             voiceWakeMicKey: "initial-mic",
             voiceWakeLocaleKey: "en-US",
-            swabbleTriggersKey: ["hey vikiclow"]
+            swabbleTriggersKey: ["hey vikiclow"],
         ]) {
-            let state = AppState(preview: false)
+            let state = AppState(preview: false, treatTestsAsPreview: false)
 
             #expect(state.voiceWakeValidationComplete)
 

@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "id": "env-wrapper",
+      "argv": ["/usr/bin/env", "FOO=bar", "/usr/bin/printf", "ok"],
+      "expectedRawExecutable": "/usr/bin/env"
+    },
+    {
+      "id": "plain-shell",
+      "argv": ["/bin/sh", "./script.sh"],
+      "expectedRawExecutable": "/bin/sh"
+    },
+    {
+      "id": "env-shell-wrapper",
+      "argv": ["/usr/bin/env", "/bin/sh", "-lc", "echo ok"],
+      "expectedRawExecutable": "/bin/sh"
+    }
+  ]
+}

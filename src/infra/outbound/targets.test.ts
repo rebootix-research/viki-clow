@@ -1,5 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { discordOutbound } from "../../channels/plugins/outbound/discord.js";
+import { imessageOutbound } from "../../channels/plugins/outbound/imessage.js";
+import { signalOutbound } from "../../channels/plugins/outbound/signal.js";
+import { slackOutbound } from "../../channels/plugins/outbound/slack.js";
+import { telegramOutbound } from "../../channels/plugins/outbound/telegram.js";
+import { whatsappOutbound } from "../../channels/plugins/outbound/whatsapp.js";
 import type { VikiClowConfig } from "../../config/config.js";
+import { setActivePluginRegistry } from "../../plugins/runtime.js";
+import { createOutboundTestPlugin, createTestRegistry } from "../../test-utils/channel-plugins.js";
 import {
   resolveHeartbeatDeliveryTarget,
   resolveOutboundTarget,
@@ -12,6 +20,47 @@ import {
 } from "./targets.shared-test.js";
 
 runResolveOutboundTargetCoreTests();
+
+beforeEach(() => {
+  setActivePluginRegistry(
+    createTestRegistry([
+      {
+        pluginId: "telegram",
+        plugin: createOutboundTestPlugin({ id: "telegram", outbound: telegramOutbound }),
+        source: "test",
+      },
+      {
+        pluginId: "signal",
+        plugin: createOutboundTestPlugin({ id: "signal", outbound: signalOutbound }),
+        source: "test",
+      },
+      {
+        pluginId: "slack",
+        plugin: createOutboundTestPlugin({ id: "slack", outbound: slackOutbound }),
+        source: "test",
+      },
+      {
+        pluginId: "discord",
+        plugin: createOutboundTestPlugin({ id: "discord", outbound: discordOutbound }),
+        source: "test",
+      },
+      {
+        pluginId: "whatsapp",
+        plugin: createOutboundTestPlugin({ id: "whatsapp", outbound: whatsappOutbound }),
+        source: "test",
+      },
+      {
+        pluginId: "imessage",
+        plugin: createOutboundTestPlugin({ id: "imessage", outbound: imessageOutbound }),
+        source: "test",
+      },
+    ]),
+  );
+});
+
+afterEach(() => {
+  setActivePluginRegistry(createTestRegistry([]));
+});
 
 describe("resolveOutboundTarget defaultTo config fallback", () => {
   installResolveOutboundTargetPluginRegistryHooks();
