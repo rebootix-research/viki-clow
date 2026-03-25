@@ -1,287 +1,140 @@
-# Security Policy
+Security Policy & Operational Trust Model
+Project: VikiClow (rebootix-research)
+Status: Clinical/Institutional Grade
+1. Executive Summary
+VikiClow is an elite, high-performance personal intelligence suite developed by Rebootix Research. Unlike consumer SaaS platforms, VikiClow is architected for the Sovereign Operator. We prioritize execution speed and deep system integration over generic "safety" sandrails that restrict quantitative and technical workflows.
 
-If you believe you've found a security issue in VikiClow, please report it privately.
+If you believe you have discovered a security vulnerability that crosses a documented trust boundary, we request a private disclosure via the protocols listed below.
 
-## Reporting
+2. Reporting a Vulnerability
+2.1 Primary Channel
+Direct all sensitive findings to the Rebootix Security triage team:
 
-Report vulnerabilities directly to the repository where the issue lives:
+Email: security@rebootix-research.com
 
-- **Core CLI and gateway** â€” [vikiclow/vikiclow](https://github.com/rebootix-research/viki-clow)
-- **macOS desktop app** â€” [vikiclow/vikiclow](https://github.com/rebootix-research/viki-clow) (apps/macos)
-- **iOS app** â€” [vikiclow/vikiclow](https://github.com/rebootix-research/viki-clow) (apps/ios)
-- **Android app** â€” [vikiclow/vikiclow](https://github.com/rebootix-research/viki-clow) (apps/android)
-- **VikiClow Skills Registry** â€” [vikiclow/vikiclow-skills](https://github.com/rebootix-research/viki-clow-skills)
-- **Trust and threat model** â€” [vikiclow/trust](https://github.com/vikiclow/trust)
+Lead Architect: Laraib Khan
 
-For issues that don't fit a specific repo, or if you're unsure, email **[security@vikiclow.ai](mailto:security@vikiclow.ai)** and we'll route it.
+Head of Trust: Nabeel Saleem
 
-For full reporting instructions see our [Trust page](https://trust.vikiclow.ai).
+2.2 Mandatory Report Content
+To ensure rapid triage and bypass automated filtering, your report must include:
 
-### Required in Reports
+Technical Title: Concise description of the vulnerability.
 
-1. **Title**
-2. **Severity Assessment**
-3. **Impact**
-4. **Affected Component**
-5. **Technical Reproduction**
-6. **Demonstrated Impact**
-7. **Environment**
-8. **Remediation Advice**
+Mathematical Severity: Estimated CVSS v4.0 score.
 
-Reports without reproduction steps, demonstrated impact, and remediation advice will be deprioritized. Given the volume of AI-generated scanner findings, we must ensure we're receiving vetted reports from researchers who understand the issues.
+Affected Component: (e.g., Core Gateway, Mobile Node, WebSocket RPC, Canvas Host).
 
-### Report Acceptance Gate (Triage Fast Path)
+Reproduction (PoC): A functional, vectorized script or step-by-step reproduction targeting the latest main commit.
 
-For fastest triage, include all of the following:
+Environment: Node.js version, OS, and hardware architecture.
 
-- Exact vulnerable path (`file`, function, and line range) on a current revision.
-- Tested version details (VikiClow version and/or commit SHA).
-- Reproducible PoC against latest `main` or latest released version.
-- Demonstrated impact tied to VikiClow's documented trust boundaries.
-- For exposed-secret reports: proof the credential is VikiClow-owned (or grants access to VikiClow-operated infrastructure/services).
-- Explicit statement that the report does not rely on adversarial operators sharing one gateway host/config.
-- Scope check explaining why the report is **not** covered by the Out of Scope section below.
-- For command-risk/parity reports (for example obfuscation detection differences), a concrete boundary-bypass path is required (auth/approval/allowlist/sandbox). Parity-only findings are treated as hardening, not vulnerabilities.
+Remediation Logic: A concrete proposal for a patch that preserves system velocity.
 
-Reports that miss these requirements may be closed as `invalid` or `no-action`.
+3. The Rebootix "Sovereign Operator" Trust Model
+VikiClow does not model a single gateway as a multi-tenant, adversarial environment. Our security assumptions are clinical:
 
-### Common False-Positive Patterns
+3.1 The Single-User Root of Trust
+Axiom: The Gateway is a personal tool. Anyone who can authenticate with the Gateway is treated as a Trusted Operator.
 
-These are frequently reported but are typically closed with no code change:
+Implication: Session identifiers (sessionKey, label) are routing controls, not cryptographic authorization boundaries between different humans.
 
-- Prompt-injection-only chains without a boundary bypass (prompt injection is out of scope).
-- Operator-intended local features (for example TUI local `!` shell) presented as remote injection.
-- Reports that treat explicit operator-control surfaces (for example `canvas.eval`, browser evaluate/script execution, or direct `node.invoke` execution primitives) as vulnerabilities without demonstrating an auth/policy/sandbox boundary bypass. These capabilities are intentional when enabled and are trusted-operator features, not standalone security bugs.
-- Authorized user-triggered local actions presented as privilege escalation. Example: an allowlisted/owner sender running `/export-session /absolute/path.html` to write on the host. In this trust model, authorized user actions are trusted host actions unless you demonstrate an auth/sandbox/boundary bypass.
-- Reports that only show a malicious plugin executing privileged actions after a trusted operator installs/enables it.
-- Reports that assume per-user multi-tenant authorization on a shared gateway host/config.
-- Reports that only show differences in heuristic detection/parity (for example obfuscation-pattern detection on one exec path but not another, such as `node.invoke -> system.run` parity gaps) without demonstrating bypass of auth, approvals, allowlist enforcement, sandboxing, or other documented trust boundaries.
-- ReDoS/DoS claims that require trusted operator configuration input (for example catastrophic regex in `sessionFilter` or `logging.redactPatterns`) without a trust-boundary bypass.
-- Archive/install extraction claims that require pre-existing local filesystem priming in trusted state (for example planting symlink/hardlink aliases under destination directories such as skills/tools paths) without showing an untrusted path that can create/control that primitive.
-- Reports that depend on replacing or rewriting an already-approved executable path on a trusted host (same-path inode/content swap) without showing an untrusted path to perform that write.
-- Reports that depend on pre-existing symlinked skill/workspace filesystem state (for example symlink chains involving `skills/*/SKILL.md`) without showing an untrusted path that can create/control that state.
-- Missing HSTS findings on default local/loopback deployments.
-- Slack webhook signature findings when HTTP mode already uses signing-secret verification.
-- Discord inbound webhook signature findings for paths not used by this repo's Discord integration.
-- Claims that Microsoft Teams `fileConsent/invoke` `uploadInfo.uploadUrl` is attacker-controlled without demonstrating one of: auth boundary bypass, a real authenticated Teams/Bot Framework event carrying attacker-chosen URL, or compromise of the Microsoft/Bot trust path.
-- Scanner-only claims against stale/nonexistent paths, or claims without a working repro.
+Isolation: If multiple users require VikiClow, they must run isolated instances (separate Docker containers or VPS).
 
-### Duplicate Report Handling
+3.2 Host-First Execution
+Default State: VikiClow prioritizes host performance. agents.defaults.sandbox.mode is off by default.
 
-- Search existing advisories before filing.
-- Include likely duplicate GHSA IDs in your report when applicable.
-- Maintainers may close lower-quality/later duplicates in favor of the earliest high-quality canonical report.
+Operator Choice: Sandboxing is an opt-in security layer (sandbox: "require").
 
-## Security & Trust
+Non-Bug: Host-side execution when the sandbox is disabled is intended behavior and not a vulnerability.
 
-**Jamieson O'Reilly** ([@theonejvo](https://twitter.com/theonejvo)) is Security & Trust at VikiClow. Jamieson is the founder of [Dvuln](https://dvuln.com) and brings extensive experience in offensive security, penetration testing, and security program development.
+3.3 Plugin Trust Boundary
+Plugins and Skills are part of the Trusted Computing Base (TCB).
 
-## Bug Bounties
+The Rule: Installing or enabling a plugin grants it the same trust level as local code running on that gateway host.
 
-VikiClow is a labor of love. There is no bug bounty program and no budget for paid reports. Please still disclose responsibly so we can fix issues quickly.
-The best way to help the project right now is by sending PRs.
+Boundary: Reports must demonstrate a bypass of the plugins.allow whitelist or an unauthenticated plugin load. Malicious behavior from an already-installed trusted plugin is out of scope.
 
-## Maintainers: GHSA Updates via CLI
+4. Triage Fast-Path (Researcher Requirements)
+For immediate acceptance, a report must prove a breach of the following boundaries:
 
-When patching a GHSA via `gh api`, include `X-GitHub-Api-Version: 2022-11-28` (or newer). Without it, some fields (notably CVSS) may not persist even if the request returns 200.
+Unauthenticated Access: Gaining control plane access without valid credentials or pairing.
 
-## Operator Trust Model (Important)
+Sandbox Escape: Executing code on the host when sandbox: "all" is strictly enforced.
 
-VikiClow does **not** model one gateway as a multi-tenant, adversarial user boundary.
+Path Traversal: Accessing files outside the authorized workspace when tools.fs.workspaceOnly: true is enabled.
 
-- Authenticated Gateway callers are treated as trusted operators for that gateway instance.
-- Session identifiers (`sessionKey`, session IDs, labels) are routing controls, not per-user authorization boundaries.
-- If one operator can view data from another operator on the same gateway, that is expected in this trust model.
-- VikiClow can technically run multiple gateway instances on one machine, but recommended operations are clean separation by trust boundary.
-- Recommended mode: one user per machine/host (or VPS), one gateway for that user, and one or more agents inside that gateway.
-- If multiple users need VikiClow, use one VPS (or host/OS user boundary) per user.
-- For advanced setups, multiple gateways on one machine are possible, but only with strict isolation and are not the recommended default.
-- Exec behavior is host-first by default: `agents.defaults.sandbox.mode` defaults to `off`.
-- `tools.exec.host` defaults to `sandbox` as a routing preference, but if sandbox runtime is not active for the session, exec runs on the gateway host.
-- Implicit exec calls (no explicit host in the tool call) follow the same behavior.
-- This is expected in VikiClow's one-user trusted-operator model. If you need isolation, enable sandbox mode (`non-main`/`all`) and keep strict tool policy.
+Exposed Secrets: Proof that a credential is VikiClow-owned and grants access to Rebootix infrastructure.
 
-## Trusted Plugin Concept (Core)
+5. Explicitly Out of Scope (The "Non-Bugs")
+The following patterns are frequently reported but are closed as invalid by design:
 
-Plugins/extensions are part of VikiClow's trusted computing base for a gateway.
+5.1 Prompt Injection
+Philosophy: Prompt injection is a model-level alignment task.
 
-- Installing or enabling a plugin grants it the same trust level as local code running on that gateway host.
-- Plugin behavior such as reading env/files or running host commands is expected inside this trust boundary.
-- Security reports must show a boundary bypass (for example unauthenticated plugin load, allowlist/policy bypass, or sandbox/path-safety bypass), not only malicious behavior from a trusted-installed plugin.
+Scope: Unless a prompt injection leads to a documented boundary bypass (e.g., escaping a sandbox to the host), it is not treated as a security vulnerability.
 
-## Out of Scope
+5.2 Local File Access
+Context: VikiClow assumes the host OS is secure.
 
-- Public Internet Exposure
-- Using VikiClow in ways that the docs recommend not to
-- Deployments where mutually untrusted/adversarial operators share one gateway host and config (for example, reports expecting per-operator isolation for `sessions.list`, `sessions.preview`, `chat.history`, or similar control-plane reads)
-- Prompt-injection-only attacks (without a policy/auth/sandbox boundary bypass)
-- Reports that require write access to trusted local state (`~/.vikiclow`, workspace files like `MEMORY.md` / `memory/*.md`)
-- Reports where exploitability depends on attacker-controlled pre-existing symlink/hardlink filesystem state in trusted local paths (for example extraction/install target trees) unless a separate untrusted boundary bypass is shown that creates that state.
-- Reports whose only claim is sandbox/workspace read expansion through trusted local skill/workspace symlink state (for example `skills/*/SKILL.md` symlink chains) unless a separate untrusted boundary bypass is shown that creates/controls that state.
-- Reports whose only claim is post-approval executable identity drift on a trusted host via same-path file replacement/rewrite unless a separate untrusted boundary bypass is shown for that host write primitive.
-- Reports where the only demonstrated impact is an already-authorized sender intentionally invoking a local-action command (for example `/export-session` writing to an absolute host path) without bypassing auth, sandbox, or another documented boundary
-- Reports whose only claim is use of an explicit trusted-operator control surface (for example `canvas.eval`, browser evaluate/script execution, or direct `node.invoke` execution) without demonstrating an auth, policy, allowlist, approval, or sandbox bypass.
-- Reports where the only claim is that a trusted-installed/enabled plugin can execute with gateway/host privileges (documented trust model behavior).
-- Any report whose only claim is that an operator-enabled `dangerous*`/`dangerously*` config option weakens defaults (these are explicit break-glass tradeoffs by design)
-- Reports that depend on trusted operator-supplied configuration values to trigger availability impact (for example custom regex patterns). These may still be fixed as defense-in-depth hardening, but are not security-boundary bypasses.
-- Reports whose only claim is heuristic/parity drift in command-risk detection (for example obfuscation-pattern checks) across exec surfaces, without a demonstrated trust-boundary bypass. These are hardening-only findings and are not vulnerabilities; triage may close them as `invalid`/`no-action` or track them separately as low/informational hardening.
-- Reports whose only claim is that exec approvals do not semantically model every interpreter/runtime loader form, subcommand, flag combination, package script, or transitive module/config import. Exec approvals bind exact request context and best-effort direct local file operands; they are not a complete semantic model of everything a runtime may load.
-- Exposed secrets that are third-party/user-controlled credentials (not VikiClow-owned and not granting access to VikiClow-operated infrastructure/services) without demonstrated VikiClow impact
-- Reports whose only claim is host-side exec when sandbox runtime is disabled/unavailable (documented default behavior in the trusted-operator model), without a boundary bypass.
-- Reports whose only claim is that a platform-provided upload destination URL is untrusted (for example Microsoft Teams `fileConsent/invoke` `uploadInfo.uploadUrl`) without proving attacker control in an authenticated production flow.
+Invalid Claims: "If I can write to ~/.vikiclow/config.json, I can compromise the app." This is correct, but the "Trusted Operator" boundary was breached at the OS level first.
 
-## Deployment Assumptions
+5.3 Heuristic Detection Parity
+Context: VikiClow uses best-effort regex to warn operators of dangerous commands.
 
+Invalid Claims: Reports that only show differences in heuristic detection (e.g., system.run catches a pattern that a sub-node does not) without an accompanying auth/sandbox bypass.
+
+5.4 Network Exposure
+Protocol: VikiClow binds to loopback by default.
+
+Invalid Claims: Reports citing risks of exposing the Gateway to the public internet. This is a deployment failure. Use Tailscale Serve or SSH tunnels for remote access.
+
+6. Deployment Assumptions
 VikiClow security guidance assumes:
 
-- The host where VikiClow runs is within a trusted OS/admin boundary.
-- Anyone who can modify `~/.vikiclow` state/config (including `vikiclow.json`) is effectively a trusted operator.
-- A single Gateway shared by mutually untrusted people is **not a recommended setup**. Use separate gateways (or at minimum separate OS users/hosts) per trust boundary.
-- Authenticated Gateway callers are treated as trusted operators. Session identifiers (for example `sessionKey`) are routing controls, not per-user authorization boundaries.
-- Multiple gateway instances can run on one machine, but the recommended model is clean per-user isolation (prefer one host/VPS per user).
+The Host is Secure: The OS where VikiClow runs is within a trusted admin boundary.
 
-## One-User Trust Model (Personal Assistant)
+One User per Machine: We do not support "shared gateways" between mutually untrusted people.
 
-VikiClow's security model is "personal assistant" (one trusted operator, potentially many agents), not "shared multi-tenant bus."
+Local Use Only: The Gateway Control UI is intended for localhost-only use unless wrapped in a secure tunnel (Tailscale/SSH).
 
-- If multiple people can message the same tool-enabled agent (for example a shared Slack workspace), they can all steer that agent within its granted permissions.
-- Session or memory scoping reduces context bleed, but does **not** create per-user host authorization boundaries.
-- For mixed-trust or adversarial users, isolate by OS user/host/gateway and use separate credentials per boundary.
-- A company-shared agent can be a valid setup when users are in the same trust boundary and the agent is strictly business-only.
-- For company-shared setups, use a dedicated machine/VM/container and dedicated accounts; avoid mixing personal data on that runtime.
-- If that host/browser profile is logged into personal accounts (for example Apple/Google/personal password manager), you have collapsed the boundary and increased personal-data exposure risk.
+7. Configuration Hardening (Standard Profile)
+To achieve "Rebootix-Grade" security, we recommend:
 
-## Agent and Model Assumptions
+Pin Plugins: Set plugins.allow to specific IDs.
 
-- The model/agent is **not** a trusted principal. Assume prompt/content injection can manipulate behavior.
-- Security boundaries come from host/config trust, auth, tool policy, sandboxing, and exec approvals.
-- Prompt injection by itself is not a vulnerability report unless it crosses one of those boundaries.
-- Hook/webhook-driven payloads should be treated as untrusted content; keep unsafe bypass flags disabled unless doing tightly scoped debugging (`hooks.gmail.allowUnsafeExternalContent`, `hooks.mappings[].allowUnsafeExternalContent`).
-- Weak model tiers are generally easier to prompt-inject. For tool-enabled or hook-driven agents, prefer strong modern model tiers and strict tool policy (for example `tools.profile: "messaging"` or stricter), plus sandboxing where possible.
+Workspace Isolation: Set tools.fs.workspaceOnly: true.
 
-## Gateway and Node trust concept
+Sub-Agent Gating: Set sessions_spawn: deny to prevent unauthorized agent delegation.
 
-VikiClow separates routing from execution, but both remain inside the same operator trust boundary:
+Immutability: Run via Docker with --read-only and --cap-drop=ALL.
 
-- **Gateway** is the control plane. If a caller passes Gateway auth, they are treated as a trusted operator for that Gateway.
-- **Node** is an execution extension of the Gateway. Pairing a node grants operator-level remote capability on that node.
-- **Exec approvals** (allowlist/ask UI) are operator guardrails to reduce accidental command execution, not a multi-tenant authorization boundary.
-- Exec approvals bind exact command/cwd/env context and, when VikiClow can identify one concrete local script/file operand, that file snapshot too. This is best-effort integrity hardening, not a complete semantic model of every interpreter/runtime loader path.
-- Differences in command-risk warning heuristics between exec surfaces (`gateway`, `node`, `sandbox`) do not, by themselves, constitute a security-boundary bypass.
-- For untrusted-user isolation, split by trust boundary: separate gateways and separate OS users/hosts per boundary.
+8. Runtime Requirements & Security
+8.1 Node.js Hardening
+VikiClow requires Node.js 22.12.0 or later. This mitigates:
 
-## Workspace Memory Trust Boundary
+CVE-2025-59466: Async_hooks DoS.
 
-`MEMORY.md` and `memory/*.md` are plain workspace files and are treated as trusted local operator state.
+CVE-2026-21636: Permission model bypass.
 
-- If someone can edit workspace memory files, they already crossed the trusted operator boundary.
-- Memory search indexing/recall over those files is expected behavior, not a sandbox/security boundary.
-- Example report pattern considered out of scope: "attacker writes malicious content into `memory/*.md`, then `memory_search` returns it."
-- If you need isolation between mutually untrusted users, split by OS user or host and run separate gateways.
+8.2 Secret Scanning
+We utilize detect-secrets in our CI/CD pipeline.
 
-## Plugin Trust Boundary
+Baseline: .secrets.baseline
 
-Plugins/extensions are loaded **in-process** with the Gateway and are treated as trusted code.
+Local Check: detect-secrets scan --baseline .secrets.baseline
 
-- Plugins can execute with the same OS privileges as the VikiClow process.
-- Runtime helpers (for example `runtime.system.runCommandWithTimeout`) are convenience APIs, not a sandbox boundary.
-- Only install plugins you trust, and prefer `plugins.allow` to pin explicit trusted plugin ids.
+9. Maintainer Operations (GHSA)
+Maintainers patching GHSAs via the CLI must include the modern API header:
+X-GitHub-Api-Version: 2022-11-28
 
-## Temp Folder Boundary (Media/Sandbox)
+10. Recognition & Bounties
+Rebootix Research is a high-velocity lab. Currently, we do not offer monetary bug bounties.
 
-VikiClow uses a dedicated temp root for local media handoff and sandbox-adjacent temp artifacts:
+The Reward: Elite researchers who provide valid, high-impact disclosures will be invited to the Rebootix Private Alpha and credited in our hall of fame.
 
-- Preferred temp root: `/tmp/vikiclow` (when available and safe on the host).
-- Fallback temp root: `os.tmpdir()/vikiclow` (or `vikiclow-<uid>` on multi-user hosts).
+Laraib Khan
+Founder & Chief Architect, Rebootix Research
 
-Security boundary notes:
-
-- Sandbox media validation allows absolute temp paths only under the VikiClow-managed temp root.
-- Arbitrary host tmp paths are not treated as trusted media roots.
-- Plugin/extension code should use VikiClow temp helpers (`resolvePreferredVikiClowTmpDir`, `buildRandomTempFilePath`, `withTempDownloadPath`) rather than raw `os.tmpdir()` defaults when handling media files.
-- Enforcement reference points:
-  - temp root resolver: `src/infra/tmp-vikiclow-dir.ts`
-  - SDK temp helpers: `src/plugin-sdk/temp-path.ts`
-  - messaging/channel tmp guardrail: `scripts/check-no-random-messaging-tmp.mjs`
-
-## Operational Guidance
-
-For threat model + hardening guidance (including `vikiclow security audit --deep` and `--fix`), see:
-
-- `https://docs.vikiclow.ai/gateway/security`
-
-### Tool filesystem hardening
-
-- `tools.exec.applyPatch.workspaceOnly: true` (recommended): keeps `apply_patch` writes/deletes within the configured workspace directory.
-- `tools.fs.workspaceOnly: true` (optional): restricts `read`/`write`/`edit`/`apply_patch` paths and native prompt image auto-load paths to the workspace directory.
-- Avoid setting `tools.exec.applyPatch.workspaceOnly: false` unless you fully trust who can trigger tool execution.
-
-### Sub-agent delegation hardening
-
-- Keep `sessions_spawn` denied unless you explicitly need delegated runs.
-- Keep `agents.list[].subagents.allowAgents` narrow, and only include agents with sandbox settings you trust.
-- When delegation must stay sandboxed, call `sessions_spawn` with `sandbox: "require"` (default is `inherit`).
-  - `sandbox: "require"` rejects the spawn unless the target child runtime is sandboxed.
-  - This prevents a less-restricted session from delegating work into an unsandboxed child by mistake.
-
-### Web Interface Safety
-
-VikiClow's web interface (Gateway Control UI + HTTP endpoints) is intended for **local use only**.
-
-- Recommended: keep the Gateway **loopback-only** (`127.0.0.1` / `::1`).
-  - Config: `gateway.bind="loopback"` (default).
-  - CLI: `vikiclow gateway run --bind loopback`.
-- `gateway.controlUi.dangerouslyDisableDeviceAuth` is intended for localhost-only break-glass use.
-  - VikiClow keeps deployment flexibility by design and does not hard-forbid non-local setups.
-  - Non-local and other risky configurations are surfaced by `vikiclow security audit` as dangerous findings.
-  - This operator-selected tradeoff is by design and not, by itself, a security vulnerability.
-- Canvas host note: network-visible canvas is **intentional** for trusted node scenarios (LAN/tailnet).
-  - Expected setup: non-loopback bind + Gateway auth (token/password/trusted-proxy) + firewall/tailnet controls.
-  - Expected routes: `/__vikiclow__/canvas/`, `/__vikiclow__/a2ui/`.
-  - This deployment model alone is not a security vulnerability.
-- Do **not** expose it to the public internet (no direct bind to `0.0.0.0`, no public reverse proxy). It is not hardened for public exposure.
-- If you need remote access, prefer an SSH tunnel or Tailscale serve/funnel (so the Gateway still binds to loopback), plus strong Gateway auth.
-- The Gateway HTTP surface includes the canvas host (`/__vikiclow__/canvas/`, `/__vikiclow__/a2ui/`). Treat canvas content as sensitive/untrusted and avoid exposing it beyond loopback unless you understand the risk.
-
-## Runtime Requirements
-
-### Node.js Version
-
-VikiClow requires **Node.js 22.12.0 or later** (LTS). This version includes important security patches:
-
-- CVE-2025-59466: async_hooks DoS vulnerability
-- CVE-2026-21636: Permission model bypass vulnerability
-
-Verify your Node.js version:
-
-```bash
-node --version  # Should be v22.12.0 or later
-```
-
-### Docker Security
-
-When running VikiClow in Docker:
-
-1. The official image runs as a non-root user (`node`) for reduced attack surface
-2. Use `--read-only` flag when possible for additional filesystem protection
-3. Limit container capabilities with `--cap-drop=ALL`
-
-Example secure Docker run:
-
-```bash
-docker run --read-only --cap-drop=ALL \
-  -v vikiclow-data:/app/data \
-  vikiclow/vikiclow:latest
-```
-
-## Security Scanning
-
-This project uses `detect-secrets` for automated secret detection in CI/CD.
-See `.detect-secrets.cfg` for configuration and `.secrets.baseline` for the baseline.
-
-Run locally:
-
-```bash
-pip install detect-secrets==1.5.0
-detect-secrets scan --baseline .secrets.baseline
-```
+Nabeel Saleem
+Head of Security & Trust
