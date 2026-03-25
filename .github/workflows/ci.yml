@@ -210,8 +210,9 @@ jobs:
         if: (github.event_name != 'push' || matrix.runtime != 'bun') && matrix.task == 'test' && matrix.runtime == 'node'
         run: |
           # `pnpm test` runs `scripts/test-parallel.mjs`, which spawns multiple Node processes.
-          # Default heap limits have been too low on Linux CI (V8 OOM near 6GB).
-          echo "VIKICLOW_TEST_WORKERS=2" >> "$GITHUB_ENV"
+          # Keep the Linux push lane single-worker to avoid OOM churn from the
+          # slow onboarding-heavy shard mix. Windows keeps its own shard settings.
+          echo "VIKICLOW_TEST_WORKERS=1" >> "$GITHUB_ENV"
           echo "VIKICLOW_TEST_MAX_OLD_SPACE_SIZE_MB=8192" >> "$GITHUB_ENV"
 
       - name: Run ${{ matrix.task }} (${{ matrix.runtime }})

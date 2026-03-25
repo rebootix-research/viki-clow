@@ -26,9 +26,15 @@ collect_cli_candidate_paths() {
     candidates+=(
       "${npm_prefix%/}/bin/$package_name"
       "${npm_prefix%/}/lib/node_modules/$package_name/dist/entry.js"
+      "${npm_prefix%/}/lib/node_modules/$package_name/dist/entry.mjs"
+      "${npm_prefix%/}/lib/node_modules/$package_name/dist/index.js"
       "${npm_prefix%/}/lib/node_modules/$package_name/vikiclow.mjs"
       "${npm_prefix%/}/node_modules/$package_name/dist/entry.js"
+      "${npm_prefix%/}/node_modules/$package_name/dist/entry.mjs"
+      "${npm_prefix%/}/node_modules/$package_name/dist/index.js"
       "${npm_prefix%/}/node_modules/$package_name/vikiclow.mjs"
+      "${npm_prefix%/}/lib/node_modules/$package_name"
+      "${npm_prefix%/}/node_modules/$package_name"
     )
   fi
 
@@ -36,24 +42,39 @@ collect_cli_candidate_paths() {
     candidates+=(
       "${npm_config_prefix%/}/bin/$package_name"
       "${npm_config_prefix%/}/lib/node_modules/$package_name/dist/entry.js"
+      "${npm_config_prefix%/}/lib/node_modules/$package_name/dist/entry.mjs"
+      "${npm_config_prefix%/}/lib/node_modules/$package_name/dist/index.js"
       "${npm_config_prefix%/}/lib/node_modules/$package_name/vikiclow.mjs"
       "${npm_config_prefix%/}/node_modules/$package_name/dist/entry.js"
+      "${npm_config_prefix%/}/node_modules/$package_name/dist/entry.mjs"
+      "${npm_config_prefix%/}/node_modules/$package_name/dist/index.js"
       "${npm_config_prefix%/}/node_modules/$package_name/vikiclow.mjs"
+      "${npm_config_prefix%/}/lib/node_modules/$package_name"
+      "${npm_config_prefix%/}/node_modules/$package_name"
     )
   fi
 
   if [[ -n "$npm_root" ]]; then
     candidates+=(
       "${npm_root%/}/$package_name/dist/entry.js"
+      "${npm_root%/}/$package_name/dist/entry.mjs"
+      "${npm_root%/}/$package_name/dist/index.js"
       "${npm_root%/}/$package_name/vikiclow.mjs"
+      "${npm_root%/}/$package_name"
     )
   fi
 
   candidates+=(
     "/usr/local/lib/node_modules/$package_name/dist/entry.js"
+    "/usr/local/lib/node_modules/$package_name/dist/entry.mjs"
+    "/usr/local/lib/node_modules/$package_name/dist/index.js"
     "/usr/local/lib/node_modules/$package_name/vikiclow.mjs"
+    "/usr/local/lib/node_modules/$package_name"
     "/usr/lib/node_modules/$package_name/dist/entry.js"
+    "/usr/lib/node_modules/$package_name/dist/entry.mjs"
+    "/usr/lib/node_modules/$package_name/dist/index.js"
     "/usr/lib/node_modules/$package_name/vikiclow.mjs"
+    "/usr/lib/node_modules/$package_name"
   )
 
   printf '%s\n' "${candidates[@]}" | awk 'NF && !seen[$0]++'
@@ -114,13 +135,26 @@ verify_installed_cli() {
       fi
     fi
 
-    if [[ -z "$installed_version" && -f "$candidate" && ( "${candidate##*/}" == "entry.js" || "${candidate##*/}" == "vikiclow.mjs" ) ]]; then
+    if [[ -z "$installed_version" && -f "$candidate" && ( "${candidate##*/}" == "entry.js" || "${candidate##*/}" == "entry.mjs" || "${candidate##*/}" == "index.js" || "${candidate##*/}" == "vikiclow.mjs" ) ]]; then
       candidate_version="$(node "$candidate" --version 2>/dev/null | head -n 1 | tr -d '\r')"
       candidate_version="$(extract_vikiclow_semver "$candidate_version")"
       if [[ -n "$candidate_version" ]]; then
         matched_entry_path="$candidate"
         installed_version="$candidate_version"
       fi
+    fi
+
+    if [[ -z "$installed_version" && -d "$candidate" ]]; then
+      for entrypoint in "$candidate/vikiclow.mjs" "$candidate/dist/entry.js" "$candidate/dist/entry.mjs" "$candidate/dist/index.js"; do
+        [[ -f "$entrypoint" ]] || continue
+        candidate_version="$(node "$entrypoint" --version 2>/dev/null | head -n 1 | tr -d '\r')"
+        candidate_version="$(extract_vikiclow_semver "$candidate_version")"
+        if [[ -n "$candidate_version" ]]; then
+          matched_entry_path="$entrypoint"
+          installed_version="$candidate_version"
+          break
+        fi
+      done
     fi
   done < <(collect_cli_candidate_paths "$package_name")
 

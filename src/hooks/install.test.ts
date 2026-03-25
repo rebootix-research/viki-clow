@@ -2,6 +2,8 @@ import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { gzipSync } from "node:zlib";
+import JSZip from "jszip";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { expectSingleNpmPackIgnoreScriptsCall } from "../test-utils/exec-assertions.js";
 import {
@@ -16,15 +18,13 @@ const fixtureRoot = path.join(os.tmpdir(), `vikiclow-hook-install-${randomUUID()
 const sharedArchiveDir = path.join(fixtureRoot, "_archives");
 let tempDirIndex = 0;
 const sharedArchivePathByName = new Map<string, string>();
-
-const fixturesDir = path.resolve(process.cwd(), "test", "fixtures", "hooks-install");
-const zipHooksBuffer = fs.readFileSync(path.join(fixturesDir, "zip-hooks.zip"));
-const zipTraversalBuffer = fs.readFileSync(path.join(fixturesDir, "zip-traversal.zip"));
-const tarHooksBuffer = fs.readFileSync(path.join(fixturesDir, "tar-hooks.tar"));
-const tarTraversalBuffer = fs.readFileSync(path.join(fixturesDir, "tar-traversal.tar"));
-const tarEvilIdBuffer = fs.readFileSync(path.join(fixturesDir, "tar-evil-id.tar"));
-const tarReservedIdBuffer = fs.readFileSync(path.join(fixturesDir, "tar-reserved-id.tar"));
-const npmPackHooksBuffer = fs.readFileSync(path.join(fixturesDir, "npm-pack-hooks.tgz"));
+let zipHooksBuffer: Buffer;
+let zipTraversalBuffer: Buffer;
+let tarHooksBuffer: Buffer;
+let tarTraversalBuffer: Buffer;
+let tarEvilIdBuffer: Buffer;
+let tarReservedIdBuffer: Buffer;
+let npmPackHooksBuffer: Buffer;
 
 vi.mock("../process/exec.js", () => ({
   runCommandWithTimeout: vi.fn(),
@@ -34,6 +34,131 @@ function makeTempDir() {
   const dir = path.join(fixtureRoot, `case-${tempDirIndex++}`);
   fs.mkdirSync(dir);
   return dir;
+}
+
+function buildHookMarkdown(name: string): string {
+  return [
+    "---",
+    `name: ${name}`,
+    "description: Test hook",
+    'metadata: {"vikiclow":{"events":["command:new"]}}',
+    "---",
+    "",
+    `# ${name}`,
+    "",
+  ].join("\n");
+}
+
+function tarOctal(value: number, length: number): string {
+  return value.toString(8).padStart(length - 1, "0");
+}
+
+function createTarEntryBuffer(params: {
+  name: string;
+  content?: Buffer;
+  mode?: number;
+  typeflag?: string;
+}): Buffer {
+  const content = params.content ?? Buffer.alloc(0);
+  const header = Buffer.alloc(512, 0);
+  const write = (offset: number, length: number, value: string) => {
+    header.write(value.slice(0, length), offset, "utf8");
+  };
+
+  write(0, 100, params.name);
+  write(100, 8, tarOctal(params.mode ?? 0o644, 8));
+  write(108, 8, tarOctal(0, 8));
+  write(116, 8, tarOctal(0, 8));
+  write(124, 12, tarOctal(content.length, 12));
+  write(136, 12, tarOctal(0, 12));
+  write(148, 8, "        ");
+  write(156, 1, params.typeflag ?? "0");
+  write(257, 6, "ustar");
+  write(263, 2, "00");
+
+  let checksum = 0;
+  for (const byte of header) {
+    checksum += byte;
+  }
+  write(148, 8, `${tarOctal(checksum, 7)}\0 `);
+
+  const padding = Buffer.alloc((512 - (content.length % 512)) % 512, 0);
+  return Buffer.concat([header, content, padding]);
+}
+
+function buildTarBuffer(
+  entries: Array<{ name: string; content?: string | Buffer; mode?: number; typeflag?: string }>,
+): Buffer {
+  const buffers = entries.map((entry) =>
+    createTarEntryBuffer({
+      name: entry.name,
+      content:
+        typeof entry.content === "string"
+          ? Buffer.from(entry.content, "utf8")
+          : (entry.content ?? Buffer.alloc(0)),
+      mode: entry.mode,
+      typeflag: entry.typeflag,
+    }),
+  );
+  return Buffer.concat([...buffers, Buffer.alloc(1024, 0)]);
+}
+
+function buildHookPackEntries(params: {
+  packageName: string;
+  hookDirName: string;
+  hookName: string;
+  version?: string;
+  dependencies?: Record<string, string>;
+}): Array<{ path: string; content: string }> {
+  const manifest = {
+    name: params.packageName,
+    version: params.version ?? "0.0.1",
+    vikiclow: { hooks: [`./hooks/${params.hookDirName}`] },
+    ...(params.dependencies ? { dependencies: params.dependencies } : {}),
+  };
+  return [
+    {
+      path: "package/package.json",
+      content: JSON.stringify(manifest),
+    },
+    {
+      path: `package/hooks/${params.hookDirName}/HOOK.md`,
+      content: buildHookMarkdown(params.hookName),
+    },
+    {
+      path: `package/hooks/${params.hookDirName}/handler.ts`,
+      content: "export default async () => {};\n",
+    },
+  ];
+}
+
+async function buildHookPackZipBuffer(params: {
+  packageName: string;
+  hookDirName: string;
+  hookName: string;
+}): Promise<Buffer> {
+  const zip = new JSZip();
+  for (const entry of buildHookPackEntries(params)) {
+    zip.file(entry.path, entry.content);
+  }
+  return Buffer.from(await zip.generateAsync({ type: "nodebuffer" }));
+}
+
+function buildHookPackTarBuffer(params: {
+  packageName: string;
+  hookDirName: string;
+  hookName: string;
+  version?: string;
+  dependencies?: Record<string, string>;
+  gzip?: boolean;
+}): Buffer {
+  const tarBuffer = buildTarBuffer(
+    buildHookPackEntries(params).map((entry) => ({
+      name: entry.path,
+      content: entry.content,
+    })),
+  );
+  return params.gzip ? gzipSync(tarBuffer) : tarBuffer;
 }
 
 const { runCommandWithTimeout } = await import("../process/exec.js");
@@ -52,9 +177,39 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-beforeAll(() => {
+beforeAll(async () => {
   fs.mkdirSync(fixtureRoot, { recursive: true });
   fs.mkdirSync(sharedArchiveDir, { recursive: true });
+  zipHooksBuffer = await buildHookPackZipBuffer({
+    packageName: "@vikiclow/zip-hooks",
+    hookDirName: "zip-hook",
+    hookName: "zip-hook",
+  });
+  zipTraversalBuffer = Buffer.from(
+    await new JSZip().file("../../escape.txt", "escape").generateAsync({ type: "nodebuffer" }),
+  );
+  tarHooksBuffer = buildHookPackTarBuffer({
+    packageName: "@vikiclow/tar-hooks",
+    hookDirName: "tar-hook",
+    hookName: "tar-hook",
+  });
+  tarTraversalBuffer = buildTarBuffer([{ name: "../../escape.txt", content: "escape" }]);
+  tarEvilIdBuffer = buildHookPackTarBuffer({
+    packageName: "@evil/..",
+    hookDirName: "evil-hook",
+    hookName: "evil-hook",
+  });
+  tarReservedIdBuffer = buildHookPackTarBuffer({
+    packageName: "@evil/.",
+    hookDirName: "reserved-hook",
+    hookName: "reserved-hook",
+  });
+  npmPackHooksBuffer = buildHookPackTarBuffer({
+    packageName: "@vikiclow/test-hooks",
+    hookDirName: "one-hook",
+    hookName: "one-hook",
+    gzip: true,
+  });
 });
 
 function writeArchiveFixture(params: { fileName: string; contents: Buffer }) {
@@ -129,21 +284,21 @@ describe("installHooksFromArchive", () => {
     {
       name: "zip",
       fileName: "hooks.zip",
-      contents: zipHooksBuffer,
+      contents: () => zipHooksBuffer,
       expectedPackId: "zip-hooks",
       expectedHook: "zip-hook",
     },
     {
       name: "tar",
       fileName: "hooks.tar",
-      contents: tarHooksBuffer,
+      contents: () => tarHooksBuffer,
       expectedPackId: "tar-hooks",
       expectedHook: "tar-hook",
     },
   ])("installs hook packs from $name archives", async (tc) => {
     const { fixture, result } = await installArchiveFixture({
       fileName: tc.fileName,
-      contents: tc.contents,
+      contents: tc.contents(),
     });
 
     expect(result.ok).toBe(true);
@@ -162,19 +317,19 @@ describe("installHooksFromArchive", () => {
     {
       name: "zip",
       fileName: "traversal.zip",
-      contents: zipTraversalBuffer,
+      contents: () => zipTraversalBuffer,
       expectedDetail: "archive entry",
     },
     {
       name: "tar",
       fileName: "traversal.tar",
-      contents: tarTraversalBuffer,
+      contents: () => tarTraversalBuffer,
       expectedDetail: "escapes destination",
     },
   ])("rejects $name archives with traversal entries", async (tc) => {
     const { result } = await installArchiveFixture({
       fileName: tc.fileName,
-      contents: tc.contents,
+      contents: tc.contents(),
     });
     expectInstallFailureContains(result, ["failed to extract archive", tc.expectedDetail]);
   });
@@ -182,16 +337,16 @@ describe("installHooksFromArchive", () => {
   it.each([
     {
       name: "traversal-like ids",
-      contents: tarEvilIdBuffer,
+      contents: () => tarEvilIdBuffer,
     },
     {
       name: "reserved ids",
-      contents: tarReservedIdBuffer,
+      contents: () => tarReservedIdBuffer,
     },
   ])("rejects hook packs with $name", async (tc) => {
     const { result } = await installArchiveFixture({
       fileName: "hooks.tar",
-      contents: tc.contents,
+      contents: tc.contents(),
     });
     expectInstallFailureContains(result, ["reserved path segment"]);
   });

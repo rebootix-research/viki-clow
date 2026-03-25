@@ -15,12 +15,12 @@ const TRANSLATIONS: Record<string, TranslationMap | null> = {
       health: "Estado",
     },
     languages: {
-      de: "Deutsch (Aleman)",
+      de: "Deutsch (Alemán)",
     },
   },
   "pt-BR": {
     languages: {
-      es: "Espanol (Espanhol)",
+      es: "Español (Espanhol)",
     },
   },
   "zh-CN": {

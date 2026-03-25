@@ -3,7 +3,8 @@ import os from "node:os";
 import path from "node:path";
 
 export const POSIX_VIKICLOW_TMP_DIR = "/tmp/vikiclow";
-const TMP_DIR_ACCESS_MODE = fs.constants.W_OK | fs.constants.X_OK;
+const FS_CONSTANTS = fs.constants ?? { W_OK: 2, X_OK: 1 };
+const TMP_DIR_ACCESS_MODE = FS_CONSTANTS.W_OK | FS_CONSTANTS.X_OK;
 
 type ResolvePreferredVikiClowTmpDirOptions = {
   accessSync?: (path: string, mode?: number) => void;

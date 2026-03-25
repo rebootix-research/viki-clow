@@ -13,7 +13,7 @@ struct OnboardingVoiceValidationTests {
         ]) {
             let state = AppState(preview: true)
             state.voiceWakeValidationComplete = false
-            let view = OnboardingView(
+            var view = OnboardingView(
                 state: state,
                 permissionMonitor: PermissionMonitor.shared,
                 discoveryModel: GatewayDiscoveryModel(localDisplayName: InstanceIdentity.displayName))

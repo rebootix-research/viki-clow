@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import JSZip from "jszip";
 import * as tar from "tar";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import * as skillScanner from "../security/skill-scanner.js";
@@ -24,11 +25,13 @@ let runCommandWithTimeout: typeof import("../process/exec.js").runCommandWithTim
 let suiteTempRoot = "";
 let suiteFixtureRoot = "";
 let tempDirCounter = 0;
-const pluginFixturesDir = path.resolve(process.cwd(), "test", "fixtures", "plugins-install");
 const archiveFixturePathCache = new Map<string, string>();
 const dynamicArchiveTemplatePathCache = new Map<string, string>();
 let installPluginFromDirTemplateDir = "";
 let manifestInstallTemplateDir = "";
+let VOICE_CALL_ARCHIVE_V1_BUFFER: Buffer;
+let VOICE_CALL_ARCHIVE_V2_BUFFER: Buffer;
+let ZIPPER_ARCHIVE_BUFFER: Buffer;
 const DYNAMIC_ARCHIVE_TEMPLATE_PRESETS = [
   {
     outName: "traversal.tgz",
@@ -104,10 +107,6 @@ async function packToArchive({
   return dest;
 }
 
-function readVoiceCallArchiveBuffer(version: string): Buffer {
-  return fs.readFileSync(path.join(pluginFixturesDir, `voice-call-${version}.tgz`));
-}
-
 function getArchiveFixturePath(params: {
   cacheKey: string;
   outName: string;
@@ -123,13 +122,45 @@ function getArchiveFixturePath(params: {
   return archivePath;
 }
 
-function readZipperArchiveBuffer(): Buffer {
-  return fs.readFileSync(path.join(pluginFixturesDir, "zipper-0.0.1.zip"));
+async function buildVoiceCallArchiveBuffer(version: string): Promise<Buffer> {
+  const templateDir = makeTempDir();
+  const pkgDir = path.join(templateDir, "package");
+  fs.mkdirSync(path.join(pkgDir, "dist"), { recursive: true });
+  fs.writeFileSync(
+    path.join(pkgDir, "package.json"),
+    JSON.stringify({
+      name: "@vikiclow/voice-call",
+      version,
+      vikiclow: { extensions: ["./dist/index.js"] },
+    }),
+    "utf-8",
+  );
+  fs.writeFileSync(
+    path.join(pkgDir, "dist", "index.js"),
+    `export const pluginVersion = ${JSON.stringify(version)};\n`,
+    "utf-8",
+  );
+  const archivePath = await packToArchive({
+    pkgDir,
+    outDir: ensureSuiteFixtureRoot(),
+    outName: `voice-call-${version}.tgz`,
+  });
+  return fs.readFileSync(archivePath);
 }
 
-const VOICE_CALL_ARCHIVE_V1_BUFFER = readVoiceCallArchiveBuffer("0.0.1");
-const VOICE_CALL_ARCHIVE_V2_BUFFER = readVoiceCallArchiveBuffer("0.0.2");
-const ZIPPER_ARCHIVE_BUFFER = readZipperArchiveBuffer();
+async function buildZipperArchiveBuffer(): Promise<Buffer> {
+  const zip = new JSZip();
+  zip.file(
+    "package/package.json",
+    JSON.stringify({
+      name: "@vikiclow/zipper",
+      version: "0.0.1",
+      vikiclow: { extensions: ["./dist/index.js"] },
+    }),
+  );
+  zip.file("package/dist/index.js", "export const pluginId = 'zipper';\n");
+  return Buffer.from(await zip.generateAsync({ type: "nodebuffer" }));
+}
 
 function getVoiceCallArchiveBuffer(version: string): Buffer {
   if (version === "0.0.1") {
@@ -138,7 +169,7 @@ function getVoiceCallArchiveBuffer(version: string): Buffer {
   if (version === "0.0.2") {
     return VOICE_CALL_ARCHIVE_V2_BUFFER;
   }
-  return readVoiceCallArchiveBuffer(version);
+  throw new Error(`Unsupported voice-call archive version: ${version}`);
 }
 
 async function setupVoiceCallArchiveInstall(params: { outName: string; version: string }) {
@@ -379,6 +410,10 @@ beforeAll(async () => {
     }),
     "utf-8",
   );
+
+  VOICE_CALL_ARCHIVE_V1_BUFFER = await buildVoiceCallArchiveBuffer("0.0.1");
+  VOICE_CALL_ARCHIVE_V2_BUFFER = await buildVoiceCallArchiveBuffer("0.0.2");
+  ZIPPER_ARCHIVE_BUFFER = await buildZipperArchiveBuffer();
 
   for (const preset of DYNAMIC_ARCHIVE_TEMPLATE_PRESETS) {
     await ensureDynamicArchiveTemplate({

@@ -152,9 +152,15 @@ function supportsAutomaticInstall(skill: SkillStatusEntry): boolean {
   return skill.install.some((option) => allowedKinds.has(option.kind));
 }
 
-function installIdsForSkill(skill: SkillStatusEntry): string[] {
+function installIdsForSkill(
+  skill: SkillStatusEntry,
+  options?: { forceInstall?: boolean },
+): string[] {
   const allowedKinds = resolveAutomaticInstallKinds();
-  const filtered = skill.install.filter((option) => allowedKinds.has(option.kind));
+  const filtered =
+    options?.forceInstall === true
+      ? skill.install
+      : skill.install.filter((option) => allowedKinds.has(option.kind));
   if (filtered.length === 0) {
     return [];
   }
@@ -280,7 +286,10 @@ async function collectBundledSkillInventory(params: {
     }
 
     const shouldAutoInstall = params.autoInstall || MANDATORY_VOICE_BUNDLED_SKILLS.has(skill.name);
-    if (!shouldAutoInstall || !supportsAutomaticInstall(skill)) {
+    if (
+      !shouldAutoInstall ||
+      (!supportsAutomaticInstall(skill) && !MANDATORY_VOICE_BUNDLED_SKILLS.has(skill.name))
+    ) {
       entries.push({
         name: skill.name,
         status: skill.install.length > 0 ? "available" : "skipped",
@@ -294,7 +303,9 @@ async function collectBundledSkillInventory(params: {
     }
 
     let failedReason: string | undefined;
-    for (const installId of installIdsForSkill(skill)) {
+    for (const installId of installIdsForSkill(skill, {
+      forceInstall: MANDATORY_VOICE_BUNDLED_SKILLS.has(skill.name),
+    })) {
       const result = await installSkill({
         workspaceDir: params.workspaceDir,
         skillName: skill.name,

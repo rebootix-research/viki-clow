@@ -1,0 +1,67 @@
+{
+  "cases": [
+    {
+      "name": "approval request mismatch preserves run id and code",
+      "runId": "run-argv-mismatch",
+      "match": {
+        "ok": false,
+        "code": "APPROVAL_REQUEST_MISMATCH",
+        "message": "approval id does not match request"
+      },
+      "expected": {
+        "ok": false,
+        "message": "approval id does not match request",
+        "details": {
+          "code": "APPROVAL_REQUEST_MISMATCH",
+          "runId": "run-argv-mismatch"
+        }
+      }
+    },
+    {
+      "name": "missing env binding reports env keys",
+      "runId": "run-env-binding-missing",
+      "match": {
+        "ok": false,
+        "code": "APPROVAL_ENV_BINDING_MISSING",
+        "message": "approval id missing env binding for requested env overrides",
+        "details": {
+          "envKeys": ["OPENAI_API_KEY", "LANGGRAPH_ENDPOINT"]
+        }
+      },
+      "expected": {
+        "ok": false,
+        "message": "approval id missing env binding for requested env overrides",
+        "details": {
+          "code": "APPROVAL_ENV_BINDING_MISSING",
+          "runId": "run-env-binding-missing",
+          "envKeys": ["OPENAI_API_KEY", "LANGGRAPH_ENDPOINT"]
+        }
+      }
+    },
+    {
+      "name": "env mismatch keeps both hashes",
+      "runId": "run-env-mismatch",
+      "match": {
+        "ok": false,
+        "code": "APPROVAL_ENV_MISMATCH",
+        "message": "approval id env binding mismatch",
+        "details": {
+          "envKeys": ["OPENAI_API_KEY"],
+          "expectedEnvHash": "expected-hash",
+          "actualEnvHash": "actual-hash"
+        }
+      },
+      "expected": {
+        "ok": false,
+        "message": "approval id env binding mismatch",
+        "details": {
+          "code": "APPROVAL_ENV_MISMATCH",
+          "runId": "run-env-mismatch",
+          "envKeys": ["OPENAI_API_KEY"],
+          "expectedEnvHash": "expected-hash",
+          "actualEnvHash": "actual-hash"
+        }
+      }
+    }
+  ]
+}

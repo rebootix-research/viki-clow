@@ -290,6 +290,26 @@ class PersistenceProofMemoryManager implements MemorySearchManager {
     private readonly params: { agentId: string },
   ) {}
 
+  get openAi() {
+    return (this.delegate as { openAi?: unknown }).openAi;
+  }
+
+  get gemini() {
+    return (this.delegate as { gemini?: unknown }).gemini;
+  }
+
+  get voyage() {
+    return (this.delegate as { voyage?: unknown }).voyage;
+  }
+
+  get mistral() {
+    return (this.delegate as { mistral?: unknown }).mistral;
+  }
+
+  get ollama() {
+    return (this.delegate as { ollama?: unknown }).ollama;
+  }
+
   async bootstrap(): Promise<void> {
     if (this.bootstrapPromise) {
       await this.bootstrapPromise;
@@ -362,6 +382,16 @@ class PersistenceProofMemoryManager implements MemorySearchManager {
 
   async probeVectorAvailability() {
     return await this.delegate.probeVectorAvailability();
+  }
+
+  async activateFallbackProvider(reason: string): Promise<boolean> {
+    const candidate = this.delegate as {
+      activateFallbackProvider?: (reason: string) => Promise<boolean>;
+    };
+    if (typeof candidate.activateFallbackProvider !== "function") {
+      return false;
+    }
+    return await candidate.activateFallbackProvider(reason);
   }
 
   async close() {
