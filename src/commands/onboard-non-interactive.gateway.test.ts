@@ -13,16 +13,18 @@ const gatewayClientCalls: Array<{
   onClose?: (code: number, reason: string) => void;
 }> = [];
 const ensureWorkspaceAndSessionsMock = vi.fn(async (..._args: unknown[]) => {});
-const bundleSupportedCapabilitiesMock = vi.fn(async ({ config, workspaceDir }: { config: unknown; workspaceDir: string }) => ({
-  config,
-  inventory: {
-    manifestPath: path.join(workspaceDir, ".vikiclow", "capabilities", "bundle-inventory.json"),
-    voice: {
-      ready: true,
-      notes: [],
+const bundleSupportedCapabilitiesMock = vi.fn(
+  async ({ config, workspaceDir }: { config: unknown; workspaceDir: string }) => ({
+    config,
+    inventory: {
+      manifestPath: path.join(workspaceDir, ".vikiclow", "capabilities", "bundle-inventory.json"),
+      voice: {
+        ready: true,
+        notes: [],
+      },
     },
-  },
-}));
+  }),
+);
 
 vi.mock("../gateway/client.js", () => ({
   GatewayClient: class {
@@ -144,7 +146,7 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
     );
   });
 
-afterAll(async () => {
+  afterAll(async () => {
     if (tempHome) {
       await fs.rm(tempHome, { recursive: true, force: true });
     }
@@ -213,7 +215,9 @@ afterAll(async () => {
           },
           runtime,
         ),
-      ).rejects.toThrow(/Mandatory voice bootstrap did not complete|Local Whisper STT is not configured yet/);
+      ).rejects.toThrow(
+        /Mandatory voice bootstrap did not complete|Local Whisper STT is not configured yet/,
+      );
     });
   }, 60_000);
 

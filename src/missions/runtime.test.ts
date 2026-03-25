@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { buildMissionBackbone } from "./backbone.js";
 import { resolveMissionBackbonePaths } from "./backbone-materializer.js";
+import { buildMissionBackbone } from "./backbone.js";
 import { buildMissionExecutionPrompt } from "./orchestration.js";
 import { beginMissionRun } from "./runtime.js";
 import { loadMissionRecord } from "./store.js";
@@ -28,7 +28,9 @@ async function withTempStateDir<T>(run: (stateDir: string) => Promise<T>): Promi
 
 afterEach(async () => {
   await Promise.all(
-    tempStateDirs.splice(0, tempStateDirs.length).map((dir) => fs.rm(dir, { recursive: true, force: true })),
+    tempStateDirs
+      .splice(0, tempStateDirs.length)
+      .map((dir) => fs.rm(dir, { recursive: true, force: true })),
   );
 });
 
@@ -73,7 +75,9 @@ describe("mission runtime", () => {
       expect(record?.backbone?.temporal.adapter).toBe("temporal");
       expect(record?.backbone?.langGraph.adapter).toBe("langgraph");
       expect(record?.backbone?.langGraph.nodes.some((node) => node.role === "verifier")).toBe(true);
-      expect(record?.backbone?.langGraph.edges.some((edge) => edge.relation === "verifies")).toBe(true);
+      expect(record?.backbone?.langGraph.edges.some((edge) => edge.relation === "verifies")).toBe(
+        true,
+      );
       expect(record?.backbone?.langGraph.currentNodeId).toBe("swarm-verifier");
       expect(record?.backbone?.browser.adapter).toBe("browserd");
       expect(record?.backbone?.browser.product).toBe("Viki Browser");
@@ -163,8 +167,12 @@ describe("mission runtime", () => {
 
       await tracker.finalizeCompleted({ replyText: "Capability preflight recorded." });
       const record = await loadMissionRecord(tracker.missionId);
-      expect(record?.artifacts.some((artifact) => artifact.label === "Capability preflight")).toBe(true);
-      expect(record?.artifacts.some((artifact) => artifact.label === "Generated mission skill")).toBe(true);
+      expect(record?.artifacts.some((artifact) => artifact.label === "Capability preflight")).toBe(
+        true,
+      );
+      expect(
+        record?.artifacts.some((artifact) => artifact.label === "Generated mission skill"),
+      ).toBe(true);
       expect(record?.checkpoint?.summary).toContain("Capability preflight");
     });
   });

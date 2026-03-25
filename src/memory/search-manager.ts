@@ -1,9 +1,9 @@
 import type { VikiClowConfig } from "../config/config.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
-import { recordMemoryPersistenceProof } from "./persistence-proof.js";
-import { GraphitiBackboneManager } from "./graphiti-backbone.js";
 import type { ResolvedQmdConfig } from "./backend-config.js";
 import { resolveMemoryBackendConfig } from "./backend-config.js";
+import { GraphitiBackboneManager } from "./graphiti-backbone.js";
+import { recordMemoryPersistenceProof } from "./persistence-proof.js";
 import type {
   MemoryEmbeddingProbeResult,
   MemorySearchManager,

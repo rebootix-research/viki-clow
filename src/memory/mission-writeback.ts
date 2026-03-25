@@ -37,10 +37,12 @@ function resolveMissionWritebackTimezone(): string {
   return "UTC";
 }
 
-export function resolveMissionMemoryWritebackRelativePath(params: {
-  nowMs?: number;
-  timezone?: string;
-} = {}): string {
+export function resolveMissionMemoryWritebackRelativePath(
+  params: {
+    nowMs?: number;
+    timezone?: string;
+  } = {},
+): string {
   const nowMs = Number.isFinite(params.nowMs) ? (params.nowMs as number) : Date.now();
   const timezone = params.timezone?.trim() || resolveMissionWritebackTimezone();
   const dateStamp = formatDateStampInTimezone(nowMs, timezone);
@@ -65,7 +67,10 @@ function buildMissionMemoryWritebackMarkdown(record: MissionRecord, recordedAt: 
     ...[
       formatListItem("Agent", record.agentId),
       formatListItem("Session", record.sessionId),
-      formatListItem("Workspace", record.workspaceDir ? shortenHomePath(record.workspaceDir) : undefined),
+      formatListItem(
+        "Workspace",
+        record.workspaceDir ? shortenHomePath(record.workspaceDir) : undefined,
+      ),
       formatListItem("Checkpoint", record.checkpoint?.summary),
       formatListItem("Terminal message", record.terminalMessage),
       formatListItem("Last error", record.lastError),
@@ -77,7 +82,9 @@ function buildMissionMemoryWritebackMarkdown(record: MissionRecord, recordedAt: 
   if (record.approvals.length > 0) {
     const lastApproval = record.approvals.at(-1);
     if (lastApproval) {
-      lines.push(`- Latest approval: ${lastApproval.status}${lastApproval.command ? ` :: ${lastApproval.command}` : ""}`);
+      lines.push(
+        `- Latest approval: ${lastApproval.status}${lastApproval.command ? ` :: ${lastApproval.command}` : ""}`,
+      );
     }
   }
 
@@ -122,7 +129,9 @@ export async function appendMissionMemoryWriteback(
     return null;
   }
 
-  const recordedAt = new Date(Number.isFinite(params.nowMs) ? (params.nowMs as number) : Date.now()).toISOString();
+  const recordedAt = new Date(
+    Number.isFinite(params.nowMs) ? (params.nowMs as number) : Date.now(),
+  ).toISOString();
   const relativePath = resolveMissionMemoryWritebackRelativePath(params);
   const absolutePath = path.join(record.workspaceDir, relativePath);
   const existing = await readTextIfExists(absolutePath);

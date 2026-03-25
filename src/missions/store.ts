@@ -29,7 +29,10 @@ export async function saveMissionRecord(
   const next = current.then(async () => {
     await writeFileAtomic(pathname, `${JSON.stringify(record, null, 2)}\n`);
   });
-  writeQueues.set(record.id, next.catch(() => {}));
+  writeQueues.set(
+    record.id,
+    next.catch(() => {}),
+  );
   await next;
   return record;
 }
@@ -73,5 +76,5 @@ export async function listMissionRecords(
         return JSON.parse(raw) as MissionRecord;
       }),
   );
-  return records.sort((left, right) => right.updatedAt - left.updatedAt);
+  return records.toSorted((left, right) => right.updatedAt - left.updatedAt);
 }

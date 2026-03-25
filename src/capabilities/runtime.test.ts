@@ -15,7 +15,9 @@ vi.mock("../process/exec.js", () => ({
 
 const tempDirs: string[] = [];
 
-async function withTempDirs<T>(run: (params: { stateDir: string; workspaceDir: string }) => Promise<T>) {
+async function withTempDirs<T>(
+  run: (params: { stateDir: string; workspaceDir: string }) => Promise<T>,
+) {
   const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "vikiclow-cap-state-"));
   const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "vikiclow-cap-workspace-"));
   tempDirs.push(stateDir, workspaceDir);
@@ -34,7 +36,9 @@ async function withTempDirs<T>(run: (params: { stateDir: string; workspaceDir: s
 
 afterEach(async () => {
   vi.clearAllMocks();
-  await Promise.all(tempDirs.splice(0, tempDirs.length).map((dir) => fs.rm(dir, { recursive: true, force: true })));
+  await Promise.all(
+    tempDirs.splice(0, tempDirs.length).map((dir) => fs.rm(dir, { recursive: true, force: true })),
+  );
 });
 
 describe("capability runtime", () => {

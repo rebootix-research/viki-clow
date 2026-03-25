@@ -1,9 +1,13 @@
 import { execFile, execSync } from "node:child_process";
-import fs from "node:fs/promises";
 import fsSync from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
-import { resolveNativeVikiBrowserLauncherPaths, resolveNativeVikiBrowserRoot, writeNativeVikiBrowserLaunchers } from "./native-launcher.js";
+import {
+  resolveNativeVikiBrowserLauncherPaths,
+  resolveNativeVikiBrowserRoot,
+  writeNativeVikiBrowserLaunchers,
+} from "./native-launcher.js";
 
 const execFileAsync = promisify(execFile);
 const NODE_SEA_SENTINEL = "NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2";
@@ -95,7 +99,9 @@ export async function packageNativeVikiBrowserExecutable(params?: {
   rootDir?: string;
 }): Promise<NativeVikiBrowserExecutablePackageResult> {
   if (process.platform !== "win32") {
-    throw new Error("Native Viki Browser executable packaging is currently implemented for Windows only.");
+    throw new Error(
+      "Native Viki Browser executable packaging is currently implemented for Windows only.",
+    );
   }
 
   const rootDir = resolveNativeVikiBrowserRoot(params?.rootDir);
@@ -111,7 +117,11 @@ export async function packageNativeVikiBrowserExecutable(params?: {
     );
   }
 
-  await fs.writeFile(paths.bootstrapPath, buildNativeVikiBrowserSeaBootstrap(paths.nodeLauncherPath), "utf8");
+  await fs.writeFile(
+    paths.bootstrapPath,
+    buildNativeVikiBrowserSeaBootstrap(paths.nodeLauncherPath),
+    "utf8",
+  );
   await fs.writeFile(
     paths.seaConfigPath,
     `${JSON.stringify(

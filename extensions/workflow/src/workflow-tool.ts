@@ -217,9 +217,7 @@ function buildWorkflowArgv(action: string, params: Record<string, unknown>): str
   throw new Error(`Unknown action: ${action}`);
 }
 
-export function createWorkflowTool(
-  api: VikiClowPluginApi,
-) {
+export function createWorkflowTool(api: VikiClowPluginApi) {
   return {
     name: "workflow",
     label: "Viki Workflow",

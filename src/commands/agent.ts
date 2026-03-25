@@ -58,6 +58,7 @@ import {
   isSilentReplyText,
   SILENT_REPLY_TOKEN,
 } from "../auto-reply/tokens.js";
+import { ensureCapabilitiesForObjective } from "../capabilities/runtime.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { resolveCommandSecretRefsViaGateway } from "../cli/command-secret-gateway.js";
 import { getAgentRuntimeCommandSecretTargetIds } from "../cli/command-secret-targets.js";
@@ -82,11 +83,8 @@ import {
 } from "../infra/agent-events.js";
 import { buildOutboundSessionContext } from "../infra/outbound/session-context.js";
 import { getRemoteSkillEligibility } from "../infra/skills-remote.js";
-import { ensureCapabilitiesForObjective } from "../capabilities/runtime.js";
-import {
-  beginMissionRun,
-  buildMissionTerminalNotice,
-} from "../missions/runtime.js";
+import { beginMissionRun, buildMissionTerminalNotice } from "../missions/runtime.js";
+import type { MissionReplayRequest } from "../missions/types.js";
 import { normalizeAgentId } from "../routing/session-key.js";
 import { defaultRuntime, type RuntimeEnv } from "../runtime.js";
 import { applyVerboseOverride } from "../sessions/level-overrides.js";
@@ -98,7 +96,6 @@ import { deliverAgentCommandResult } from "./agent/delivery.js";
 import { resolveAgentRunContext } from "./agent/run-context.js";
 import { updateSessionStoreAfterAgentRun } from "./agent/session-store.js";
 import { resolveSession } from "./agent/session.js";
-import type { MissionReplayRequest } from "../missions/types.js";
 import type { AgentCommandIngressOpts, AgentCommandOpts } from "./agent/types.js";
 
 type PersistSessionEntryParams = {
@@ -168,7 +165,10 @@ function prependInternalEventContext(
 }
 
 function combineExtraSystemPrompts(...parts: Array<string | undefined>): string | undefined {
-  const combined = parts.map((part) => part?.trim()).filter(Boolean).join("\n\n");
+  const combined = parts
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join("\n\n");
   return combined || undefined;
 }
 
@@ -197,7 +197,10 @@ function formatCapabilityPlanPrompt(
   return lines.length > 1 ? lines.join("\n") : undefined;
 }
 
-function createMissionReplayRequest(opts: AgentCommandOpts, missionId: string): MissionReplayRequest {
+function createMissionReplayRequest(
+  opts: AgentCommandOpts,
+  missionId: string,
+): MissionReplayRequest {
   return {
     message: opts.message,
     agentId: opts.agentId,
@@ -1369,10 +1372,7 @@ async function agentCommandInternal(
             : result.meta.aborted
               ? "blocked"
               : "completed";
-      const terminalNotice = buildMissionTerminalNotice(
-        missionTracker.snapshot,
-        noticeStatus,
-      );
+      const terminalNotice = buildMissionTerminalNotice(missionTracker.snapshot, noticeStatus);
       const terminalPayload = normalizeReplyPayload({ text: terminalNotice });
       if (terminalPayload) {
         payloads = [terminalPayload];

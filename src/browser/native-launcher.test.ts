@@ -11,7 +11,9 @@ const tempRoots: string[] = [];
 
 afterEach(async () => {
   await Promise.all(
-    tempRoots.splice(0, tempRoots.length).map((dir) => fs.rm(dir, { recursive: true, force: true })),
+    tempRoots
+      .splice(0, tempRoots.length)
+      .map((dir) => fs.rm(dir, { recursive: true, force: true })),
   );
 });
 
@@ -36,8 +38,12 @@ describe("native Viki Browser launchers", () => {
       '"./browser/browserd.js"',
     );
     await expect(fs.readFile(paths.nodeLauncherPath, "utf8")).resolves.toContain("--probe");
-    await expect(fs.readFile(paths.windowsCmdPath, "utf8")).resolves.toContain("viki-browser-launch.mjs");
-    await expect(fs.readFile(paths.windowsPs1Path, "utf8")).resolves.toContain("viki-browser-launch.mjs");
+    await expect(fs.readFile(paths.windowsCmdPath, "utf8")).resolves.toContain(
+      "viki-browser-launch.mjs",
+    );
+    await expect(fs.readFile(paths.windowsPs1Path, "utf8")).resolves.toContain(
+      "viki-browser-launch.mjs",
+    );
     await expect(fs.readFile(paths.unixLauncherPath, "utf8")).resolves.toContain("exec node");
   });
 

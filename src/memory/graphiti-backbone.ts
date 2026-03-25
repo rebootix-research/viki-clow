@@ -4,9 +4,11 @@ import fs from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
 import { resolveStateDir } from "../config/paths.js";
-import { listMemoryFiles } from "./internal.js";
-import { readLatestMemoryWritebackSummary } from "./persistence-proof.js";
 import type { MissionRecord } from "../missions/types.js";
+import type { ResolvedGraphitiConfig } from "./backend-config.js";
+import { listMemoryFiles } from "./internal.js";
+import type { MissionMemoryWritebackSummary } from "./mission-writeback.js";
+import { readLatestMemoryWritebackSummary } from "./persistence-proof.js";
 import type {
   MemoryEmbeddingProbeResult,
   MemoryProviderStatus,
@@ -14,8 +16,6 @@ import type {
   MemorySearchResult,
   MemorySyncProgressUpdate,
 } from "./types.js";
-import type { ResolvedGraphitiConfig } from "./backend-config.js";
-import type { MissionMemoryWritebackSummary } from "./mission-writeback.js";
 
 type GraphitiNeo4jState = {
   enabled: boolean;
@@ -236,7 +236,9 @@ async function probeNeo4jConnection(config?: ResolvedGraphitiConfig): Promise<Gr
         finish(new Error("neo4j connection timeout"));
       });
       socket.once("connect", () => finish());
-      socket.once("error", (error) => finish(error instanceof Error ? error : new Error(String(error))));
+      socket.once("error", (error) =>
+        finish(error instanceof Error ? error : new Error(String(error))),
+      );
     });
     return {
       enabled: true,
@@ -258,11 +260,20 @@ async function probeNeo4jConnection(config?: ResolvedGraphitiConfig): Promise<Gr
 
 async function loadNeo4jDriver(): Promise<Neo4jDriverModuleLike | null> {
   try {
-    const loader = new Function("return import('neo4j-driver');") as () => Promise<unknown>;
-    return (await loader()) as Neo4jDriverModuleLike;
+    return (await import("neo4j-driver")) as Neo4jDriverModuleLike;
   } catch {
     return null;
   }
+}
+
+function stringifyGraphValue(value: unknown, fallback = ""): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  return fallback;
 }
 
 export function buildGraphitiNeo4jMissionQuery(): string {
@@ -325,7 +336,9 @@ async function withNeo4jSession<T>(
   if (!neo4j) {
     return null;
   }
-  const auth = config.neo4jUser ? neo4j.auth.basic(config.neo4jUser, config.neo4jPassword ?? "") : undefined;
+  const auth = config.neo4jUser
+    ? neo4j.auth.basic(config.neo4jUser, config.neo4jPassword ?? "")
+    : undefined;
   const driver = neo4j.driver(config.neo4jUri, auth, {
     connectionAcquisitionTimeout: config.connectionTimeoutMs,
   });
@@ -610,10 +623,10 @@ export async function searchGraphitiBackbone(params: {
         };
         const records = raw.records ?? [];
         return records.map((record) => {
-          const snippet = String(record.get("summary") ?? "");
-          const writebackPath = String(record.get("writebackPath") ?? "");
-          const relativePath = String(record.get("writebackRelativePath") ?? "");
-          const missionId = String(record.get("missionId") ?? "");
+          const snippet = stringifyGraphValue(record.get("summary"));
+          const writebackPath = stringifyGraphValue(record.get("writebackPath"));
+          const relativePath = stringifyGraphValue(record.get("writebackRelativePath"));
+          const missionId = stringifyGraphValue(record.get("missionId"));
           return {
             path: writebackPath || paths.proofPath,
             startLine: 1,
@@ -626,7 +639,7 @@ export async function searchGraphitiBackbone(params: {
                 agentId: params.agentId,
                 missionId,
                 objective: snippet,
-                status: String(record.get("status") ?? "completed"),
+                status: stringifyGraphValue(record.get("status"), "completed"),
                 runId: missionId,
                 evidenceCount: 0,
                 artifactCount: 0,
@@ -689,11 +702,13 @@ export function buildGraphitiBackboneStatus(params: {
     provider: neo4j.available ? "neo4j" : "graphiti-local",
     model: "graphiti-backbone",
     workspaceDir: proof?.paths.baseDir ?? params.config?.localStore,
-    dbPath: proof?.paths.proofPath ?? resolveGraphitiBackbonePaths({
-      agentId: params.agentId,
-      localStore: params.config?.localStore,
-      env: params.env,
-    }).proofPath,
+    dbPath:
+      proof?.paths.proofPath ??
+      resolveGraphitiBackbonePaths({
+        agentId: params.agentId,
+        localStore: params.config?.localStore,
+        env: params.env,
+      }).proofPath,
     files: proof?.ledgerEntries,
     chunks: proof?.ledgerEntries,
     dirty: false,
@@ -738,7 +753,9 @@ export class GraphitiBackboneManager implements MemorySearchManager {
     const delegateResults = this.params.delegate
       ? await this.params.delegate.search(query, opts)
       : [];
-    const merged = [...graphResults, ...delegateResults].toSorted((left, right) => right.score - left.score);
+    const merged = [...graphResults, ...delegateResults].toSorted(
+      (left, right) => right.score - left.score,
+    );
     const minScore = opts?.minScore ?? 0;
     return merged.filter((entry) => entry.score >= minScore).slice(0, opts?.maxResults ?? 10);
   }
@@ -787,15 +804,19 @@ export class GraphitiBackboneManager implements MemorySearchManager {
       model: status.model,
       dbPath: status.dbPath ?? delegateStatus.dbPath,
       custom: {
-        ...(delegateStatus.custom ?? {}),
+        ...delegateStatus.custom,
         graphiti: status.custom?.graphiti,
       },
       fallback: delegateStatus.fallback,
     };
   }
 
-  async sync(params?: { reason?: string; force?: boolean; progress?: (update: MemorySyncProgressUpdate) => void }) {
-    const status = await this.status();
+  async sync(params?: {
+    reason?: string;
+    force?: boolean;
+    progress?: (update: MemorySyncProgressUpdate) => void;
+  }) {
+    const status = this.status();
     const workspaceDir = status.workspaceDir;
     if (workspaceDir) {
       await syncGraphitiBackboneFromWorkspace({

@@ -38,14 +38,14 @@ This threat model documents adversarial threats to the VikiClow AI agent platfor
 
 ### 1.2 Scope
 
-| Component              | Included | Notes                                            |
-| ---------------------- | -------- | ------------------------------------------------ |
-| VikiClow Agent Runtime | Yes      | Core agent execution, tool calls, sessions       |
-| Gateway                | Yes      | Authentication, routing, channel integration     |
-| Channel Integrations   | Yes      | WhatsApp, Telegram, Discord, Signal, Slack, etc. |
-| VikiClow Skills Registry Marketplace    | Yes      | Skill publishing, moderation, distribution       |
-| MCP Servers            | Yes      | External tool providers                          |
-| User Devices           | Partial  | Mobile apps, desktop clients                     |
+| Component                            | Included | Notes                                            |
+| ------------------------------------ | -------- | ------------------------------------------------ |
+| VikiClow Agent Runtime               | Yes      | Core agent execution, tool calls, sessions       |
+| Gateway                              | Yes      | Authentication, routing, channel integration     |
+| Channel Integrations                 | Yes      | WhatsApp, Telegram, Discord, Signal, Slack, etc. |
+| VikiClow Skills Registry Marketplace | Yes      | Skill publishing, moderation, distribution       |
+| MCP Servers                          | Yes      | External tool providers                          |
+| User Devices                         | Partial  | Mobile apps, desktop clients                     |
 
 ### 1.3 Out of Scope
 
@@ -124,14 +124,14 @@ Nothing is explicitly out of scope for this threat model.
 
 ### 2.2 Data Flows
 
-| Flow | Source  | Destination | Data               | Protection           |
-| ---- | ------- | ----------- | ------------------ | -------------------- |
-| F1   | Channel | Gateway     | User messages      | TLS, AllowFrom       |
-| F2   | Gateway | Agent       | Routed messages    | Session isolation    |
-| F3   | Agent   | Tools       | Tool invocations   | Policy enforcement   |
-| F4   | Agent   | External    | web_fetch requests | SSRF blocking        |
+| Flow | Source                   | Destination | Data               | Protection           |
+| ---- | ------------------------ | ----------- | ------------------ | -------------------- |
+| F1   | Channel                  | Gateway     | User messages      | TLS, AllowFrom       |
+| F2   | Gateway                  | Agent       | Routed messages    | Session isolation    |
+| F3   | Agent                    | Tools       | Tool invocations   | Policy enforcement   |
+| F4   | Agent                    | External    | web_fetch requests | SSRF blocking        |
 | F5   | VikiClow Skills Registry | Agent       | Skill code         | Moderation, scanning |
-| F6   | Agent   | Channel     | Responses          | Output filtering     |
+| F6   | Agent                    | Channel     | Responses          | Output filtering     |
 
 ---
 
@@ -264,9 +264,9 @@ Nothing is explicitly out of scope for this threat model.
 | Attribute               | Value                                                                    |
 | ----------------------- | ------------------------------------------------------------------------ |
 | **ATLAS ID**            | AML.T0010.001 - Supply Chain Compromise: AI Software                     |
-| **Description**         | Attacker publishes malicious skill to VikiClow Skills Registry                            |
+| **Description**         | Attacker publishes malicious skill to VikiClow Skills Registry           |
 | **Attack Vector**       | Create account, publish skill with hidden malicious code                 |
-| **Affected Components** | VikiClow Skills Registry, skill loading, agent execution                                  |
+| **Affected Components** | VikiClow Skills Registry, skill loading, agent execution                 |
 | **Current Mitigations** | GitHub account age verification, pattern-based moderation flags          |
 | **Residual Risk**       | Critical - No sandboxing, limited review                                 |
 | **Recommendations**     | VirusTotal integration (in progress), skill sandboxing, community review |
@@ -278,7 +278,7 @@ Nothing is explicitly out of scope for this threat model.
 | **ATLAS ID**            | AML.T0010.001 - Supply Chain Compromise: AI Software           |
 | **Description**         | Attacker compromises popular skill and pushes malicious update |
 | **Attack Vector**       | Account compromise, social engineering of skill owner          |
-| **Affected Components** | VikiClow Skills Registry versioning, auto-update flows                          |
+| **Affected Components** | VikiClow Skills Registry versioning, auto-update flows         |
 | **Current Mitigations** | Version fingerprinting                                         |
 | **Residual Risk**       | High - Auto-updates may pull malicious versions                |
 | **Recommendations**     | Implement update signing, rollback capability, version pinning |
@@ -306,7 +306,7 @@ Nothing is explicitly out of scope for this threat model.
 | **ATLAS ID**            | AML.T0043 - Craft Adversarial Data                                     |
 | **Description**         | Attacker crafts skill content to evade moderation patterns             |
 | **Attack Vector**       | Unicode homoglyphs, encoding tricks, dynamic loading                   |
-| **Affected Components** | VikiClow Skills Registry moderation.ts                                                  |
+| **Affected Components** | VikiClow Skills Registry moderation.ts                                 |
 | **Current Mitigations** | Pattern-based FLAG_RULES                                               |
 | **Residual Risk**       | High - Simple regex easily bypassed                                    |
 | **Recommendations**     | Add behavioral analysis (VirusTotal Code Insight), AST-based detection |
@@ -574,29 +574,29 @@ T-EXEC-002 → T-EXFIL-001 → External exfiltration
 
 ### 7.2 Key Security Files
 
-| Path                                | Purpose                     | Risk Level   |
-| ----------------------------------- | --------------------------- | ------------ |
-| `src/infra/exec-approvals.ts`       | Command approval logic      | **Critical** |
-| `src/gateway/auth.ts`               | Gateway authentication      | **Critical** |
-| `src/web/inbound/access-control.ts` | Channel access control      | **Critical** |
-| `src/infra/net/ssrf.ts`             | SSRF protection             | **Critical** |
-| `src/security/external-content.ts`  | Prompt injection mitigation | **Critical** |
-| `src/agents/sandbox/tool-policy.ts` | Tool policy enforcement     | **Critical** |
-| `convex/lib/moderation.ts`          | VikiClow Skills Registry moderation          | **High**     |
-| `convex/lib/skillPublish.ts`        | Skill publishing flow       | **High**     |
-| `src/routing/resolve-route.ts`      | Session isolation           | **Medium**   |
+| Path                                | Purpose                             | Risk Level   |
+| ----------------------------------- | ----------------------------------- | ------------ |
+| `src/infra/exec-approvals.ts`       | Command approval logic              | **Critical** |
+| `src/gateway/auth.ts`               | Gateway authentication              | **Critical** |
+| `src/web/inbound/access-control.ts` | Channel access control              | **Critical** |
+| `src/infra/net/ssrf.ts`             | SSRF protection                     | **Critical** |
+| `src/security/external-content.ts`  | Prompt injection mitigation         | **Critical** |
+| `src/agents/sandbox/tool-policy.ts` | Tool policy enforcement             | **Critical** |
+| `convex/lib/moderation.ts`          | VikiClow Skills Registry moderation | **High**     |
+| `convex/lib/skillPublish.ts`        | Skill publishing flow               | **High**     |
+| `src/routing/resolve-route.ts`      | Session isolation                   | **Medium**   |
 
 ### 7.3 Glossary
 
-| Term                 | Definition                                                |
-| -------------------- | --------------------------------------------------------- |
-| **ATLAS**            | MITRE's Adversarial Threat Landscape for AI Systems       |
-| **VikiClow Skills Registry**          | VikiClow's skill marketplace                              |
-| **Gateway**          | VikiClow's message routing and authentication layer       |
-| **MCP**              | Model Context Protocol - tool provider interface          |
-| **Prompt Injection** | Attack where malicious instructions are embedded in input |
-| **Skill**            | Downloadable extension for VikiClow agents                |
-| **SSRF**             | Server-Side Request Forgery                               |
+| Term                         | Definition                                                |
+| ---------------------------- | --------------------------------------------------------- |
+| **ATLAS**                    | MITRE's Adversarial Threat Landscape for AI Systems       |
+| **VikiClow Skills Registry** | VikiClow's skill marketplace                              |
+| **Gateway**                  | VikiClow's message routing and authentication layer       |
+| **MCP**                      | Model Context Protocol - tool provider interface          |
+| **Prompt Injection**         | Attack where malicious instructions are embedded in input |
+| **Skill**                    | Downloadable extension for VikiClow agents                |
+| **SSRF**                     | Server-Side Request Forgery                               |
 
 ---
 

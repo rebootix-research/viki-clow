@@ -1,10 +1,10 @@
 import { formatCliCommand } from "../cli/command-format.js";
-import { resolveVikiClowPackageRoot } from "../infra/vikiclow-root.js";
 import {
   checkUpdateStatus,
   compareSemverStrings,
   type UpdateCheckResult,
 } from "../infra/update-check.js";
+import { resolveVikiClowPackageRoot } from "../infra/vikiclow-root.js";
 import { VERSION } from "../version.js";
 
 export async function getUpdateCheckResult(params: {

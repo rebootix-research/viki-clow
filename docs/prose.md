@@ -119,7 +119,7 @@ Direct URLs are fetched as-is. This uses the `web_fetch` tool (or `exec` for POS
 
 Viki Prose programs map to VikiClow primitives:
 
-| Viki Prose concept         | VikiClow tool    |
+| Viki Prose concept        | VikiClow tool    |
 | ------------------------- | ---------------- |
 | Spawn session / Task tool | `sessions_spawn` |
 | File read/write           | `read` / `write` |

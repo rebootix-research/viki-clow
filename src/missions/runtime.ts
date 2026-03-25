@@ -1,5 +1,8 @@
 import crypto from "node:crypto";
+import type { CapabilityPlan } from "../capabilities/types.js";
 import type { AgentEventPayload } from "../infra/agent-events.js";
+import { recordGraphitiMissionWriteback } from "../memory/graphiti-backbone.js";
+import { appendMissionMemoryWriteback } from "../memory/mission-writeback.js";
 import { shortenHomePath } from "../utils.js";
 import { materializeMissionBackbone } from "./backbone-materializer.js";
 import {
@@ -9,13 +12,9 @@ import {
   labelMissionDomain,
 } from "./orchestration.js";
 import { loadMissionRecord, saveMissionRecord } from "./store.js";
-import { appendMissionMemoryWriteback } from "../memory/mission-writeback.js";
-import { recordGraphitiMissionWriteback } from "../memory/graphiti-backbone.js";
-import type { CapabilityPlan } from "../capabilities/types.js";
 import type {
   MissionApproval,
   MissionArtifact,
-  MissionCheckpoint,
   MissionDomain,
   MissionRecord,
   MissionReplayRequest,
@@ -134,11 +133,17 @@ function updateProof(
     lastEvidenceSummary: patch.lastEvidenceSummary ?? record.proof?.lastEvidenceSummary,
     checkpoint: patch.checkpoint ?? record.proof?.checkpoint ?? record.checkpoint,
     terminalState: patch.terminalState ?? record.proof?.terminalState,
-    terminalMessage: patch.terminalMessage ?? record.proof?.terminalMessage ?? record.terminalMessage,
+    terminalMessage:
+      patch.terminalMessage ?? record.proof?.terminalMessage ?? record.terminalMessage,
   };
 }
 
-function touchSubtask(record: MissionRecord, domain: MissionDomain, status: MissionStatus, at: number): void {
+function touchSubtask(
+  record: MissionRecord,
+  domain: MissionDomain,
+  status: MissionStatus,
+  at: number,
+): void {
   const subtask = record.subtasks.find((entry) => entry.domain === domain);
   if (!subtask) {
     return;
@@ -387,7 +392,8 @@ export class MissionRunTracker {
             updateProof(record, evt.ts, {
               swarmCount: record.plan.swarms.length,
               domains: record.plan.domains,
-              topology: "sovereign orchestrator -> domain swarms -> specialists -> verifier/recovery",
+              topology:
+                "sovereign orchestrator -> domain swarms -> specialists -> verifier/recovery",
               lastEvidenceSummary: record.currentState,
               checkpoint: record.checkpoint,
               terminalState: "needs_approval",
@@ -406,7 +412,8 @@ export class MissionRunTracker {
             updateProof(record, evt.ts, {
               swarmCount: record.plan.swarms.length,
               domains: record.plan.domains,
-              topology: "sovereign orchestrator -> domain swarms -> specialists -> verifier/recovery",
+              topology:
+                "sovereign orchestrator -> domain swarms -> specialists -> verifier/recovery",
               lastEvidenceSummary: record.currentState,
               checkpoint: record.checkpoint,
               terminalState: "blocked",
@@ -479,7 +486,9 @@ export class MissionRunTracker {
         swarmCount: record.plan.swarms.length,
         domains: record.plan.domains,
         topology: "sovereign orchestrator -> domain swarms -> specialists -> verifier/recovery",
-        lastEvidenceSummary: params.replyText?.trim() ? truncate(params.replyText, 180) : record.currentState,
+        lastEvidenceSummary: params.replyText?.trim()
+          ? truncate(params.replyText, 180)
+          : record.currentState,
         checkpoint: record.checkpoint,
         terminalState: status,
         terminalMessage: record.terminalMessage,
@@ -634,7 +643,7 @@ export function buildMissionTerminalNotice(
 }
 
 export function summarizeMissionForList(record: MissionRecord): string {
-  const checkpoint = (record.checkpoint as MissionCheckpoint | undefined)?.summary;
+  const checkpoint = record.checkpoint?.summary;
   return `${record.id}  ${record.status}  ${truncate(record.objective, 60)}${checkpoint ? `  (${truncate(checkpoint, 50)})` : ""}`;
 }
 

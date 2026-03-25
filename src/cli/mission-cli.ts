@@ -10,12 +10,15 @@ import { theme } from "../terminal/theme.js";
 import { runCommandWithRuntime } from "./cli-utils.js";
 import { formatHelpExamples } from "./help-format.js";
 
-function printMissionRecord(record: NonNullable<Awaited<ReturnType<typeof loadMissionRecord>>>, json: boolean) {
+function printMissionRecord(
+  record: NonNullable<Awaited<ReturnType<typeof loadMissionRecord>>>,
+  json: boolean,
+) {
   if (json) {
     defaultRuntime.log(JSON.stringify(record, null, 2));
     return;
   }
-  defaultRuntime.log(`${record.id}`);
+  defaultRuntime.log(record.id);
   defaultRuntime.log(`Status: ${record.status}`);
   defaultRuntime.log(`Objective: ${record.objective}`);
   defaultRuntime.log(`Current state: ${record.currentState}`);
@@ -109,7 +112,7 @@ export function registerMissionCli(program: Command) {
     .action(async (opts) => {
       await runCommandWithRuntime(defaultRuntime, async () => {
         const records = await listMissionRecords();
-        if (Boolean(opts.json)) {
+        if (opts.json) {
           defaultRuntime.log(JSON.stringify(records, null, 2));
           return;
         }
@@ -133,7 +136,7 @@ export function registerMissionCli(program: Command) {
         if (!record) {
           throw new Error(`Mission not found: ${missionId}`);
         }
-        printMissionRecord(record, Boolean(opts.json));
+        printMissionRecord(record, opts.json);
       });
     });
 
@@ -161,7 +164,7 @@ export function registerMissionCli(program: Command) {
           throw new Error(`Mission not found: ${missionId}`);
         }
         const backbone = record.backbone ?? buildMissionBackbone(record);
-        if (Boolean(opts.json)) {
+        if (opts.json) {
           defaultRuntime.log(JSON.stringify(backbone, null, 2));
           return;
         }
@@ -177,8 +180,14 @@ export function registerMissionCli(program: Command) {
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
           ["vikiclow mission list", "Inspect recent mission records."],
-          ["vikiclow mission show mission-123", "Display the mission status, swarms, and approvals."],
-          ["vikiclow mission resume mission-123", "Replay the saved request and append a new attempt."],
+          [
+            "vikiclow mission show mission-123",
+            "Display the mission status, swarms, and approvals.",
+          ],
+          [
+            "vikiclow mission resume mission-123",
+            "Replay the saved request and append a new attempt.",
+          ],
         ])}`,
     )
     .action(async (missionId) => {

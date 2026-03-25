@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import "./test-helpers/fast-core-tools.js";
+import { resetSubagentRegistryForTests } from "./subagent-registry.js";
+import { SUBAGENT_SPAWN_ACCEPTED_NOTE } from "./subagent-spawn.js";
 import {
   getCallGatewayMock,
   getSessionsSpawnTool,
   resetSessionsSpawnConfigOverride,
   setupSessionsSpawnGatewayMock,
 } from "./vikiclow-tools.subagents.sessions-spawn.test-harness.js";
-import { resetSubagentRegistryForTests } from "./subagent-registry.js";
-import { SUBAGENT_SPAWN_ACCEPTED_NOTE } from "./subagent-spawn.js";
 
 const callGatewayMock = getCallGatewayMock();
 

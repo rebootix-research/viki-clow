@@ -17,7 +17,10 @@ const spawnState = vi.hoisted(() => ({
   spawn: vi.fn(),
 }));
 
-vi.mock("vikiclow/plugin-sdk/workflow", async () => await import("../../../src/plugin-sdk/workflow.ts"));
+vi.mock(
+  "vikiclow/plugin-sdk/workflow",
+  async () => await import("../../../src/plugin-sdk/workflow.ts"),
+);
 
 vi.mock("node:child_process", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:child_process")>();

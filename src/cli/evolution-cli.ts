@@ -23,7 +23,7 @@ export function registerEvolutionCli(program: Command) {
     .action(async (opts) => {
       await runCommandWithRuntime(defaultRuntime, async () => {
         const summary = await summarizeEvolutionState();
-        if (Boolean(opts.json)) {
+        if (opts.json) {
           defaultRuntime.log(JSON.stringify(summary, null, 2));
           return;
         }
@@ -50,7 +50,7 @@ export function registerEvolutionCli(program: Command) {
           notes: opts.notes ? String(opts.notes) : undefined,
           tags: Array.isArray(opts.tag) ? opts.tag.map(String) : undefined,
         });
-        defaultRuntime.log(Boolean(opts.json) ? JSON.stringify(candidate, null, 2) : candidate.id);
+        defaultRuntime.log(opts.json ? JSON.stringify(candidate, null, 2) : candidate.id);
       });
     });
 
@@ -75,7 +75,7 @@ export function registerEvolutionCli(program: Command) {
           },
           secret: String(opts.secret),
         });
-        defaultRuntime.log(Boolean(opts.json) ? JSON.stringify(candidate, null, 2) : candidate.id);
+        defaultRuntime.log(opts.json ? JSON.stringify(candidate, null, 2) : candidate.id);
       });
     });
 
@@ -98,7 +98,7 @@ export function registerEvolutionCli(program: Command) {
           solveRate: opts.solveRate != null ? Number(opts.solveRate) : undefined,
           latencyMs: opts.latencyMs != null ? Number(opts.latencyMs) : undefined,
         });
-        defaultRuntime.log(Boolean(opts.json) ? JSON.stringify(experiment, null, 2) : experiment.id);
+        defaultRuntime.log(opts.json ? JSON.stringify(experiment, null, 2) : experiment.id);
       });
     });
 
@@ -115,7 +115,7 @@ export function registerEvolutionCli(program: Command) {
           experimentId: opts.experiment ? String(opts.experiment) : undefined,
           rationale: String(opts.rationale),
         });
-        defaultRuntime.log(Boolean(opts.json) ? JSON.stringify(promotion, null, 2) : promotion.id);
+        defaultRuntime.log(opts.json ? JSON.stringify(promotion, null, 2) : promotion.id);
       });
     });
 
@@ -130,7 +130,7 @@ export function registerEvolutionCli(program: Command) {
           candidateId: String(candidateId),
           rationale: String(opts.rationale),
         });
-        defaultRuntime.log(Boolean(opts.json) ? JSON.stringify(rollback, null, 2) : rollback.id);
+        defaultRuntime.log(opts.json ? JSON.stringify(rollback, null, 2) : rollback.id);
       });
     });
 }

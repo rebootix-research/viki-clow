@@ -1,9 +1,11 @@
 # VikiClow Execution State
 
 ## Current Objective
+
 Strengthen GitHub Actions coverage for native/browser/runtime verification so post-push CI exposes the remaining environment-backed gaps directly and keeps the native lanes zero-red.
 
 ## Remaining Blockers Before This Pass
+
 - Native browser packaging was launcher-backed but not yet producing a shipped Windows executable.
 - Workflow plugin renaming had not fully cleared its test/runtime path.
 - LangGraph live verification needed a rebuilt probe path instead of metadata-only proof.
@@ -11,6 +13,7 @@ Strengthen GitHub Actions coverage for native/browser/runtime verification so po
 - Native macOS and Android verification were still blocked by missing host toolchains (`swift`, `java` / `JAVA_HOME`).
 
 ## Completed Workstreams
+
 - Added a dedicated `Native Verification` GitHub Actions workflow:
   - Windows native-browser packaging + verification
   - Ubuntu runtime-stack proof
@@ -50,10 +53,12 @@ Strengthen GitHub Actions coverage for native/browser/runtime verification so po
   - top-level docs/install docs/app READMEs
 
 ## In-Progress Workstreams
+
 - Final commit, push, and GitHub release update.
 - Final identity cleanup on GitHub-facing docs/scripts/product text.
 
 ## Exact Next Actions
+
 - Push the workflow changes.
 - Inspect the first `CI` and `Native Verification` runs on GitHub.
 - Download `runtime-stack-proof`, `voice-proof`, `native-browser-windows`, `native-browser-proof`, `android-test-report`, and `android-debug-apk` from the first successful run.
@@ -64,6 +69,7 @@ Strengthen GitHub Actions coverage for native/browser/runtime verification so po
 - Publish a final GitHub tag/release for this closure pass.
 
 ## Blockers
+
 - No packaged native CEF browser binary or `.app` bundle exists; the shipped native browser is a Windows SEA executable plus launcher-based sibling-process surface, not a compiled CEF app.
 - Native macOS verification is blocked locally because `swift` is not installed.
 - Native Android verification is blocked locally because `java` and `JAVA_HOME` are not installed.
@@ -81,6 +87,7 @@ Strengthen GitHub Actions coverage for native/browser/runtime verification so po
     - `docs/security/CONTRIBUTING-THREAT-MODEL.md`
 
 ## Exact Files Changed In This Pass
+
 - `.github/workflows/ci.yml`
 - `.github/workflows/native-verification.yml`
 - `VIKICLOW_EXECUTION_STATE.md`
@@ -99,6 +106,7 @@ Strengthen GitHub Actions coverage for native/browser/runtime verification so po
 - `scripts/update-clawtributors.ts`
 
 ## Tests / Proofs Run In This Pass
+
 - local workflow YAML parse for:
   - `.github/workflows/ci.yml`
   - `.github/workflows/native-verification.yml`
@@ -124,6 +132,7 @@ Strengthen GitHub Actions coverage for native/browser/runtime verification so po
 - targeted residue sweeps over `AGENTS.md`, `CONTRIBUTING.md`, `docs/install/ansible.md`, and `scripts/update-clawtributors.ts`
 
 ## Artifacts Produced In This Pass
+
 - No new local product artifacts were generated for the workflow-only CI closure edit.
 - `C:\\Users\\Nabeel Saleem\\Desktop\\viki clow\\dist\\Viki Browser.exe`
 - `C:\\Users\\Nabeel Saleem\\Desktop\\viki clow\\dist\\viki-browser-launch.mjs`
@@ -139,11 +148,13 @@ Strengthen GitHub Actions coverage for native/browser/runtime verification so po
 - `C:\\Users\\Nabeel Saleem\\.vikiclow\\browserd\\native-proof.json`
 
 ## Publish / Release Status
+
 - Repository already exists: `https://github.com/rebootix-research/viki-clow`
 - Branch targeted for final closure push: `main`
 - Final closure tag/release: pending this commit
 
 ## Final Pillar Status (Pre-Push)
+
 - `1. Universal task execution` — materially complete
 - `2. Fully visible Viki Browser using CEF` — materially complete with native-packaging blocker
 - `3. Durable mission runtime` — materially complete

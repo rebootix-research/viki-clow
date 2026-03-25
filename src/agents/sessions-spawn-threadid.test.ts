@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import "./test-helpers/fast-core-tools.js";
 import {
+  listSubagentRunsForRequester,
+  resetSubagentRegistryForTests,
+} from "./subagent-registry.js";
+import {
   getCallGatewayMock,
   getSessionsSpawnTool,
   setSessionsSpawnConfigOverride,
 } from "./vikiclow-tools.subagents.sessions-spawn.test-harness.js";
-import {
-  listSubagentRunsForRequester,
-  resetSubagentRegistryForTests,
-} from "./subagent-registry.js";
 
 describe("sessions_spawn requesterOrigin threading", () => {
   const spawnAndReadRequesterRun = async (opts?: { agentThreadId?: number }) => {

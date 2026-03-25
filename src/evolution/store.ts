@@ -22,7 +22,9 @@ async function readJsonDir<T>(dirPath: string): Promise<T[]> {
     const items = await Promise.all(
       entries
         .filter((entry) => entry.endsWith(".json"))
-        .map(async (entry) => JSON.parse(await fs.readFile(path.join(dirPath, entry), "utf8")) as T),
+        .map(
+          async (entry) => JSON.parse(await fs.readFile(path.join(dirPath, entry), "utf8")) as T,
+        ),
     );
     return items;
   } catch (error) {
@@ -72,7 +74,7 @@ export async function listEvolutionCandidates(
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<EvolutionCandidate[]> {
   const { candidatesDir } = resolveEvolutionPaths(env);
-  return (await readJsonDir<EvolutionCandidate>(candidatesDir)).sort((left, right) =>
+  return (await readJsonDir<EvolutionCandidate>(candidatesDir)).toSorted((left, right) =>
     right.receivedAt.localeCompare(left.receivedAt),
   );
 }
@@ -81,7 +83,7 @@ export async function listEvolutionExperiments(
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<EvolutionExperiment[]> {
   const { experimentsDir } = resolveEvolutionPaths(env);
-  return (await readJsonDir<EvolutionExperiment>(experimentsDir)).sort((left, right) =>
+  return (await readJsonDir<EvolutionExperiment>(experimentsDir)).toSorted((left, right) =>
     right.createdAt.localeCompare(left.createdAt),
   );
 }
@@ -90,7 +92,7 @@ export async function listEvolutionPromotions(
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<EvolutionPromotion[]> {
   const { promotionsDir } = resolveEvolutionPaths(env);
-  return (await readJsonDir<EvolutionPromotion>(promotionsDir)).sort((left, right) =>
+  return (await readJsonDir<EvolutionPromotion>(promotionsDir)).toSorted((left, right) =>
     (right.promotedAt ?? right.rolledBackAt ?? "").localeCompare(
       left.promotedAt ?? left.rolledBackAt ?? "",
     ),

@@ -45,7 +45,9 @@ export async function installChromeExtension(opts?: {
 }): Promise<{ path: string }> {
   const src = opts?.sourceDir ?? resolveBundledExtensionRootDir();
   if (!hasManifest(src)) {
-    throw new Error("Bundled Viki Browser Relay extension is missing. Reinstall VikiClow and try again.");
+    throw new Error(
+      "Bundled Viki Browser Relay extension is missing. Reinstall VikiClow and try again.",
+    );
   }
 
   const stateDir = opts?.stateDir ?? resolveStateDir();
@@ -61,7 +63,9 @@ export async function installChromeExtension(opts?: {
 
   await fs.promises.cp(src, dest, { recursive: true });
   if (!hasManifest(dest)) {
-    throw new Error("Viki Browser Relay extension install failed (manifest.json missing). Try again.");
+    throw new Error(
+      "Viki Browser Relay extension install failed (manifest.json missing). Try again.",
+    );
   }
 
   return { path: dest };

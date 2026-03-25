@@ -245,7 +245,9 @@ function resolveGraphitiConfig(
 ): ResolvedGraphitiConfig {
   const localStoreRaw = env.VIKICLOW_GRAPHITI_LOCAL_STORE?.trim() || raw?.localStore?.trim();
   const connectionTimeoutMs = resolveTimeoutMs(
-    env.VIKICLOW_GRAPHITI_TIMEOUT_MS ? Number(env.VIKICLOW_GRAPHITI_TIMEOUT_MS) : raw?.connectionTimeoutMs,
+    env.VIKICLOW_GRAPHITI_TIMEOUT_MS
+      ? Number(env.VIKICLOW_GRAPHITI_TIMEOUT_MS)
+      : raw?.connectionTimeoutMs,
     DEFAULT_GRAPHITI_TIMEOUT_MS,
   );
   return {

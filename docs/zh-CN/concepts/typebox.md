@@ -43,14 +43,14 @@ Client                    Gateway
 
 å¸¸ç”¨æ–¹æ³• + äº‹ä»¶ï¼š
 
-| ç±»åˆ« | ç¤ºä¾‹                                                      | è¯´æ˜Ž                            |
-| ---- | --------------------------------------------------------- | ------------------------------- |
+| ç±»åˆ« | ç¤ºä¾‹                                                    | è¯´æ˜Ž                                |
+| ------ | --------------------------------------------------------- | ------------------------------------- |
 | æ ¸å¿ƒ | `connect`ã€`health`ã€`status`                             | `connect` å¿…é¡»æ˜¯ç¬¬ä¸€ä¸ª          |
-| æ¶ˆæ¯ | `send`ã€`poll`ã€`agent`ã€`agent.wait`                     | æœ‰å‰¯ä½œç”¨çš„éœ€è¦ `idempotencyKey` |
-| èŠå¤© | `chat.history`ã€`chat.send`ã€`chat.abort`ã€`chat.inject`  | WebChat ä½¿ç”¨è¿™äº›                |
-| ä¼šè¯ | `sessions.list`ã€`sessions.patch`ã€`sessions.delete`      | ä¼šè¯ç®¡ç†                        |
-| èŠ‚ç‚¹ | `node.list`ã€`node.invoke`ã€`node.pair.*`                 | Gateway ç½‘å…³ WS + èŠ‚ç‚¹æ“ä½œ      |
-| äº‹ä»¶ | `tick`ã€`presence`ã€`agent`ã€`chat`ã€`health`ã€`shutdown` | æœåŠ¡å™¨æŽ¨é€                      |
+| æ¶ˆæ¯  | `send`ã€`poll`ã€`agent`ã€`agent.wait`                     | æœ‰å‰¯ä½œç”¨çš„éœ€è¦ `idempotencyKey` |
+| èŠå¤©  | `chat.history`ã€`chat.send`ã€`chat.abort`ã€`chat.inject`  | WebChat ä½¿ç”¨è¿™äº›                  |
+| ä¼šè¯  | `sessions.list`ã€`sessions.patch`ã€`sessions.delete`      | ä¼šè¯ç®¡ç†                            |
+| èŠ‚ç‚¹ | `node.list`ã€`node.invoke`ã€`node.pair.*`                 | Gateway ç½‘å…³ WS + èŠ‚ç‚¹æ“ä½œ       |
+| äº‹ä»¶ | `tick`ã€`presence`ã€`agent`ã€`chat`ã€`health`ã€`shutdown` | æœåŠ¡å™¨æŽ¨é€                         |
 
 æƒå¨åˆ—è¡¨åœ¨ `src/gateway/server.ts`ï¼ˆ`METHODS`ã€`EVENTS`ï¼‰ä¸­ã€‚
 

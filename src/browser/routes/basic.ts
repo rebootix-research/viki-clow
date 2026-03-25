@@ -1,5 +1,5 @@
-import { resolveBrowserExecutableForPlatform } from "../chrome.executables.js";
 import { writeBrowserdManifestForState } from "../browserd.js";
+import { resolveBrowserExecutableForPlatform } from "../chrome.executables.js";
 import { toBrowserErrorResponse } from "../errors.js";
 import { createBrowserProfilesService } from "../profiles-service.js";
 import type { BrowserRouteContext, ProfileContext } from "../server-context.js";

@@ -198,10 +198,14 @@ async function ensureCapability(
 }
 
 function sortRecords(records: CapabilityRecord[]): CapabilityRecord[] {
-  return [...records].sort((left, right) => left.label.localeCompare(right.label));
+  return records.toSorted((left, right) => left.label.localeCompare(right.label));
 }
 
-function buildPlan(objective: string, inferred: CapabilityId[], records: CapabilityRecord[]): CapabilityPlan {
+function buildPlan(
+  objective: string,
+  inferred: CapabilityId[],
+  records: CapabilityRecord[],
+): CapabilityPlan {
   const ready = sortRecords(records.filter((record) => record.status === "ready"));
   const provisioned = sortRecords(records.filter((record) => record.status === "provisioned"));
   const missing = sortRecords(records.filter((record) => record.status === "missing"));

@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 
-export const inboundCtxCapture: { ctx?: any } = {};
+export const inboundCtxCapture: { ctx?: unknown } = {};
 
 export function buildInboundDispatchCaptureMock<T extends Record<string, unknown>>(
   actual: T,

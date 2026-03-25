@@ -8,19 +8,20 @@ import { loadConfig } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
 import { resolveSessionTranscriptsDirForAgent } from "../config/sessions/paths.js";
 import { setVerbose } from "../globals.js";
-import {
-  getMemorySearchManager,
-  MemoryIndexManager,
-  type MemorySearchManagerResult,
-} from "../memory/index.js";
+import { resolveMemoryBackendConfig } from "../memory/backend-config.js";
 import {
   GraphitiBackboneManager,
   readLatestGraphitiBackboneProof,
   summarizeGraphitiBackboneProof,
-  syncGraphitiBackboneFromWorkspace,
 } from "../memory/graphiti-backbone.js";
-import { resolveMemoryBackendConfig } from "../memory/backend-config.js";
+import { getMemorySearchManager, type MemorySearchManagerResult } from "../memory/index.js";
 import { listMemoryFiles, normalizeExtraMemoryPaths } from "../memory/internal.js";
+import {
+  readLatestMemoryPersistenceProof,
+  readLatestMemoryWritebackSummary,
+  summarizeMemoryPersistenceProof,
+  summarizeMemoryWritebackSummary,
+} from "../memory/persistence-proof.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../terminal/links.js";
 import { colorize, isRich, theme } from "../terminal/theme.js";
@@ -30,12 +31,6 @@ import { resolveCommandSecretRefsViaGateway } from "./command-secret-gateway.js"
 import { getMemoryCommandSecretTargetIds } from "./command-secret-targets.js";
 import { formatHelpExamples } from "./help-format.js";
 import { withProgress, withProgressTotals } from "./progress.js";
-import {
-  readLatestMemoryPersistenceProof,
-  readLatestMemoryWritebackSummary,
-  summarizeMemoryPersistenceProof,
-  summarizeMemoryWritebackSummary,
-} from "../memory/persistence-proof.js";
 
 type MemoryCommandOptions = {
   agent?: string;
@@ -585,7 +580,7 @@ export async function runMemoryStatus(opts: MemoryCommandOptions) {
       );
       lines.push(`${label("Lineage")} ${info(proof.lineageId)}`);
       if (proof.syncReason) {
-      lines.push(`${label("Sync reason")} ${muted(proof.syncReason)}`);
+        lines.push(`${label("Sync reason")} ${muted(proof.syncReason)}`);
       }
       lines.push(`${label("Recorded")} ${info(proof.recordedAt)}`);
     }
@@ -639,10 +634,9 @@ export async function runMemoryProof(opts: MemoryCommandOptions) {
       run: async (manager) => {
         const status = manager.status();
         const persistenceProof = await readLatestMemoryPersistenceProof({ agentId });
-        const latestWriteback =
-          status.workspaceDir
-            ? await readLatestMemoryWritebackSummary({ workspaceDir: status.workspaceDir })
-            : null;
+        const latestWriteback = status.workspaceDir
+          ? await readLatestMemoryWritebackSummary({ workspaceDir: status.workspaceDir })
+          : null;
         if (opts.json) {
           defaultRuntime.log(
             JSON.stringify(
@@ -761,7 +755,9 @@ export async function runGraphitiBackboneStatus(opts: MemoryCommandOptions) {
         const lines = [`${heading("Graphiti Backbone")} ${muted(`(${agentId})`)}`];
         lines.push(`${label("Backend")} ${info(status.backend)}`);
         lines.push(`${label("Provider")} ${info(status.provider)}`);
-        lines.push(`${label("Ledger entries")} ${success(String(graphitiProof?.ledgerEntries ?? 0))}`);
+        lines.push(
+          `${label("Ledger entries")} ${success(String(graphitiProof?.ledgerEntries ?? 0))}`,
+        );
         if (graphitiProof) {
           lines.push(`${label("Proof")} ${info(shortenHomePath(graphitiProof.paths.proofPath))}`);
           lines.push(`${label("Ledger")} ${info(shortenHomePath(graphitiProof.paths.ledgerPath))}`);
@@ -775,7 +771,9 @@ export async function runGraphitiBackboneStatus(opts: MemoryCommandOptions) {
           }
           if (graphitiProof.neo4j.enabled) {
             const neo4jState = graphitiProof.neo4j.available ? "ready" : "unavailable";
-            lines.push(`${label("Neo4j")} ${graphitiProof.neo4j.available ? success(neo4jState) : warn(neo4jState)}`);
+            lines.push(
+              `${label("Neo4j")} ${graphitiProof.neo4j.available ? success(neo4jState) : warn(neo4jState)}`,
+            );
             if (graphitiProof.neo4j.reason) {
               lines.push(`${label("Neo4j error")} ${warn(graphitiProof.neo4j.reason)}`);
             }
@@ -790,7 +788,9 @@ export async function runGraphitiBackboneStatus(opts: MemoryCommandOptions) {
   }
 }
 
-export async function runGraphitiBackboneSearch(opts: MemoryCommandOptions & { query?: string; maxResults?: number; minScore?: number }) {
+export async function runGraphitiBackboneSearch(
+  opts: MemoryCommandOptions & { query?: string; maxResults?: number; minScore?: number },
+) {
   setVerbose(Boolean(opts.verbose));
   const { config: cfg, diagnostics } = await loadMemoryCommandConfig("memory graphiti search");
   emitMemorySecretResolveDiagnostics(diagnostics, { json: Boolean(opts.json) });

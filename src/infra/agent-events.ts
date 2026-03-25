@@ -72,7 +72,7 @@ export function emitAgentEvent(event: Omit<AgentEventPayload, "seq" | "ts">) {
   const eventSessionKey =
     typeof event.sessionKey === "string" && event.sessionKey.trim() ? event.sessionKey : undefined;
   const sessionKey = isControlUiVisible ? (eventSessionKey ?? context?.sessionKey) : undefined;
-  const missionId = isControlUiVisible ? event.missionId ?? context?.missionId : undefined;
+  const missionId = isControlUiVisible ? (event.missionId ?? context?.missionId) : undefined;
   const enriched: AgentEventPayload = {
     ...event,
     sessionKey,

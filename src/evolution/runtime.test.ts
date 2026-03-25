@@ -30,7 +30,9 @@ async function withTempState<T>(run: (stateDir: string) => Promise<T>) {
 }
 
 afterEach(async () => {
-  await Promise.all(tempDirs.splice(0, tempDirs.length).map((dir) => fs.rm(dir, { recursive: true, force: true })));
+  await Promise.all(
+    tempDirs.splice(0, tempDirs.length).map((dir) => fs.rm(dir, { recursive: true, force: true })),
+  );
 });
 
 describe("evolution runtime", () => {
@@ -81,8 +83,8 @@ describe("evolution runtime", () => {
         },
       });
       const secret = "nightly-secret";
-      const signature = await import("node:crypto").then(({ createHmac }) =>
-        `sha256=${createHmac("sha256", secret).update(payload).digest("hex")}`,
+      const signature = await import("node:crypto").then(
+        ({ createHmac }) => `sha256=${createHmac("sha256", secret).update(payload).digest("hex")}`,
       );
       const candidate = await ingestGitHubWebhookCandidate({
         envelope: {

@@ -7,9 +7,9 @@ describe("voice bootstrap proof", () => {
     const proof = await collectVoiceBootstrapProof(path.resolve(process.cwd()));
 
     expect(proof.passed).toBe(true);
-    expect(proof.checks.some((check) => check.id === "install-sh-required-voice" && check.passed)).toBe(
-      true,
-    );
+    expect(
+      proof.checks.some((check) => check.id === "install-sh-required-voice" && check.passed),
+    ).toBe(true);
     expect(
       proof.checks.some((check) => check.id === "mac-onboarding-voice-gate" && check.passed),
     ).toBe(true);

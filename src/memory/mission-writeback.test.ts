@@ -3,7 +3,10 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import type { MissionRecord } from "../missions/types.js";
-import { appendMissionMemoryWriteback, resolveMissionMemoryWritebackRelativePath } from "./mission-writeback.js";
+import {
+  appendMissionMemoryWriteback,
+  resolveMissionMemoryWritebackRelativePath,
+} from "./mission-writeback.js";
 
 describe("mission memory writeback", () => {
   it("appends a mission summary into the canonical memory file and stays idempotent", async () => {

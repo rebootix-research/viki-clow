@@ -28,16 +28,15 @@ export function resetMemoryToolMockState(params: Partial<MemoryToolMockState> = 
   state.provider = params.provider ?? "mock";
   state.model = params.model ?? "mock-embed";
   state.searchImpl = params.searchImpl ?? (async () => []);
-  state.readFileImpl = params.readFileImpl ?? (async (readParams) => ({ text: "", path: readParams.relPath }));
+  state.readFileImpl =
+    params.readFileImpl ?? (async (readParams) => ({ text: "", path: readParams.relPath }));
 }
 
 export function setMemoryBackend(backend: string): void {
   state.backend = backend;
 }
 
-export function setMemorySearchImpl(
-  impl: (query: string) => Promise<MemorySearchResult[]>,
-): void {
+export function setMemorySearchImpl(impl: (query: string) => Promise<MemorySearchResult[]>): void {
   state.searchImpl = impl;
 }
 

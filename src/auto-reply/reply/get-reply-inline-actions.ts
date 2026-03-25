@@ -1,7 +1,7 @@
 import { collectTextContentBlocks } from "../../agents/content-blocks.js";
-import { createVikiClowTools } from "../../agents/vikiclow-tools.js";
 import type { SkillCommandSpec } from "../../agents/skills.js";
 import { applyOwnerOnlyToolPolicy } from "../../agents/tool-policy.js";
+import { createVikiClowTools } from "../../agents/vikiclow-tools.js";
 import { getChannelDock } from "../../channels/dock.js";
 import type { VikiClowConfig } from "../../config/config.js";
 import type { SessionEntry } from "../../config/sessions.js";

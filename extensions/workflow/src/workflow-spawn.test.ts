@@ -9,7 +9,10 @@ import {
   snapshotPlatformPathEnv,
 } from "./test-helpers.js";
 
-vi.mock("vikiclow/plugin-sdk/workflow", async () => await import("../../../src/plugin-sdk/workflow.ts"));
+vi.mock(
+  "vikiclow/plugin-sdk/workflow",
+  async () => await import("../../../src/plugin-sdk/workflow.ts"),
+);
 
 let resolveWindowsWorkflowSpawn: typeof import("./workflow-spawn.js").resolveWindowsWorkflowSpawn;
 

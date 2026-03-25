@@ -11,7 +11,7 @@ import {
 
 describe("memory persistence proof", () => {
   it("writes and reloads a durable proof manifest", async () => {
-    await withTempHome(async (home) => {
+    await withTempHome(async () => {
       const record = await recordMemoryPersistenceProof({
         agentId: "main",
         result: "ready",
@@ -28,7 +28,15 @@ describe("memory persistence proof", () => {
           cache: { enabled: true, entries: 1, maxEntries: 100 },
           fts: { enabled: true, available: true },
           vector: { enabled: false },
-          batch: { enabled: false, failures: 0, limit: 2, wait: true, concurrency: 1, pollIntervalMs: 1, timeoutMs: 1 },
+          batch: {
+            enabled: false,
+            failures: 0,
+            limit: 2,
+            wait: true,
+            concurrency: 1,
+            pollIntervalMs: 1,
+            timeoutMs: 1,
+          },
           custom: { searchMode: "search" },
         },
         syncReason: "bootstrap",
@@ -37,7 +45,9 @@ describe("memory persistence proof", () => {
       expect(record.agentId).toBe("main");
       expect(record.result).toBe("ready");
       await expect(fs.readFile(record.proofPath, "utf-8")).resolves.toContain('"result": "ready"');
-      await expect(fs.readFile(record.eventsPath, "utf-8")).resolves.toContain('"syncReason":"bootstrap"');
+      await expect(fs.readFile(record.eventsPath, "utf-8")).resolves.toContain(
+        '"syncReason":"bootstrap"',
+      );
 
       const reloaded = await readLatestMemoryPersistenceProof({ agentId: "main" });
       expect(reloaded?.lineageId).toBe(record.lineageId);
@@ -86,7 +96,11 @@ describe("memory persistence proof", () => {
         const memoryDir = path.join(workspaceDir, "memory");
         await fs.mkdir(memoryDir, { recursive: true });
         const writebackPath = path.join(memoryDir, "2026-03-24.md");
-        await fs.writeFile(writebackPath, "## Mission Writeback\n- Mission: mission-123\n", "utf-8");
+        await fs.writeFile(
+          writebackPath,
+          "## Mission Writeback\n- Mission: mission-123\n",
+          "utf-8",
+        );
 
         const summary = await readLatestMemoryWritebackSummary({ workspaceDir });
         expect(summary?.relativePath).toBe("memory/2026-03-24.md");

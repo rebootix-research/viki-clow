@@ -1,13 +1,7 @@
 ---
 name: vikiclow-skills
 description: Use the VikiClow Skills Registry CLI to search, install, update, and publish agent skills. Use when you need to fetch new skills on the fly, sync installed skills to latest or a specific version, or publish new/updated skill folders with the npm-installed VikiClow skills CLI.
-metadata:
-  {
-    "vikiclow":
-      {
-        "requires": { "bins": ["vikiclow-skills"] },
-      },
-  }
+metadata: { "vikiclow": { "requires": { "bins": ["vikiclow-skills"] } } }
 ---
 
 # VikiClow Skills Registry CLI

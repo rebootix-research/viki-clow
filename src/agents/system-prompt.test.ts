@@ -120,7 +120,9 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).toContain("## Execution Mindset");
     expect(prompt).toContain("Default to action.");
     expect(prompt).toContain("When the first approach fails, try another safe path");
-    expect(prompt).toContain("Only call something blocked after you have exhausted relevant safe alternatives.");
+    expect(prompt).toContain(
+      "Only call something blocked after you have exhausted relevant safe alternatives.",
+    );
     expect(prompt).toContain("## Safety");
     expect(prompt).toContain(
       "For long waits, avoid rapid poll loops: use exec with enough yieldMs or process(action=poll, timeout=<ms>).",

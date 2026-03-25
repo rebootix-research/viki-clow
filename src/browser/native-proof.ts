@@ -1,12 +1,15 @@
 import { execFile } from "node:child_process";
-import fs from "node:fs/promises";
 import fsSync from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import { resolveStateDir } from "../config/paths.js";
 import { readBrowserdManifest } from "./browserd.js";
-import { resolveNativeVikiBrowserLauncherPaths, resolveNativeVikiBrowserRoot } from "./native-launcher.js";
+import {
+  resolveNativeVikiBrowserLauncherPaths,
+  resolveNativeVikiBrowserRoot,
+} from "./native-launcher.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -244,7 +247,9 @@ export async function collectNativeVikiBrowserProof(params?: {
   }
   if (!launcherSmoke.passed) {
     notes.push(
-      launcherSmoke.error ? `launcher smoke failed: ${launcherSmoke.error}` : "launcher smoke failed",
+      launcherSmoke.error
+        ? `launcher smoke failed: ${launcherSmoke.error}`
+        : "launcher smoke failed",
     );
   }
   return {

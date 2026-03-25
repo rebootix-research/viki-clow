@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "./test-helpers/fast-core-tools.js";
+import { resetSubagentRegistryForTests } from "./subagent-registry.js";
 import {
   findGatewayRequest,
   getCallGatewayMock,
@@ -7,7 +8,6 @@ import {
   getSessionsSpawnTool,
   setSessionsSpawnConfigOverride,
 } from "./vikiclow-tools.subagents.sessions-spawn.test-harness.js";
-import { resetSubagentRegistryForTests } from "./subagent-registry.js";
 
 const hookRunnerMocks = vi.hoisted(() => ({
   hasSubagentEndedHook: true,

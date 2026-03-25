@@ -82,11 +82,16 @@ type RecordProofParams = ProofParams & {
 };
 
 function sanitizeAgentId(input: string): string {
-  const cleaned = input.trim().toLowerCase().replace(/[^a-z0-9._-]+/g, "-");
+  const cleaned = input
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-");
   return cleaned.replace(/^-+|-+$/g, "") || "default";
 }
 
-export function resolveMemoryPersistenceProofPaths(params: ProofParams): MemoryPersistenceProofPaths {
+export function resolveMemoryPersistenceProofPaths(
+  params: ProofParams,
+): MemoryPersistenceProofPaths {
   const stateDir = params.stateDir ?? resolveStateDir(params.env ?? process.env);
   const baseDir = path.join(stateDir, "memory", "proof");
   const agentDir = path.join(baseDir, sanitizeAgentId(params.agentId));
@@ -271,7 +276,7 @@ export async function readLatestMemoryWritebackSummary(params: {
   );
   const sorted = candidates
     .filter((value): value is MemoryWritebackSummary & { mtimeMs: number } => Boolean(value))
-    .sort((left, right) => {
+    .toSorted((left, right) => {
       if (right.mtimeMs !== left.mtimeMs) {
         return right.mtimeMs - left.mtimeMs;
       }

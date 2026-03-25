@@ -20,9 +20,7 @@ Enable it in an agent allowlist:
       {
         "id": "main",
         "tools": {
-          "allow": [
-            "workflow"
-          ]
+          "allow": ["workflow"]
         }
       }
     ]

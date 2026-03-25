@@ -48,7 +48,6 @@ RUN corepack enable
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-COPY ui/package.json ./ui/package.json
 COPY patches ./patches
 
 COPY --from=ext-deps /out/ ./extensions/
@@ -81,7 +80,7 @@ RUN pnpm canvas:a2ui:bundle || \
 RUN pnpm build:docker
 # Force pnpm for UI build (Bun may fail on ARM/Synology architectures)
 ENV VIKICLOW_PREFER_PNPM=1
-RUN pnpm ui:build
+RUN CI=true pnpm ui:build
 
 # Prune dev dependencies and strip build-only metadata before copying
 # runtime assets into the final image.

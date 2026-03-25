@@ -2,15 +2,15 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
+import { addSubagentRunForTests, resetSubagentRegistryForTests } from "./subagent-registry.js";
+import { createPerSenderSessionConfig } from "./test-helpers/session-config.js";
+import "./test-helpers/fast-core-tools.js";
+import { createSubagentsTool } from "./tools/subagents-tool.js";
 import {
   callGatewayMock,
   resetSubagentsConfigOverride,
   setSubagentsConfigOverride,
 } from "./vikiclow-tools.subagents.test-harness.js";
-import { addSubagentRunForTests, resetSubagentRegistryForTests } from "./subagent-registry.js";
-import "./test-helpers/fast-core-tools.js";
-import { createPerSenderSessionConfig } from "./test-helpers/session-config.js";
-import { createSubagentsTool } from "./tools/subagents-tool.js";
 
 function writeStore(storePath: string, store: Record<string, unknown>) {
   fs.mkdirSync(path.dirname(storePath), { recursive: true });

@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { emitAgentEvent } from "../infra/agent-events.js";
 import "./test-helpers/fast-core-tools.js";
+import { resetSubagentRegistryForTests } from "./subagent-registry.js";
 import {
   getCallGatewayMock,
   getSessionsSpawnTool,
@@ -8,7 +9,6 @@ import {
   setupSessionsSpawnGatewayMock,
   setSessionsSpawnConfigOverride,
 } from "./vikiclow-tools.subagents.sessions-spawn.test-harness.js";
-import { resetSubagentRegistryForTests } from "./subagent-registry.js";
 
 const fastModeEnv = vi.hoisted(() => {
   const previous = process.env.VIKICLOW_TEST_FAST;

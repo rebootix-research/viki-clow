@@ -1,6 +1,12 @@
 import { buildMissionBackbone } from "./backbone.js";
 export { buildMissionBackbone } from "./backbone.js";
-import type { MissionDomain, MissionPlan, MissionRecord, MissionSubtask, MissionSwarm } from "./types.js";
+import type {
+  MissionDomain,
+  MissionPlan,
+  MissionRecord,
+  MissionSubtask,
+  MissionSwarm,
+} from "./types.js";
 
 const DOMAIN_LABELS: Record<MissionDomain, string> = {
   browser_web: "Browser and Web",
@@ -28,7 +34,14 @@ const DOMAIN_KEYWORDS: Array<{ domain: MissionDomain; patterns: RegExp[] }> = [
   },
   {
     domain: "coding_repo",
-    patterns: [/\bcode\b/i, /\brepo\b/i, /\bbuild\b/i, /\btest\b/i, /\brefactor\b/i, /\btypescript\b/i],
+    patterns: [
+      /\bcode\b/i,
+      /\brepo\b/i,
+      /\bbuild\b/i,
+      /\btest\b/i,
+      /\brefactor\b/i,
+      /\btypescript\b/i,
+    ],
   },
   {
     domain: "research",
@@ -48,7 +61,14 @@ const DOMAIN_KEYWORDS: Array<{ domain: MissionDomain; patterns: RegExp[] }> = [
   },
   {
     domain: "local_computer",
-    patterns: [/\bmouse\b/i, /\bcursor\b/i, /\bdesktop\b/i, /\bwindow\b/i, /\bkeyboard\b/i, /\bapp\b/i],
+    patterns: [
+      /\bmouse\b/i,
+      /\bcursor\b/i,
+      /\bdesktop\b/i,
+      /\bwindow\b/i,
+      /\bkeyboard\b/i,
+      /\bapp\b/i,
+    ],
   },
   {
     domain: "communications_outreach",

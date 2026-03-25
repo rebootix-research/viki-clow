@@ -9,9 +9,7 @@ import {
   postJson,
   startServerAndBase,
 } from "./server.agent-contract.test-harness.js";
-import {
-  getPwMocks,
-} from "./server.control-server.test-harness.js";
+import { getPwMocks } from "./server.control-server.test-harness.js";
 
 const cdpUrl = expect.stringMatching(/^http:\/\/127\.0\.0\.1:\d+$/);
 const pwMocks = getPwMocks();

@@ -4,10 +4,7 @@ import path from "node:path";
 
 type TempHomeOptions = {
   prefix?: string;
-  env?: Record<
-    string,
-    string | undefined | ((home: string) => string | undefined)
-  >;
+  env?: Record<string, string | undefined | ((home: string) => string | undefined)>;
 };
 
 export async function withTempHome<T>(
@@ -23,20 +20,12 @@ export async function withTempHome<T>(
   second?: TempHomeOptions | ((home: string) => Promise<T> | T),
 ): Promise<T> {
   const run =
-    typeof first === "function"
-      ? first
-      : typeof second === "function"
-        ? second
-        : undefined;
+    typeof first === "function" ? first : typeof second === "function" ? second : undefined;
   if (!run) {
     throw new Error("withTempHome requires a callback");
   }
   const options =
-    typeof first === "string"
-      ? {}
-      : typeof second === "function"
-        ? {}
-        : (second ?? {});
+    typeof first === "string" ? {} : typeof second === "function" ? {} : (second ?? {});
   const prefix =
     typeof first === "string"
       ? first.trim() || "vikiclow-test-home-"

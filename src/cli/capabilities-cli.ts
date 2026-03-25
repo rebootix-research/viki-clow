@@ -1,13 +1,13 @@
 import type { Command } from "commander";
-import { loadConfig } from "../config/config.js";
 import { resolveDefaultAgentId, resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
-import { defaultRuntime } from "../runtime.js";
 import {
   bundleSupportedCapabilities,
   ensureBaseCapabilityPack,
   ensureCapabilitiesForObjective,
   loadCapabilityManifest,
 } from "../capabilities/index.js";
+import { loadConfig } from "../config/config.js";
+import { defaultRuntime } from "../runtime.js";
 import { runCommandWithRuntime } from "./cli-utils.js";
 
 function formatPlan(plan: Awaited<ReturnType<typeof ensureCapabilitiesForObjective>>): string[] {
@@ -54,7 +54,7 @@ export function registerCapabilitiesCli(program: Command) {
     .action(async (opts) => {
       await runCommandWithRuntime(defaultRuntime, async () => {
         const manifest = await loadCapabilityManifest();
-        if (Boolean(opts.json)) {
+        if (opts.json) {
           defaultRuntime.log(JSON.stringify(manifest, null, 2));
           return;
         }
@@ -72,7 +72,9 @@ export function registerCapabilitiesCli(program: Command) {
 
   capabilities
     .command("bundle")
-    .description("Prebundle shipped skills, plugins, voice/runtime surfaces, and capability inventory")
+    .description(
+      "Prebundle shipped skills, plugins, voice/runtime surfaces, and capability inventory",
+    )
     .option("--workspace <path>", "Workspace directory")
     .option("--no-auto-install", "Do not auto-install bundled skill dependencies")
     .option("--json", "Output JSON", false)
@@ -84,7 +86,7 @@ export function registerCapabilitiesCli(program: Command) {
           workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
           autoInstall: opts.autoInstall !== false,
         });
-        if (Boolean(opts.json)) {
+        if (opts.json) {
           defaultRuntime.log(JSON.stringify(result.inventory, null, 2));
           return;
         }
@@ -107,7 +109,7 @@ export function registerCapabilitiesCli(program: Command) {
           workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
           autoInstall: opts.autoInstall !== false,
         });
-        if (Boolean(opts.json)) {
+        if (opts.json) {
           defaultRuntime.log(JSON.stringify(plan, null, 2));
           return;
         }
@@ -133,7 +135,7 @@ export function registerCapabilitiesCli(program: Command) {
           workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
           autoInstall: opts.autoInstall !== false,
         });
-        if (Boolean(opts.json)) {
+        if (opts.json) {
           defaultRuntime.log(JSON.stringify(plan, null, 2));
           return;
         }

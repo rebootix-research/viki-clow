@@ -3,7 +3,6 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { resolveStateDir } from "../../config/paths.js";
-import { resolveVikiClowPackageRoot } from "../../infra/vikiclow-root.js";
 import { readPackageName, readPackageVersion } from "../../infra/package-json.js";
 import { normalizePackageTagInput } from "../../infra/package-tag.js";
 import { trimLogTail } from "../../infra/restart-sentinel.js";
@@ -16,6 +15,7 @@ import {
   type GlobalInstallManager,
 } from "../../infra/update-global.js";
 import type { UpdateStepProgress, UpdateStepResult } from "../../infra/update-runner.js";
+import { resolveVikiClowPackageRoot } from "../../infra/vikiclow-root.js";
 import { runCommandWithTimeout } from "../../process/exec.js";
 import { defaultRuntime } from "../../runtime.js";
 import { theme } from "../../terminal/theme.js";

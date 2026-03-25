@@ -38,8 +38,8 @@ import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Button
@@ -350,7 +350,7 @@ private fun VoiceWakeStatusBanner(card: VoiceWakeStatusCard) {
     when (card.iconKey) {
       "mic" -> Icons.Default.Mic
       "mic-off" -> Icons.Default.MicOff
-      "send" -> Icons.Default.Send
+      "send" -> Icons.AutoMirrored.Filled.Send
       "schedule" -> Icons.Default.Schedule
       "warning" -> Icons.Default.Warning
       "success" -> Icons.Default.CheckCircle

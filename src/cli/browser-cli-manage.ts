@@ -109,7 +109,9 @@ export function registerBrowserManageCommands(
 ) {
   browser
     .command("package-native")
-    .description("Write the packaged native Viki Browser launcher files, and a Windows executable when supported")
+    .description(
+      "Write the packaged native Viki Browser launcher files, and a Windows executable when supported",
+    )
     .action(async (_opts, cmd) => {
       const parent = parentOpts(cmd);
       await runBrowserCommand(async () => {
@@ -154,7 +156,9 @@ export function registerBrowserManageCommands(
         if (printJsonResult(parent, { ...proof, jsonPath })) {
           return;
         }
-        const firstExisting = proof.candidates.find((candidate) => candidate.exists)?.executablePath;
+        const firstExisting = proof.candidates.find(
+          (candidate) => candidate.exists,
+        )?.executablePath;
         defaultRuntime.log(
           [
             `passed: ${proof.passed}`,

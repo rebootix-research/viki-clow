@@ -2,19 +2,25 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { installSkill } from "../agents/skills-install.js";
-import { hasBinary } from "../agents/skills.js";
 import { buildWorkspaceSkillStatus, type SkillStatusEntry } from "../agents/skills-status.js";
+import { hasBinary } from "../agents/skills.js";
+import { writeNativeVikiBrowserProof } from "../browser/native-proof.js";
 import type { VikiClowConfig } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
-import { writeNativeVikiBrowserProof } from "../browser/native-proof.js";
 import { resolveMemoryBackendConfig } from "../memory/backend-config.js";
 import { writeGraphitiBackboneProof } from "../memory/graphiti-backbone.js";
 import { enablePluginInConfig } from "../plugins/enable.js";
-import { loadPluginManifestRegistry, type PluginManifestRecord } from "../plugins/manifest-registry.js";
+import {
+  loadPluginManifestRegistry,
+  type PluginManifestRecord,
+} from "../plugins/manifest-registry.js";
 import { applyExclusiveSlotSelection } from "../plugins/slots.js";
 import { resolveConfigDir } from "../utils.js";
 import { writeVoiceBootstrapProof } from "../voice/bootstrap-proof.js";
-import { ensureVoiceRuntimeBootstrap, type VoiceRuntimeBootstrapStatus } from "../voice/runtime-bootstrap.js";
+import {
+  ensureVoiceRuntimeBootstrap,
+  type VoiceRuntimeBootstrapStatus,
+} from "../voice/runtime-bootstrap.js";
 import { ensureBaseCapabilityPack } from "./runtime.js";
 import type { CapabilityPlan } from "./types.js";
 
@@ -173,7 +179,7 @@ function upsertSkillEnv(
         [skillKey]: {
           ...existing,
           env: {
-            ...(existing.env ?? {}),
+            ...existing.env,
             ...envPatch,
           },
         },
@@ -273,8 +279,7 @@ async function collectBundledSkillInventory(params: {
       continue;
     }
 
-    const shouldAutoInstall =
-      params.autoInstall || MANDATORY_VOICE_BUNDLED_SKILLS.has(skill.name);
+    const shouldAutoInstall = params.autoInstall || MANDATORY_VOICE_BUNDLED_SKILLS.has(skill.name);
     if (!shouldAutoInstall || !supportsAutomaticInstall(skill)) {
       entries.push({
         name: skill.name,
@@ -493,7 +498,9 @@ export async function bundleSupportedCapabilities(params: {
     "",
     `- Ready: \`${inventory.voice.ready}\``,
     `- Runtime manifest: \`${inventory.voice.manifestPath}\``,
-    ...(inventory.voice.sourceProofPath ? [`- Source proof: \`${inventory.voice.sourceProofPath}\``] : []),
+    ...(inventory.voice.sourceProofPath
+      ? [`- Source proof: \`${inventory.voice.sourceProofPath}\``]
+      : []),
     "",
     "## Browser",
     "",

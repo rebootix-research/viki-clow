@@ -12,7 +12,9 @@ const tempRoots: string[] = [];
 
 afterEach(async () => {
   await Promise.all(
-    tempRoots.splice(0, tempRoots.length).map((dir) => fs.rm(dir, { recursive: true, force: true })),
+    tempRoots
+      .splice(0, tempRoots.length)
+      .map((dir) => fs.rm(dir, { recursive: true, force: true })),
   );
 });
 
@@ -32,12 +34,16 @@ async function seedLauncherRuntime(rootDir: string) {
   );
   await fs.writeFile(
     path.join(browserDir, "browserd.js"),
-    ['export async function readBrowserdManifest() { return null; }', ""].join("\n"),
+    ["export async function readBrowserdManifest() { return null; }", ""].join("\n"),
     "utf8",
   );
 }
 
-function buildState(rootDir: string, exePath: string, userDataDir: string | null): BrowserServerState {
+function buildState(
+  rootDir: string,
+  exePath: string,
+  userDataDir: string | null,
+): BrowserServerState {
   return {
     server: null,
     port: 18791,
@@ -208,7 +214,11 @@ describe("native Viki Browser proof", () => {
           },
         ],
       });
-      await fs.rm(manifest.profiles[0]!.sessionVaultDir, { recursive: true, force: true });
+      const profile = manifest.profiles[0];
+      if (!profile) {
+        throw new Error("Expected browserd manifest profile");
+      }
+      await fs.rm(profile.sessionVaultDir, { recursive: true, force: true });
 
       const { proof } = await writeNativeVikiBrowserProof({
         rootDir,
@@ -220,7 +230,7 @@ describe("native Viki Browser proof", () => {
 
       expect(proof.passed).toBe(true);
       expect(proof.sessionVaultReady).toBe(true);
-      await expect(fs.stat(manifest.profiles[0]!.sessionVaultDir)).resolves.toBeDefined();
+      await expect(fs.stat(profile.sessionVaultDir)).resolves.toBeDefined();
     });
   });
 });

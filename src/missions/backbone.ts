@@ -63,11 +63,19 @@ function resolveNodeStatus(
   if (record.status === "completed") {
     return "completed";
   }
-  if (record.status === "blocked" || record.status === "failed" || record.status === "needs_approval") {
+  if (
+    record.status === "blocked" ||
+    record.status === "failed" ||
+    record.status === "needs_approval"
+  ) {
     if (nodeRole === "recovery" || nodeRole === "verifier") {
       return record.status;
     }
-    if (nodeRole === "swarm" && domain && record.subtasks.some((entry) => entry.domain === domain && entry.status === "running")) {
+    if (
+      nodeRole === "swarm" &&
+      domain &&
+      record.subtasks.some((entry) => entry.domain === domain && entry.status === "running")
+    ) {
       return record.status;
     }
     return "planned";
@@ -75,7 +83,11 @@ function resolveNodeStatus(
   if (nodeRole === "sovereign") {
     return "running";
   }
-  if (nodeRole === "swarm" && domain && record.subtasks.some((entry) => entry.domain === domain && entry.status === "running")) {
+  if (
+    nodeRole === "swarm" &&
+    domain &&
+    record.subtasks.some((entry) => entry.domain === domain && entry.status === "running")
+  ) {
     return "running";
   }
   return "planned";
@@ -185,7 +197,7 @@ export function buildMissionLangGraphBoundary(record: MissionRecord): MissionLan
   };
 }
 
-export function buildMissionBrowserBoundary(record: MissionRecord): MissionBrowserBoundary {
+export function buildMissionBrowserBoundary(_record: MissionRecord): MissionBrowserBoundary {
   return {
     adapter: "browserd",
     backend: "shadow",

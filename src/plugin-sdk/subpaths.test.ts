@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import * as compatSdk from "vikiclow/plugin-sdk/compat";
 import * as discordSdk from "vikiclow/plugin-sdk/discord";
 import * as imessageSdk from "vikiclow/plugin-sdk/imessage";
@@ -7,7 +8,6 @@ import * as signalSdk from "vikiclow/plugin-sdk/signal";
 import * as slackSdk from "vikiclow/plugin-sdk/slack";
 import * as telegramSdk from "vikiclow/plugin-sdk/telegram";
 import * as whatsappSdk from "vikiclow/plugin-sdk/whatsapp";
-import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
 const bundledExtensionSubpathLoaders = [
@@ -114,7 +114,10 @@ describe("plugin-sdk subpath exports", () => {
   it("publishes the workflow alias subpath for Node consumers", () => {
     const result = spawnSync(
       process.execPath,
-      ["-e", "import('vikiclow/plugin-sdk/workflow').then(()=>process.exit(0)).catch((err)=>{console.error(err);process.exit(1);})"],
+      [
+        "-e",
+        "import('vikiclow/plugin-sdk/workflow').then(()=>process.exit(0)).catch((err)=>{console.error(err);process.exit(1);})",
+      ],
       {
         cwd: process.cwd(),
         encoding: "utf8",
@@ -126,7 +129,10 @@ describe("plugin-sdk subpath exports", () => {
   it("publishes the prose alias subpath for Node consumers", () => {
     const result = spawnSync(
       process.execPath,
-      ["-e", "import('vikiclow/plugin-sdk/prose').then(()=>process.exit(0)).catch((err)=>{console.error(err);process.exit(1);})"],
+      [
+        "-e",
+        "import('vikiclow/plugin-sdk/prose').then(()=>process.exit(0)).catch((err)=>{console.error(err);process.exit(1);})",
+      ],
       {
         cwd: process.cwd(),
         encoding: "utf8",

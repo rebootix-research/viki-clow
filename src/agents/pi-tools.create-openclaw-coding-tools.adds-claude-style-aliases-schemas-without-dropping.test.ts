@@ -5,12 +5,12 @@ import type { AgentTool, AgentToolResult } from "@mariozechner/pi-agent-core";
 import { Type } from "@sinclair/typebox";
 import { describe, expect, it, vi } from "vitest";
 import "./test-helpers/fast-coding-tools.js";
-import { createVikiClowTools } from "./vikiclow-tools.js";
 import { findUnsupportedSchemaKeywords } from "./pi-embedded-runner/google.js";
 import { __testing, createVikiClowCodingTools } from "./pi-tools.js";
 import { createVikiClowReadTool, createSandboxedReadTool } from "./pi-tools.read.js";
 import { createHostSandboxFsBridge } from "./test-helpers/host-sandbox-fs-bridge.js";
 import { createBrowserTool } from "./tools/browser-tool.js";
+import { createVikiClowTools } from "./vikiclow-tools.js";
 
 const defaultTools = createVikiClowCodingTools();
 

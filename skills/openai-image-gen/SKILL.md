@@ -90,4 +90,3 @@ Different models support different parameter values. The script automatically se
 - `*.png`, `*.jpeg`, or `*.webp` images (output format depends on model + `--output-format`)
 - `prompts.json` (prompt â†’ file mapping)
 - `index.html` (thumbnail gallery)
-

@@ -1,12 +1,15 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { resolveDefaultAgentId } from "../agents/agent-scope.js";
+import { readBrowserdManifest } from "../browser/browserd.js";
+import { writeNativeVikiBrowserProof } from "../browser/native-proof.js";
 import { loadConfig } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
-import { writeNativeVikiBrowserProof } from "../browser/native-proof.js";
-import { readBrowserdManifest } from "../browser/browserd.js";
-import { resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { resolveMemoryBackendConfig } from "../memory/backend-config.js";
-import { readLatestGraphitiBackboneProof, writeGraphitiBackboneProof } from "../memory/graphiti-backbone.js";
+import {
+  readLatestGraphitiBackboneProof,
+  writeGraphitiBackboneProof,
+} from "../memory/graphiti-backbone.js";
 import { buildMissionBackbone } from "./backbone.js";
 import type { MissionRecord, MissionRuntimeBackbone, MissionStatus } from "./types.js";
 
@@ -127,7 +130,9 @@ export function resolveMissionBackbonePaths(
   };
 }
 
-async function probeTemporalConnection(address: string): Promise<{ connected: boolean; error?: string }> {
+async function probeTemporalConnection(
+  address: string,
+): Promise<{ connected: boolean; error?: string }> {
   try {
     const mod = await loadTemporalClient();
     if (!mod) {
@@ -153,14 +158,15 @@ async function probeTemporalConnection(address: string): Promise<{ connected: bo
 
 async function loadTemporalClient(): Promise<TemporalClientModuleLike | null> {
   try {
-    const loader = new Function("return import('@temporalio/client');") as () => Promise<unknown>;
-    return (await loader()) as TemporalClientModuleLike;
+    return (await import("@temporalio/client")) as TemporalClientModuleLike;
   } catch {
     return null;
   }
 }
 
-async function probeLangGraphEndpoint(endpoint: string): Promise<{ connected: boolean; error?: string }> {
+async function probeLangGraphEndpoint(
+  endpoint: string,
+): Promise<{ connected: boolean; error?: string }> {
   const startedAt = Date.now();
   let lastError: string | undefined;
   while (Date.now() - startedAt < 30_000) {
@@ -197,7 +203,9 @@ async function materializeTemporalBoundary(
   const address = trimEnv(env.VIKICLOW_TEMPORAL_ADDRESS);
   const configured = Boolean(address);
   const lastSyncAt = Date.now();
-  const connection = address ? await probeTemporalConnection(address) : { connected: false as const };
+  const connection = address
+    ? await probeTemporalConnection(address)
+    : { connected: false as const };
   const materialized: TemporalMaterialization = {
     backend: connection.connected ? "temporal" : "shadow",
     configured,
@@ -231,7 +239,9 @@ async function materializeLangGraphBoundary(
   const endpoint = trimEnv(env.VIKICLOW_LANGGRAPH_ENDPOINT);
   const configured = Boolean(endpoint);
   const lastSyncAt = Date.now();
-  const connection = endpoint ? await probeLangGraphEndpoint(endpoint) : { connected: false as const };
+  const connection = endpoint
+    ? await probeLangGraphEndpoint(endpoint)
+    : { connected: false as const };
   const checkpointPayload = {
     missionId: record.id,
     runId: record.runId,
@@ -284,7 +294,9 @@ async function materializeBrowserBoundary(
       evidenceReady: proof.evidenceReady,
       nativeReady: proof.passed,
       nativeProofPath: jsonPath,
-      candidates: proof.candidates.filter((candidate) => candidate.exists).map((candidate) => candidate.executablePath),
+      candidates: proof.candidates
+        .filter((candidate) => candidate.exists)
+        .map((candidate) => candidate.executablePath),
       configuredExecutable: proof.configuredExecutable,
       descriptorPath: manifest?.manifestPath,
       lastSyncAt,

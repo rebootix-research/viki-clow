@@ -38,11 +38,7 @@ function isEnabled(cfg: VikiClowConfig, pluginId: string): boolean {
   return cfg.plugins?.entries?.[pluginId]?.enabled !== false;
 }
 
-function readSkillEnv(
-  cfg: VikiClowConfig,
-  skillKey: string,
-  envName: string,
-): string | undefined {
+function readSkillEnv(cfg: VikiClowConfig, skillKey: string, envName: string): string | undefined {
   const value = cfg.skills?.entries?.[skillKey]?.env?.[envName];
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
@@ -63,16 +59,8 @@ export async function ensureVoiceRuntimeBootstrap(params: {
   };
   await Promise.all(Object.values(dirs).map((dir) => fs.mkdir(dir, { recursive: true })));
 
-  const sherpaRuntimeDir = readSkillEnv(
-    params.cfg,
-    "sherpa-onnx-tts",
-    "SHERPA_ONNX_RUNTIME_DIR",
-  );
-  const sherpaModelDir = readSkillEnv(
-    params.cfg,
-    "sherpa-onnx-tts",
-    "SHERPA_ONNX_MODEL_DIR",
-  );
+  const sherpaRuntimeDir = readSkillEnv(params.cfg, "sherpa-onnx-tts", "SHERPA_ONNX_RUNTIME_DIR");
+  const sherpaModelDir = readSkillEnv(params.cfg, "sherpa-onnx-tts", "SHERPA_ONNX_MODEL_DIR");
   const whisperConfigured =
     Boolean(env.WHISPER_MODEL) ||
     Boolean(readSkillEnv(params.cfg, "openai-whisper", "WHISPER_MODEL"));

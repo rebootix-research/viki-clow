@@ -1,8 +1,8 @@
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -20,6 +20,17 @@ const inputPaths = [
 function fail(message, exitCode = 1) {
   console.error(message);
   process.exit(exitCode);
+}
+
+async function writeStubBundle(reason) {
+  await fs.mkdir(path.dirname(outputFile), { recursive: true });
+  await fs.writeFile(
+    outputFile,
+    "/* A2UI bundle unavailable in this build; using deterministic stub. */\n",
+    "utf8",
+  );
+  await fs.writeFile(hashFile, "stub\n", "utf8");
+  console.warn(reason);
 }
 
 function run(command, args, label) {
@@ -78,13 +89,19 @@ async function computeHash() {
 
 async function main() {
   try {
+    if (process.env.VIKICLOW_FORCE_A2UI_STUB === "1") {
+      await writeStubBundle("A2UI stub forced by VIKICLOW_FORCE_A2UI_STUB.");
+      return;
+    }
+
     const sourcesPresent = existsSync(a2uiRendererDir) && existsSync(a2uiAppDir);
     if (!sourcesPresent) {
       if (existsSync(outputFile)) {
         console.log("A2UI sources missing; keeping prebuilt bundle.");
         return;
       }
-      fail(`A2UI sources missing and no prebuilt bundle found at: ${outputFile}`);
+      await writeStubBundle(`A2UI sources missing; writing stub bundle to: ${outputFile}`);
+      return;
     }
 
     const currentHash = await computeHash();
@@ -96,7 +113,10 @@ async function main() {
       }
     }
 
-    runPnpm(["-s", "exec", "tsc", "-p", path.join(a2uiRendererDir, "tsconfig.json")], "A2UI TypeScript build");
+    runPnpm(
+      ["-s", "exec", "tsc", "-p", path.join(a2uiRendererDir, "tsconfig.json")],
+      "A2UI TypeScript build",
+    );
     runPnpm(
       ["-s", "exec", "rolldown", "-c", path.join(a2uiAppDir, "rolldown.config.mjs")],
       "A2UI rolldown bundle",

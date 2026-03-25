@@ -86,11 +86,12 @@ const textBasenames = new Set([
   "makefile",
 ]);
 
-const LEGACY_OPENCLAW = `Open${"Claw"}`;
-const LEGACY_OPEN_CLAW = `Open ${"Claw"}`;
-const LEGACY_OPENCLOW = `Open${"Clow"}`;
-const LEGACY_OPEN_CLOW = `Open ${"Clow"}`;
-const LEGACY_CLAWHUB = `Claw${"Hub"}`;
+const buildLegacyToken = (...parts) => parts.join("");
+const LEGACY_OPENCLAW = buildLegacyToken("Open", "Claw");
+const LEGACY_OPEN_CLAW = buildLegacyToken("Open ", "Claw");
+const LEGACY_OPENCLOW = buildLegacyToken("Open", "Clow");
+const LEGACY_OPEN_CLOW = buildLegacyToken("Open ", "Clow");
+const LEGACY_CLAWHUB = buildLegacyToken("Claw", "Hub");
 
 const contentReplacements = [
   [new RegExp(LEGACY_OPEN_CLAW, "g"), "VikiClow"],
@@ -114,7 +115,9 @@ const renameReplacements = [
 function isTextFile(filePath) {
   const base = path.basename(filePath);
   const ext = path.extname(filePath).toLowerCase();
-  if (textExtensions.has(ext)) return true;
+  if (textExtensions.has(ext)) {
+    return true;
+  }
   return textBasenames.has(base.toLowerCase());
 }
 
@@ -123,7 +126,9 @@ async function walk(dir, files = [], dirs = []) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (skippedDirs.has(entry.name)) continue;
+      if (skippedDirs.has(entry.name)) {
+        continue;
+      }
       dirs.push(fullPath);
       await walk(fullPath, files, dirs);
       continue;
@@ -152,7 +157,9 @@ function applyRenameReplacements(input) {
 async function rewriteTextFiles(files) {
   let changed = 0;
   for (const file of files) {
-    if (!isTextFile(file)) continue;
+    if (!isTextFile(file)) {
+      continue;
+    }
     const original = await fs.readFile(file, "utf8");
     const next = applyContentReplacements(original);
     if (next !== original) {
@@ -165,12 +172,14 @@ async function rewriteTextFiles(files) {
 
 async function renamePaths(paths) {
   let renamed = 0;
-  const ordered = [...paths].sort((a, b) => b.length - a.length);
+  const ordered = [...paths].toSorted((a, b) => b.length - a.length);
   for (const oldPath of ordered) {
     const parent = path.dirname(oldPath);
     const currentName = path.basename(oldPath);
     const nextName = applyRenameReplacements(currentName);
-    if (nextName === currentName) continue;
+    if (nextName === currentName) {
+      continue;
+    }
     const nextPath = path.join(parent, nextName);
     try {
       await fs.access(oldPath);

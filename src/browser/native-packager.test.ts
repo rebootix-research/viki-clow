@@ -11,7 +11,9 @@ const tempRoots: string[] = [];
 
 afterEach(async () => {
   await Promise.all(
-    tempRoots.splice(0, tempRoots.length).map((dir) => fs.rm(dir, { recursive: true, force: true })),
+    tempRoots
+      .splice(0, tempRoots.length)
+      .map((dir) => fs.rm(dir, { recursive: true, force: true })),
   );
 });
 

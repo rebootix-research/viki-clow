@@ -1,5 +1,4 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { createVikiClowTools } from "../agents/vikiclow-tools.js";
 import {
   resolveEffectiveToolPolicy,
   resolveGroupToolPolicy,
@@ -15,6 +14,7 @@ import {
   resolveToolProfilePolicy,
 } from "../agents/tool-policy.js";
 import { ToolInputError } from "../agents/tools/common.js";
+import { createVikiClowTools } from "../agents/vikiclow-tools.js";
 import { loadConfig } from "../config/config.js";
 import { resolveMainSessionKey } from "../config/sessions.js";
 import { logWarn } from "../logger.js";

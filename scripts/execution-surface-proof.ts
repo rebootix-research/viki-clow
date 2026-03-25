@@ -15,6 +15,7 @@ console.log(`execution-surface-proof: wrote ${jsonPath}`);
 console.log(`execution-surface-proof: wrote ${markdownPath}`);
 
 if (!proof.passed) {
-  const details = proof.notes.length > 0 ? proof.notes.join("; ") : "execution surface proof failed";
+  const details =
+    proof.notes.length > 0 ? proof.notes.join("; ") : "execution surface proof failed";
   throw new Error(details);
 }

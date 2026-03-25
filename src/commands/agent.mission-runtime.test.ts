@@ -3,9 +3,9 @@ import fsp from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as configModule from "../config/config.js";
 import { loadModelCatalog } from "../agents/model-catalog.js";
 import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
+import * as configModule from "../config/config.js";
 import { listMissionRecords } from "../missions/store.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { agentCommand } from "./agent.js";
@@ -115,7 +115,9 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
-  await Promise.all(tempDirs.splice(0, tempDirs.length).map((dir) => fsp.rm(dir, { recursive: true, force: true })));
+  await Promise.all(
+    tempDirs.splice(0, tempDirs.length).map((dir) => fsp.rm(dir, { recursive: true, force: true })),
+  );
 });
 
 describe("agent mission runtime integration", () => {

@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { resolveStateDir } from "../config/paths.js";
 import { CONFIG_DIR } from "../utils.js";
-import type { BrowserServerState, ProfileStatus } from "./server-context.js";
 import { resolveProfile } from "./config.js";
+import type { BrowserServerState, ProfileStatus } from "./server-context.js";
 
 export type BrowserdProfileManifest = {
   name: string;
@@ -62,7 +62,7 @@ export function buildBrowserdManifest(params: {
   const paths = resolveBrowserdPaths(params.env);
   const statuses = new Map((params.profileStatuses ?? []).map((status) => [status.name, status]));
   const profiles = Object.keys(params.state.resolved.profiles)
-    .sort()
+    .toSorted()
     .map<BrowserdProfileManifest>((name) => {
       const runtime = params.state.profiles.get(name);
       const profile = resolveProfile(params.state.resolved, name) ?? runtime?.profile;

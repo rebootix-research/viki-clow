@@ -184,7 +184,9 @@ describe("resolveMemoryBackendConfig", () => {
         VIKICLOW_GRAPHITI_TIMEOUT_MS: "9100",
       },
     });
-    expect(resolved.graphiti?.localStore).toBe(path.normalize(path.resolve("/tmp/custom-graphiti-store")));
+    expect(resolved.graphiti?.localStore).toBe(
+      path.normalize(path.resolve("/tmp/custom-graphiti-store")),
+    );
     expect(resolved.graphiti?.connectionTimeoutMs).toBe(9100);
   });
 });

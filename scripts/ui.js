@@ -8,6 +8,10 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "..");
 const uiDir = path.join(repoRoot, "ui");
+const uiPackageJson = path.join(uiDir, "package.json");
+const uiRequirePath = fs.existsSync(uiPackageJson)
+  ? uiPackageJson
+  : path.join(repoRoot, "package.json");
 
 const WINDOWS_SHELL_EXTENSIONS = new Set([".cmd", ".bat", ".com"]);
 const WINDOWS_UNSAFE_SHELL_ARG_PATTERN = /[\r\n"&|<>^%!]/;
@@ -129,7 +133,7 @@ function runSync(cmd, args, envOverride) {
 
 function depsInstalled(kind) {
   try {
-    const require = createRequire(path.join(uiDir, "package.json"));
+    const require = createRequire(uiRequirePath);
     require.resolve("vite");
     require.resolve("dompurify");
     if (kind === "test") {
@@ -183,7 +187,7 @@ export function main(argv = process.argv.slice(2)) {
     return;
   }
 
-  if (!depsInstalled(action === "test" ? "test" : "build")) {
+  if (!depsInstalled(action === "test" ? "test" : "build") && action !== "build") {
     const installEnv =
       action === "build" ? { ...process.env, NODE_ENV: "production" } : process.env;
     const installArgs = action === "build" ? ["install", "--prod"] : ["install"];

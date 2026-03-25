@@ -5,11 +5,11 @@ import fs from "node:fs/promises";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { beginMissionRun } from "../src/missions/runtime.ts";
-import { loadMissionRecord } from "../src/missions/store.ts";
+import type { VikiClowConfig } from "../src/config/config.ts";
 import { resolveMemoryBackendConfig } from "../src/memory/backend-config.ts";
 import { searchGraphitiBackbone } from "../src/memory/graphiti-backbone.ts";
-import type { VikiClowConfig } from "../src/config/config.ts";
+import { beginMissionRun } from "../src/missions/runtime.ts";
+import { loadMissionRecord } from "../src/missions/store.ts";
 
 function sh(command: string, args: string[]) {
   return execFileSync(command, args, {
@@ -259,25 +259,35 @@ try {
     runtime?: string;
     graph_id?: string;
     nodes?: string[];
-  }>(`http://127.0.0.1:${langGraphHostPort}/metadata`, {
-    method: "GET",
-    headers: { accept: "application/json" },
-  }, 30_000, "LangGraph metadata probe");
+  }>(
+    `http://127.0.0.1:${langGraphHostPort}/metadata`,
+    {
+      method: "GET",
+      headers: { accept: "application/json" },
+    },
+    30_000,
+    "LangGraph metadata probe",
+  );
   const langGraphInvoke = await fetchJsonWithRetry<{
     ok?: boolean;
     result?: { trace?: string[] };
     graph_id?: string;
-  }>(`http://127.0.0.1:${langGraphHostPort}/invoke`, {
-    method: "POST",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
+  }>(
+    `http://127.0.0.1:${langGraphHostPort}/invoke`,
+    {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        mission_id: stored.id,
+        trace: ["proof-start"],
+      }),
     },
-    body: JSON.stringify({
-      mission_id: stored.id,
-      trace: ["proof-start"],
-    }),
-  }, 30_000, "LangGraph invoke probe");
+    30_000,
+    "LangGraph invoke probe",
+  );
   if (langGraphInvoke.ok !== true) {
     throw new Error("LangGraph invoke probe returned an invalid payload");
   }
@@ -327,7 +337,9 @@ try {
       version: langGraphMetadata.langgraph_version ?? null,
       runtime: langGraphMetadata.runtime ?? null,
       graphId: langGraphMetadata.graph_id ?? langGraphInvoke.graph_id ?? null,
-      invokedTrace: Array.isArray(langGraphInvoke.result?.trace) ? langGraphInvoke.result.trace : [],
+      invokedTrace: Array.isArray(langGraphInvoke.result?.trace)
+        ? langGraphInvoke.result.trace
+        : [],
     },
   };
 

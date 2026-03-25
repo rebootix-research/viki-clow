@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { parseGitHubWebhookCandidate, verifyGitHubWebhookSignature } from "./github-webhook.js";
 import {
   listEvolutionCandidates,
   listEvolutionExperiments,
@@ -7,7 +8,6 @@ import {
   saveEvolutionExperiment,
   saveEvolutionPromotion,
 } from "./store.js";
-import { parseGitHubWebhookCandidate, verifyGitHubWebhookSignature } from "./github-webhook.js";
 import type {
   EvolutionCandidate,
   EvolutionExperiment,

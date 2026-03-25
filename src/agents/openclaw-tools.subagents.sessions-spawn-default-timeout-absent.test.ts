@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import "./test-helpers/fast-core-tools.js";
+import { resetSubagentRegistryForTests } from "./subagent-registry.js";
 import {
   getCallGatewayMock,
   getSessionsSpawnTool,
@@ -7,7 +8,6 @@ import {
   setSessionsSpawnConfigOverride,
   setupSessionsSpawnGatewayMock,
 } from "./vikiclow-tools.subagents.sessions-spawn.test-harness.js";
-import { resetSubagentRegistryForTests } from "./subagent-registry.js";
 
 const MAIN_SESSION_KEY = "agent:test:main";
 

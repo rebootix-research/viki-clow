@@ -3,16 +3,16 @@ import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
-  callGatewayMock,
-  setSubagentsConfigOverride,
-} from "./vikiclow-tools.subagents.test-harness.js";
-import {
   addSubagentRunForTests,
   listSubagentRunsForRequester,
   resetSubagentRegistryForTests,
 } from "./subagent-registry.js";
-import "./test-helpers/fast-core-tools.js";
 import { createSubagentsTool } from "./tools/subagents-tool.js";
+import "./test-helpers/fast-core-tools.js";
+import {
+  callGatewayMock,
+  setSubagentsConfigOverride,
+} from "./vikiclow-tools.subagents.test-harness.js";
 
 describe("vikiclow-tools: subagents steer failure", () => {
   beforeEach(() => {

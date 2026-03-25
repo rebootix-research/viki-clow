@@ -123,7 +123,10 @@ function setFeishuGroupPolicy(
   }) as VikiClowBotConfig;
 }
 
-function setFeishuGroupAllowFrom(cfg: VikiClowBotConfig, groupAllowFrom: string[]): VikiClowBotConfig {
+function setFeishuGroupAllowFrom(
+  cfg: VikiClowBotConfig,
+  groupAllowFrom: string[],
+): VikiClowBotConfig {
   return {
     ...cfg,
     channels: {

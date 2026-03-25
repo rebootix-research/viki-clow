@@ -48,15 +48,15 @@ beforeAll(async () => {
   ({ isVerbose, setVerbose } = await import("../globals.js"));
 });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-    getMemorySearchManager.mockClear();
-    resolveCommandSecretRefsViaGateway.mockClear();
-    readLatestMemoryPersistenceProof.mockClear();
-    readLatestMemoryWritebackSummary.mockClear();
-    process.exitCode = undefined;
-    setVerbose(false);
-  });
+afterEach(() => {
+  vi.restoreAllMocks();
+  getMemorySearchManager.mockClear();
+  resolveCommandSecretRefsViaGateway.mockClear();
+  readLatestMemoryPersistenceProof.mockClear();
+  readLatestMemoryWritebackSummary.mockClear();
+  process.exitCode = undefined;
+  setVerbose(false);
+});
 
 describe("memory cli", () => {
   function spyRuntimeLogs() {

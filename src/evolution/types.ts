@@ -1,5 +1,9 @@
 export type EvolutionCandidateKind = "repo" | "package" | "model";
-export type EvolutionCandidateSource = "github_release" | "github_webhook" | "huggingface" | "manual";
+export type EvolutionCandidateSource =
+  | "github_release"
+  | "github_webhook"
+  | "huggingface"
+  | "manual";
 export type EvolutionCandidateStatus =
   | "intake"
   | "benchmarked"

@@ -79,10 +79,14 @@ describe("browserd manifest", () => {
 
       expect(manifest.service).toBe("browserd");
       expect(manifest.product).toBe("Viki Browser");
-      expect(manifest.profiles[0]?.tabCount).toBe(3);
-      expect(manifest.profiles[0]?.sessionVaultDir).toContain("browser");
-      await expect(fs.access(manifest.profiles[0]!.sessionVaultDir)).resolves.toBeUndefined();
-      await expect(fs.access(manifest.profiles[0]!.evidenceDir)).resolves.toBeUndefined();
+      const profile = manifest.profiles[0];
+      expect(profile?.tabCount).toBe(3);
+      expect(profile?.sessionVaultDir).toContain("browser");
+      if (!profile) {
+        throw new Error("Expected browserd manifest profile");
+      }
+      await expect(fs.access(profile.sessionVaultDir)).resolves.toBeUndefined();
+      await expect(fs.access(profile.evidenceDir)).resolves.toBeUndefined();
       await expect(fs.readFile(manifest.manifestPath, "utf8")).resolves.toContain(
         '"product": "Viki Browser"',
       );

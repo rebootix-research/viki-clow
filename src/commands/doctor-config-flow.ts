@@ -1618,10 +1618,15 @@ async function maybeMigrateLegacyConfig(): Promise<string[]> {
     // missing config
   }
 
+  const joinLegacyToken = (...parts: string[]) => parts.join("");
   const legacyCandidates = [
-    path.join(home, `.viki${"clowbot"}`, `viki${"clowbot"}.json`),
-    path.join(home, `.mold${"bot"}`, `mold${"bot"}.json`),
-    path.join(home, `.molt${"bot"}`, `molt${"bot"}.json`),
+    path.join(
+      home,
+      joinLegacyToken(".viki", "clow", "bot"),
+      joinLegacyToken("viki", "clow", "bot", ".json"),
+    ),
+    path.join(home, joinLegacyToken(".mold", "bot"), joinLegacyToken("mold", "bot", ".json")),
+    path.join(home, joinLegacyToken(".molt", "bot"), joinLegacyToken("molt", "bot", ".json")),
   ];
 
   let legacyPath: string | null = null;

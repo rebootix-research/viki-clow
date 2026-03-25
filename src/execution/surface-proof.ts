@@ -2,10 +2,10 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { createWebFetchTool } from "../agents/tools/web-fetch.js";
-import { resolveStateDir } from "../config/paths.js";
-import { writeNativeVikiBrowserProof } from "../browser/native-proof.js";
 import { resolveBrowserdPaths, type BrowserdManifest } from "../browser/browserd.js";
+import { writeNativeVikiBrowserProof } from "../browser/native-proof.js";
 import type { VikiClowConfig } from "../config/config.js";
+import { resolveStateDir } from "../config/paths.js";
 import { runPluginCommandWithTimeout } from "../plugin-sdk/run-command.js";
 
 export type ExecutionSurfaceProof = {
@@ -77,7 +77,20 @@ function stringify(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-async function runExecutionWebFetch(webFetchTool: NonNullable<ReturnType<typeof createWebFetchTool>>) {
+function stringifyScalar(value: unknown, fallback = "unknown"): string {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : fallback;
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  return fallback;
+}
+
+async function runExecutionWebFetch(
+  webFetchTool: NonNullable<ReturnType<typeof createWebFetchTool>>,
+) {
   const candidates = ["https://example.com", "http://example.com"] as const;
   let lastError: unknown;
   for (const url of candidates) {
@@ -98,9 +111,7 @@ async function runExecutionWebFetch(webFetchTool: NonNullable<ReturnType<typeof 
   throw lastError instanceof Error ? lastError : new Error("web_fetch proof failed");
 }
 
-async function seedBrowserExecutionState(params: {
-  env: NodeJS.ProcessEnv;
-}) {
+async function seedBrowserExecutionState(params: { env: NodeJS.ProcessEnv }) {
   const stateDir = resolveStateDir(params.env);
   const browserdPaths = resolveBrowserdPaths(params.env);
   const profileRoot = path.join(stateDir, "browserd", "profiles", "main");
@@ -208,8 +219,10 @@ export async function writeExecutionSurfaceProof(params?: {
   if (!fileExists) {
     notes.push("local filesystem proof file was not created");
   }
-  if (Number(webPayload.status) !== 200) {
-    notes.push(`web fetch returned status ${String(webPayload.status ?? "unknown")}`);
+  const webStatus =
+    typeof webPayload.status === "number" ? webPayload.status : Number(webPayload.status) || null;
+  if (webStatus !== 200) {
+    notes.push(`web fetch returned status ${stringifyScalar(webPayload.status)}`);
   }
   if (!browserProof.proof.passed) {
     notes.push(
@@ -242,17 +255,14 @@ export async function writeExecutionSurfaceProof(params?: {
     },
     webFetch: {
       url: webFetchResult.url,
-      status: typeof webPayload.status === "number" ? webPayload.status : Number(webPayload.status) || null,
+      status: webStatus,
       finalUrl: stringify(webPayload.finalUrl),
       extractor: stringify(webPayload.extractor),
       title: stringify(webPayload.title),
       textPreview: stringify(webPayload.text)?.slice(0, 280) ?? "",
     },
     passed:
-      commandResult.code === 0 &&
-      fileExists &&
-      (typeof webPayload.status === "number" ? webPayload.status : Number(webPayload.status)) === 200 &&
-      browserProof.proof.passed,
+      commandResult.code === 0 && fileExists && webStatus === 200 && browserProof.proof.passed,
     notes,
   };
 
@@ -270,7 +280,9 @@ export async function writeExecutionSurfaceProof(params?: {
     "",
     "## Notes",
     "",
-    ...(proof.notes.length > 0 ? proof.notes.map((note) => `- ${note}`) : ["- All execution surfaces passed."]),
+    ...(proof.notes.length > 0
+      ? proof.notes.map((note) => `- ${note}`)
+      : ["- All execution surfaces passed."]),
     "",
   ].join("\n");
   await fs.writeFile(markdownPath, `${markdown}\n`, "utf8");

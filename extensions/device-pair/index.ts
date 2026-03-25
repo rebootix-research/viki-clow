@@ -1,4 +1,5 @@
 import os from "node:os";
+import qrcode from "qrcode-terminal";
 import type { VikiClowPluginApi } from "vikiclow/plugin-sdk/device-pair";
 import {
   approveDevicePairing,
@@ -7,7 +8,6 @@ import {
   runPluginCommandWithTimeout,
   resolveTailnetHostWithRunner,
 } from "vikiclow/plugin-sdk/device-pair";
-import qrcode from "qrcode-terminal";
 import {
   armPairNotifyOnce,
   formatPendingRequests,

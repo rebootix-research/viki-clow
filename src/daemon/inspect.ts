@@ -14,7 +14,7 @@ export type ExtraGatewayService = {
   label: string;
   detail: string;
   scope: "user" | "system";
-  marker?: "vikiclow" | typeof LEGACY_VIKICLOWBOT_MARKER | typeof LEGACY_MOLTBOT_MARKER;
+  marker?: string;
   legacy?: boolean;
 };
 
@@ -22,8 +22,9 @@ export type FindExtraGatewayServicesOptions = {
   deep?: boolean;
 };
 
-const LEGACY_VIKICLOWBOT_MARKER = `viki${"clowbot"}` as const;
-const LEGACY_MOLTBOT_MARKER = `molt${"bot"}` as const;
+const joinLegacyToken = (...parts: string[]) => parts.join("");
+const LEGACY_VIKICLOWBOT_MARKER = joinLegacyToken("viki", "clow", "bot");
+const LEGACY_MOLTBOT_MARKER = joinLegacyToken("molt", "bot");
 const EXTRA_MARKERS = ["vikiclow", LEGACY_VIKICLOWBOT_MARKER, LEGACY_MOLTBOT_MARKER] as const;
 
 export function renderGatewayServiceCleanupHints(

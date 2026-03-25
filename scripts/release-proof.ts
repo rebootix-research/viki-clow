@@ -1,9 +1,17 @@
 #!/usr/bin/env -S node --import tsx
 
 import { execSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
 type PackFile = { path: string };
 type PackResult = { files?: PackFile[] };
@@ -57,13 +65,20 @@ const packageJson = readJson<{
 }>(resolve("package.json"));
 
 const buildInfoPath = resolve("dist/build-info.json");
-const buildInfo = existsSync(buildInfoPath) ? readJson<Record<string, unknown>>(buildInfoPath) : null;
+const buildInfo = existsSync(buildInfoPath)
+  ? readJson<Record<string, unknown>>(buildInfoPath)
+  : null;
 const packRaw = sh("npm pack --dry-run --json --ignore-scripts");
 const packResults = JSON.parse(packRaw) as PackResult[];
-const packFiles = (packResults[0]?.files ?? []).map((file) => file.path).sort();
+const packFiles = (packResults[0]?.files ?? []).map((file) => file.path).toSorted();
 const packDestination = mkdtempSync(join(tmpdir(), "vikiclow-pack-"));
-const actualPackRaw = sh(`npm pack --json --ignore-scripts --pack-destination "${packDestination.replace(/\\/g, "/")}"`);
-const actualPackResults = JSON.parse(actualPackRaw) as Array<{ filename?: string; files?: PackFile[] }>;
+const actualPackRaw = sh(
+  `npm pack --json --ignore-scripts --pack-destination "${packDestination.replace(/\\/g, "/")}"`,
+);
+const actualPackResults = JSON.parse(actualPackRaw) as Array<{
+  filename?: string;
+  files?: PackFile[];
+}>;
 const tarballName = actualPackResults[0]?.filename ?? "";
 const tarballSourcePath = tarballName ? resolve(packDestination, tarballName) : "";
 
@@ -86,7 +101,9 @@ const missingFiles = requiredFiles.filter((path) => !packFiles.includes(path));
 const forbiddenFiles = packFiles.filter((path) => path.startsWith("dist/VikiClow.app/"));
 const browserLauncherSmoke = (() => {
   try {
-    const stdout = sh(`"${process.execPath}" "${resolve("dist/viki-browser-launch.mjs")}" --probe --json`);
+    const stdout = sh(
+      `"${process.execPath}" "${resolve("dist/viki-browser-launch.mjs")}" --probe --json`,
+    );
     const parsed = JSON.parse(stdout) as { ok?: boolean; product?: string };
     return {
       passed: parsed.ok === true && parsed.product === "Viki Browser",
@@ -119,7 +136,9 @@ const browserNativeExecutableSmoke =
       })();
 const gitAvailable = isGitRepo();
 const gitSha = gitAvailable ? shOrFallback("git rev-parse HEAD", "unknown") : "unknown";
-const gitBranch = gitAvailable ? shOrFallback("git rev-parse --abbrev-ref HEAD", "unknown") : "unknown";
+const gitBranch = gitAvailable
+  ? shOrFallback("git rev-parse --abbrev-ref HEAD", "unknown")
+  : "unknown";
 const gitStatus = gitAvailable ? shOrFallback("git status --short", "") : "n/a";
 mkdirSync(outDir, { recursive: true });
 

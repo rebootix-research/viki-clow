@@ -1,5 +1,5 @@
-import fs from "node:fs/promises";
 import fsSync from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -47,7 +47,9 @@ export function resolveNativeVikiBrowserRoot(rootDir?: string): string {
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 }
 
-export function resolveNativeVikiBrowserLauncherPaths(rootDir?: string): NativeVikiBrowserLauncherPaths {
+export function resolveNativeVikiBrowserLauncherPaths(
+  rootDir?: string,
+): NativeVikiBrowserLauncherPaths {
   const resolvedRoot = resolveNativeVikiBrowserRoot(rootDir);
   const distDir = path.join(resolvedRoot, "dist");
   return {
@@ -244,7 +246,11 @@ export async function writeNativeVikiBrowserLaunchers(params?: {
   await fs.writeFile(paths.nodeLauncherPath, buildNodeLauncherContents(), "utf8");
   await fs.writeFile(paths.windowsCmdPath, buildWindowsCmdContents(paths.nodeLauncherPath), "utf8");
   await fs.writeFile(paths.windowsPs1Path, buildWindowsPs1Contents(paths.nodeLauncherPath), "utf8");
-  await fs.writeFile(paths.unixLauncherPath, buildUnixLauncherContents(paths.nodeLauncherPath), "utf8");
+  await fs.writeFile(
+    paths.unixLauncherPath,
+    buildUnixLauncherContents(paths.nodeLauncherPath),
+    "utf8",
+  );
   await fs.chmod(paths.nodeLauncherPath, 0o755);
   await fs.chmod(paths.unixLauncherPath, 0o755);
   return paths;

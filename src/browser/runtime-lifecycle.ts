@@ -1,6 +1,6 @@
 import type { Server } from "node:http";
-import { isPwAiLoaded } from "./pw-ai-state.js";
 import { writeBrowserdManifestForState } from "./browserd.js";
+import { isPwAiLoaded } from "./pw-ai-state.js";
 import type { BrowserServerState } from "./server-context.js";
 import { ensureExtensionRelayForProfiles, stopKnownBrowserProfiles } from "./server-lifecycle.js";
 
