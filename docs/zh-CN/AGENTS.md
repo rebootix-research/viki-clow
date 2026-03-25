@@ -1,59 +1,59 @@
-# AGENTS.md - zh-CN 文档翻译工作区
+# AGENTS.md - zh-CN æ–‡æ¡£ç¿»è¯‘å·¥ä½œåŒº
 
 ## Read When
 
-- 维护 `docs/zh-CN/**`
-- 更新中文翻译流水线（glossary/TM/prompt）
-- 处理中文翻译反馈或回归
+- ç»´æŠ¤ `docs/zh-CN/**`
+- æ›´æ–°ä¸­æ–‡ç¿»è¯‘æµæ°´çº¿ï¼ˆglossary/TM/promptï¼‰
+- å¤„ç†ä¸­æ–‡ç¿»è¯‘åé¦ˆæˆ–å›žå½’
 
-## Pipeline（docs-i18n）
+## Pipelineï¼ˆdocs-i18nï¼‰
 
-- 源文档：`docs/**/*.md`
-- 目标文档：`docs/zh-CN/**/*.md`
-- 术语表：`docs/.i18n/glossary.zh-CN.json`
-- 翻译记忆库：`docs/.i18n/zh-CN.tm.jsonl`
-- 提示词规则：`scripts/docs-i18n/translator.go`
+- æºæ–‡æ¡£ï¼š`docs/**/*.md`
+- ç›®æ ‡æ–‡æ¡£ï¼š`docs/zh-CN/**/*.md`
+- æœ¯è¯­è¡¨ï¼š`docs/.i18n/glossary.zh-CN.json`
+- ç¿»è¯‘è®°å¿†åº“ï¼š`docs/.i18n/zh-CN.tm.jsonl`
+- æç¤ºè¯è§„åˆ™ï¼š`scripts/docs-i18n/translator.go`
 
-常用运行方式：
+å¸¸ç”¨è¿è¡Œæ–¹å¼ï¼š
 
 ```bash
-# 批量（doc 模式，可并行）
+# æ‰¹é‡ï¼ˆdoc æ¨¡å¼ï¼Œå¯å¹¶è¡Œï¼‰
 go run scripts/docs-i18n/main.go -mode doc -parallel 6 docs/**/*.md
 
-# 单文件
+# å•æ–‡ä»¶
 
 go run scripts/docs-i18n/main.go -mode doc docs/channels/matrix.md
 
-# 小范围补丁（segment 模式，使用 TM；不支持并行）
+# å°èŒƒå›´è¡¥ä¸ï¼ˆsegment æ¨¡å¼ï¼Œä½¿ç”¨ TMï¼›ä¸æ”¯æŒå¹¶è¡Œï¼‰
 go run scripts/docs-i18n/main.go -mode segment docs/channels/matrix.md
 ```
 
-注意事项：
+æ³¨æ„äº‹é¡¹ï¼š
 
-- doc 模式用于整页翻译；segment 模式用于小范围修补（依赖 TM）。
-- 超大文件若超时，优先做**定点替换**或拆分后再跑。
-- 翻译后检查中文引号、CJK-Latin 间距和术语一致性。
+- doc æ¨¡å¼ç”¨äºŽæ•´é¡µç¿»è¯‘ï¼›segment æ¨¡å¼ç”¨äºŽå°èŒƒå›´ä¿®è¡¥ï¼ˆä¾èµ– TMï¼‰ã€‚
+- è¶…å¤§æ–‡ä»¶è‹¥è¶…æ—¶ï¼Œä¼˜å…ˆåš**å®šç‚¹æ›¿æ¢**æˆ–æ‹†åˆ†åŽå†è·‘ã€‚
+- ç¿»è¯‘åŽæ£€æŸ¥ä¸­æ–‡å¼•å·ã€CJK-Latin é—´è·å’Œæœ¯è¯­ä¸€è‡´æ€§ã€‚
 
-## zh-CN 样式规则
+## zh-CN æ ·å¼è§„åˆ™
 
-- CJK-Latin 间距：遵循 W3C CLREQ（如 `Gateway 网关`、`Skills 配置`）。
-- 中文引号：正文/标题使用 `“”`；代码/CLI/键名保持 ASCII 引号。
-- 术语保留英文：`Skills`、`local loopback`、`Tailscale`。
-- 代码块/内联代码：保持原样，不在代码内插入空格或引号替换。
+- CJK-Latin é—´è·ï¼šéµå¾ª W3C CLREQï¼ˆå¦‚ `Gateway ç½‘å…³`ã€`Skills é…ç½®`ï¼‰ã€‚
+- ä¸­æ–‡å¼•å·ï¼šæ­£æ–‡/æ ‡é¢˜ä½¿ç”¨ `â€œâ€`ï¼›ä»£ç /CLI/é”®åä¿æŒ ASCII å¼•å·ã€‚
+- æœ¯è¯­ä¿ç•™è‹±æ–‡ï¼š`Skills`ã€`local loopback`ã€`Tailscale`ã€‚
+- ä»£ç å—/å†…è”ä»£ç ï¼šä¿æŒåŽŸæ ·ï¼Œä¸åœ¨ä»£ç å†…æ’å…¥ç©ºæ ¼æˆ–å¼•å·æ›¿æ¢ã€‚
 
-## 关键术语（#6995 修复）
+## å…³é”®æœ¯è¯­ï¼ˆ#6995 ä¿®å¤ï¼‰
 
-- `Gateway 网关`
-- `Skills 配置`
-- `沙箱`
-- `预期键名`
-- `配套应用`
-- `分块流式传输`
-- `设备发现`
+- `Gateway ç½‘å…³`
+- `Skills é…ç½®`
+- `æ²™ç®±`
+- `é¢„æœŸé”®å`
+- `é…å¥—åº”ç”¨`
+- `åˆ†å—æµå¼ä¼ è¾“`
+- `è®¾å¤‡å‘çŽ°`
 
-## 反馈与变更记录
+## åé¦ˆä¸Žå˜æ›´è®°å½•
 
-- 反馈来源：GitHub issue #6995
-- 反馈用户：@AaronWander、@taiyi747、@Explorer1092、@rendaoyuan
-- 变更要点：更新 prompt 规则、扩充 glossary、清理 TM、批量再生成 + 定点修复
-- 参考链接：https://github.com/vikiclow/vikiclow/issues/6995
+- åé¦ˆæ¥æºï¼šGitHub issue #6995
+- åé¦ˆç”¨æˆ·ï¼š@AaronWanderã€@taiyi747ã€@Explorer1092ã€@rendaoyuan
+- å˜æ›´è¦ç‚¹ï¼šæ›´æ–° prompt è§„åˆ™ã€æ‰©å…… glossaryã€æ¸…ç† TMã€æ‰¹é‡å†ç”Ÿæˆ + å®šç‚¹ä¿®å¤
+- å‚è€ƒé“¾æŽ¥ï¼šhttps://github.com/rebootix-research/viki-clow/issues/6995

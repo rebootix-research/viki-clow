@@ -157,6 +157,16 @@ export async function collectNativeVikiBrowserProof(params?: {
     candidate.exists = await exists(candidate.executablePath);
   }
   const manifest = await readBrowserdManifest(env);
+  if (manifest) {
+    await Promise.all(
+      manifest.profiles.flatMap((profile) => {
+        const dirs = [profile.sessionVaultDir, profile.evidenceDir].filter((dir) => dir.length > 0);
+        return dirs.map(async (dir) => {
+          await fs.mkdir(dir, { recursive: true });
+        });
+      }),
+    );
+  }
   const launchers = resolveNativeVikiBrowserLauncherPaths(rootDir);
   const launcherDependencyPaths = [
     path.join(rootDir, "dist", "browser", "control-service.js"),

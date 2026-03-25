@@ -1,8 +1,8 @@
 ---
 read_when:
-  - 在 Windows 上安装 VikiClow
-  - 查找 Windows 配套应用状态
-summary: Windows（WSL2）支持 + 配套应用状态
+  - åœ¨ Windows ä¸Šå®‰è£… VikiClow
+  - æŸ¥æ‰¾ Windows é…å¥—åº”ç”¨çŠ¶æ€
+summary: Windowsï¼ˆWSL2ï¼‰æ”¯æŒ + é…å¥—åº”ç”¨çŠ¶æ€
 title: Windows (WSL2)
 x-i18n:
   generated_at: "2026-02-03T07:53:19Z"
@@ -15,54 +15,54 @@ x-i18n:
 
 # Windows (WSL2)
 
-Windows 上的 VikiClow 推荐**通过 WSL2**（推荐 Ubuntu）。CLI + Gateway 网关在 Linux 内运行，这保持了运行时的一致性并使工具兼容性大大提高（Node/Bun/pnpm、Linux 二进制文件、Skills）。原生 Windows 可能更棘手。WSL2 给你完整的 Linux 体验——一条命令安装：`wsl --install`。
+Windows ä¸Šçš„ VikiClow æŽ¨è**é€šè¿‡ WSL2**ï¼ˆæŽ¨è Ubuntuï¼‰ã€‚CLI + Gateway ç½‘å…³åœ¨ Linux å†…è¿è¡Œï¼Œè¿™ä¿æŒäº†è¿è¡Œæ—¶çš„ä¸€è‡´æ€§å¹¶ä½¿å·¥å…·å…¼å®¹æ€§å¤§å¤§æé«˜ï¼ˆNode/Bun/pnpmã€Linux äºŒè¿›åˆ¶æ–‡ä»¶ã€Skillsï¼‰ã€‚åŽŸç”Ÿ Windows å¯èƒ½æ›´æ£˜æ‰‹ã€‚WSL2 ç»™ä½ å®Œæ•´çš„ Linux ä½“éªŒâ€”â€”ä¸€æ¡å‘½ä»¤å®‰è£…ï¼š`wsl --install`ã€‚
 
-原生 Windows 配套应用已在计划中。
+åŽŸç”Ÿ Windows é…å¥—åº”ç”¨å·²åœ¨è®¡åˆ’ä¸­ã€‚
 
-## 安装（WSL2）
+## å®‰è£…ï¼ˆWSL2ï¼‰
 
-- [入门指南](/start/getting-started)（在 WSL 内使用）
-- [安装和更新](/install/updating)
-- 官方 WSL2 指南（Microsoft）：https://learn.microsoft.com/windows/wsl/install
+- [å…¥é—¨æŒ‡å—](/start/getting-started)ï¼ˆåœ¨ WSL å†…ä½¿ç”¨ï¼‰
+- [å®‰è£…å’Œæ›´æ–°](/install/updating)
+- å®˜æ–¹ WSL2 æŒ‡å—ï¼ˆMicrosoftï¼‰ï¼šhttps://learn.microsoft.com/windows/wsl/install
 
-## Gateway 网关
+## Gateway ç½‘å…³
 
-- [Gateway 网关操作手册](/gateway)
-- [配置](/gateway/configuration)
+- [Gateway ç½‘å…³æ“ä½œæ‰‹å†Œ](/gateway)
+- [é…ç½®](/gateway/configuration)
 
-## Gateway 网关服务安装（CLI）
+## Gateway ç½‘å…³æœåŠ¡å®‰è£…ï¼ˆCLIï¼‰
 
-在 WSL2 内：
+åœ¨ WSL2 å†…ï¼š
 
 ```
 vikiclow onboard --install-daemon
 ```
 
-或：
+æˆ–ï¼š
 
 ```
 vikiclow gateway install
 ```
 
-或：
+æˆ–ï¼š
 
 ```
 vikiclow configure
 ```
 
-出现提示时选择 **Gateway service**。
+å‡ºçŽ°æç¤ºæ—¶é€‰æ‹© **Gateway service**ã€‚
 
-修复/迁移：
+ä¿®å¤/è¿ç§»ï¼š
 
 ```
 vikiclow doctor
 ```
 
-## 高级：通过 LAN 暴露 WSL 服务（portproxy）
+## é«˜çº§ï¼šé€šè¿‡ LAN æš´éœ² WSL æœåŠ¡ï¼ˆportproxyï¼‰
 
-WSL 有自己的虚拟网络。如果另一台机器需要访问**在 WSL 内**运行的服务（SSH、本地 TTS 服务器或 Gateway 网关），你必须将 Windows 端口转发到当前的 WSL IP。WSL IP 在重启后会改变，因此你可能需要刷新转发规则。
+WSL æœ‰è‡ªå·±çš„è™šæ‹Ÿç½‘ç»œã€‚å¦‚æžœå¦ä¸€å°æœºå™¨éœ€è¦è®¿é—®**åœ¨ WSL å†…**è¿è¡Œçš„æœåŠ¡ï¼ˆSSHã€æœ¬åœ° TTS æœåŠ¡å™¨æˆ– Gateway ç½‘å…³ï¼‰ï¼Œä½ å¿…é¡»å°† Windows ç«¯å£è½¬å‘åˆ°å½“å‰çš„ WSL IPã€‚WSL IP åœ¨é‡å¯åŽä¼šæ”¹å˜ï¼Œå› æ­¤ä½ å¯èƒ½éœ€è¦åˆ·æ–°è½¬å‘è§„åˆ™ã€‚
 
-示例（以**管理员身份**运行 PowerShell）：
+ç¤ºä¾‹ï¼ˆä»¥**ç®¡ç†å‘˜èº«ä»½**è¿è¡Œ PowerShellï¼‰ï¼š
 
 ```powershell
 $Distro = "Ubuntu-24.04"
@@ -76,14 +76,14 @@ netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=$ListenPor
   connectaddress=$WslIp connectport=$TargetPort
 ```
 
-允许端口通过 Windows 防火墙（一次性）：
+å…è®¸ç«¯å£é€šè¿‡ Windows é˜²ç«å¢™ï¼ˆä¸€æ¬¡æ€§ï¼‰ï¼š
 
 ```powershell
 New-NetFirewallRule -DisplayName "WSL SSH $ListenPort" -Direction Inbound `
   -Protocol TCP -LocalPort $ListenPort -Action Allow
 ```
 
-在 WSL 重启后刷新 portproxy：
+åœ¨ WSL é‡å¯åŽåˆ·æ–° portproxyï¼š
 
 ```powershell
 netsh interface portproxy delete v4tov4 listenport=$ListenPort listenaddress=0.0.0.0 | Out-Null
@@ -91,18 +91,18 @@ netsh interface portproxy add v4tov4 listenport=$ListenPort listenaddress=0.0.0.
   connectaddress=$WslIp connectport=$TargetPort | Out-Null
 ```
 
-注意事项：
+æ³¨æ„äº‹é¡¹ï¼š
 
-- 从另一台机器 SSH 目标是 **Windows 主机 IP**（示例：`ssh user@windows-host -p 2222`）。
-- 远程节点必须指向**可访问的** Gateway 网关 URL（不是 `127.0.0.1`）；使用 `vikiclow status --all` 确认。
-- 使用 `listenaddress=0.0.0.0` 进行 LAN 访问；`127.0.0.1` 仅保持本地访问。
-- 如果你想自动化，注册一个计划任务在登录时运行刷新步骤。
+- ä»Žå¦ä¸€å°æœºå™¨ SSH ç›®æ ‡æ˜¯ **Windows ä¸»æœº IP**ï¼ˆç¤ºä¾‹ï¼š`ssh user@windows-host -p 2222`ï¼‰ã€‚
+- è¿œç¨‹èŠ‚ç‚¹å¿…é¡»æŒ‡å‘**å¯è®¿é—®çš„** Gateway ç½‘å…³ URLï¼ˆä¸æ˜¯ `127.0.0.1`ï¼‰ï¼›ä½¿ç”¨ `vikiclow status --all` ç¡®è®¤ã€‚
+- ä½¿ç”¨ `listenaddress=0.0.0.0` è¿›è¡Œ LAN è®¿é—®ï¼›`127.0.0.1` ä»…ä¿æŒæœ¬åœ°è®¿é—®ã€‚
+- å¦‚æžœä½ æƒ³è‡ªåŠ¨åŒ–ï¼Œæ³¨å†Œä¸€ä¸ªè®¡åˆ’ä»»åŠ¡åœ¨ç™»å½•æ—¶è¿è¡Œåˆ·æ–°æ­¥éª¤ã€‚
 
-## WSL2 分步安装
+## WSL2 åˆ†æ­¥å®‰è£…
 
-### 1）安装 WSL2 + Ubuntu
+### 1ï¼‰å®‰è£… WSL2 + Ubuntu
 
-打开 PowerShell（管理员）：
+æ‰“å¼€ PowerShellï¼ˆç®¡ç†å‘˜ï¼‰ï¼š
 
 ```powershell
 wsl --install
@@ -111,11 +111,11 @@ wsl --list --online
 wsl --install -d Ubuntu-24.04
 ```
 
-如果 Windows 要求则重启。
+å¦‚æžœ Windows è¦æ±‚åˆ™é‡å¯ã€‚
 
-### 2）启用 systemd（Gateway 网关安装所需）
+### 2ï¼‰å¯ç”¨ systemdï¼ˆGateway ç½‘å…³å®‰è£…æ‰€éœ€ï¼‰
 
-在你的 WSL 终端中：
+åœ¨ä½ çš„ WSL ç»ˆç«¯ä¸­ï¼š
 
 ```bash
 sudo tee /etc/wsl.conf >/dev/null <<'EOF'
@@ -124,24 +124,24 @@ systemd=true
 EOF
 ```
 
-然后从 PowerShell：
+ç„¶åŽä»Ž PowerShellï¼š
 
 ```powershell
 wsl --shutdown
 ```
 
-重新打开 Ubuntu，然后验证：
+é‡æ–°æ‰“å¼€ Ubuntuï¼Œç„¶åŽéªŒè¯ï¼š
 
 ```bash
 systemctl --user status
 ```
 
-### 3）安装 VikiClow（在 WSL 内）
+### 3ï¼‰å®‰è£… VikiClowï¼ˆåœ¨ WSL å†…ï¼‰
 
-在 WSL 内按照 Linux 入门指南流程：
+åœ¨ WSL å†…æŒ‰ç…§ Linux å…¥é—¨æŒ‡å—æµç¨‹ï¼š
 
 ```bash
-git clone https://github.com/vikiclow/vikiclow.git
+git clone https://github.com/rebootix-research/viki-clow.git
 cd vikiclow
 pnpm install
 pnpm ui:build # auto-installs UI deps on first run
@@ -149,8 +149,8 @@ pnpm build
 vikiclow onboard
 ```
 
-完整指南：[入门指南](/start/getting-started)
+å®Œæ•´æŒ‡å—ï¼š[å…¥é—¨æŒ‡å—](/start/getting-started)
 
-## Windows 配套应用
+## Windows é…å¥—åº”ç”¨
 
-我们还没有 Windows 配套应用。如果你想让它实现，欢迎贡献。
+æˆ‘ä»¬è¿˜æ²¡æœ‰ Windows é…å¥—åº”ç”¨ã€‚å¦‚æžœä½ æƒ³è®©å®ƒå®žçŽ°ï¼Œæ¬¢è¿Žè´¡çŒ®ã€‚

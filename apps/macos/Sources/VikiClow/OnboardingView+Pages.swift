@@ -33,7 +33,7 @@ extension OnboardingView {
             VStack(spacing: 22) {
                 Text("Welcome to VikiClow")
                     .font(.largeTitle.weight(.semibold))
-                Text("VikiClow is a powerful personal AI assistant that can connect to WhatsApp or Telegram.")
+                Text("VikiClow is an execution-first system that can connect to WhatsApp or Telegram.")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

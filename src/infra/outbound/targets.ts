@@ -80,14 +80,14 @@ export function resolveSessionDeliveryTarget(params: {
    * Callers should set this to the channel that originated the current
    * agent turn so the reply always routes back to the correct channel.
    *
-   * @see https://github.com/vikiclow/vikiclow/issues/24152
+   * @see https://github.com/rebootix-research/viki-clow/issues/24152
    */
   turnSourceChannel?: DeliverableMessageChannel;
-  /** Turn-source `to` — paired with `turnSourceChannel`. */
+  /** Turn-source `to` â€” paired with `turnSourceChannel`. */
   turnSourceTo?: string;
-  /** Turn-source `accountId` — paired with `turnSourceChannel`. */
+  /** Turn-source `accountId` â€” paired with `turnSourceChannel`. */
   turnSourceAccountId?: string;
-  /** Turn-source `threadId` — paired with `turnSourceChannel`. */
+  /** Turn-source `threadId` â€” paired with `turnSourceChannel`. */
   turnSourceThreadId?: string | number;
 }): SessionDeliveryTarget {
   const context = deliveryContextFromSession(params.entry);

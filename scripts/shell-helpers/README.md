@@ -25,7 +25,7 @@ Inspired by Simon Willison's [Running VikiClow in Docker](https://til.simonwilli
 **Install:**
 
 ```bash
-mkdir -p ~/.vikidock && curl -sL https://raw.githubusercontent.com/vikiclow/vikiclow/main/scripts/shell-helpers/vikidock-helpers.sh -o ~/.vikidock/vikidock-helpers.sh
+mkdir -p ~/.vikidock && curl -sL https://raw.githubusercontent.com/rebootix-research/viki-clow/main/scripts/shell-helpers/vikidock-helpers.sh -o ~/.vikidock/vikidock-helpers.sh
 ```
 
 ```bash

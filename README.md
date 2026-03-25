@@ -15,7 +15,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0f172a?style=for-the-badge" alt="License"></a>
 </p>
 
-VikiClow is not a chatbot with extra buttons.
+VikiClow is an operator-grade execution system.
 
 It is an execution-first system built for operators who want an AI that can carry work from request to terminal outcome. User intent becomes a mission object. Missions are routed through orchestration, browser execution, local-computer control, verification, memory writeback, and proof.
 

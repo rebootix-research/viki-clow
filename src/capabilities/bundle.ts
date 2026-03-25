@@ -88,7 +88,7 @@ const AUTO_ENABLE_PLUGIN_IDS = new Set([
   "open-prose",
   "thread-ownership",
   "llm-task",
-  "lobster",
+  "workflow",
 ]);
 
 const PREFERRED_BUNDLED_SKILLS = new Set([
@@ -102,7 +102,7 @@ const MANDATORY_VOICE_BUNDLED_SKILLS = new Set(["sherpa-onnx-tts", "openai-whisp
 
 function repoUrlFor(kind: "skill" | "plugin", id: string): string {
   const base = kind === "skill" ? "skills" : "extensions";
-  return `https://github.com/vikiclow/vikiclow/tree/main/${base}/${id}`;
+  return `https://github.com/rebootix-research/viki-clow/tree/main/${base}/${id}`;
 }
 
 async function writeJson(filePath: string, value: unknown): Promise<void> {
@@ -509,13 +509,13 @@ export async function bundleSupportedCapabilities(params: {
     "",
     ...inventory.plugins
       .filter((entry) => entry.status === "enabled")
-      .map((entry) => `- \`${entry.id}\` — ${entry.name}`),
+      .map((entry) => `- \`${entry.id}\` â€” ${entry.name}`),
     "",
     "## Bundled Skills",
     "",
     ...inventory.skills.map(
       (entry) =>
-        `- \`${entry.name}\` — ${entry.status}${entry.reason ? ` (${entry.reason})` : ""}`,
+        `- \`${entry.name}\` â€” ${entry.status}${entry.reason ? ` (${entry.reason})` : ""}`,
     ),
     "",
   ].join("\n");

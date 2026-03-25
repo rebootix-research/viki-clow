@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 Docs: https://docs.vikiclow.ai
 
@@ -624,7 +624,7 @@ Docs: https://docs.vikiclow.ai
 - Gateway/Control UI basePath webhook passthrough: let non-read methods under configured `controlUiBasePath` fall through to plugin routes (instead of returning Control UI 405), restoring webhook handlers behind basePath mounts. (#32311) Thanks @ademczuk.
 - Gateway/Webchat streaming finalization: flush throttled trailing assistant text before `final` chat events so streaming consumers do not miss tail content, while preserving duplicate suppression and heartbeat/silent lead-fragment guards. (#24856) Thanks @visionik and @vincentkoc.
 - Control UI/Legacy browser compatibility: replace `toSorted`-dependent cron suggestion sorting in `app-render` with a compatibility helper so older browsers without `Array.prototype.toSorted` no longer white-screen. (#31775) Thanks @liuxiaopai-ai.
-- macOS/PeekabooBridge: add compatibility socket symlinks for legacy `vikiclowbot`, `vikidis`, and `moltbot` Application Support socket paths so pre-rename clients can still connect. (#6033) Thanks @lumpinif and @vincentkoc.
+- macOS/PeekabooBridge: add compatibility socket symlinks for pre-rename Application Support socket paths so legacy clients can still connect. (#6033) Thanks @lumpinif and @vincentkoc.
 - Gateway/message tool reliability: avoid false `Unknown channel` failures when `message.*` actions receive platform-specific channel ids by falling back to `toolContext.currentChannelProvider`, and prevent health-monitor restart thrash for channels that just (re)started by adding a per-channel startup-connect grace window. (from #32367) Thanks @MunemHashmi.
 - Windows/Spawn canonicalization: unify non-core Windows spawn handling across ACP client, QMD/mcporter memory paths, and sandbox Docker execution using the shared wrapper-resolution policy, with targeted regression coverage for `.cmd` shim unwrapping and shell fallback behavior. (#31750) Thanks @Takhoffman.
 - Security/ACP sandbox inheritance: enforce fail-closed runtime guardrails for `sessions_spawn` with `runtime="acp"` by rejecting ACP spawns from sandboxed requester sessions and rejecting `sandbox="require"` for ACP runtime, preventing sandbox-boundary bypass via host-side ACP initialization. (#32254) Thanks @tdjackey for reporting, and @dutifulbob for the fix.
@@ -1673,7 +1673,7 @@ Docs: https://docs.vikiclow.ai
 - Security/Agents: make owner-ID obfuscation use a dedicated HMAC secret from configuration (`ownerDisplaySecret`) and update hashing behavior so obfuscation is decoupled from gateway token handling for improved control. (#7343) Thanks @vincentkoc.
 - Security/Infra: switch gateway lock and tool-call synthetic IDs from SHA-1 to SHA-256 with unchanged truncation length to strengthen hash basis while keeping deterministic behavior and lock key format. (#7343) Thanks @vincentkoc.
 - Dependencies/Tooling: add non-blocking dead-code scans in CI via Knip/ts-prune/ts-unused-exports to surface unused dependencies and exports earlier. (#22468) Thanks @vincentkoc.
-- Dependencies/Unused Dependencies: remove or scope unused root and extension deps (`@larksuiteoapi/node-sdk`, `signal-utils`, `ollama`, `lit`, `@lit/context`, `@lit-labs/signals`, `@microsoft/agents-hosting-express`, `@microsoft/agents-hosting-extensions-teams`, and plugin-local `vikiclow` devDeps in `extensions/open-prose`, `extensions/lobster`, and `extensions/llm-task`). (#22471, #22495) Thanks @vincentkoc.
+- Dependencies/Unused Dependencies: remove or scope unused root and extension deps (`@larksuiteoapi/node-sdk`, `signal-utils`, `ollama`, `lit`, `@lit/context`, `@lit-labs/signals`, `@microsoft/agents-hosting-express`, `@microsoft/agents-hosting-extensions-teams`, and plugin-local `vikiclow` devDeps in `extensions/open-prose`, `extensions/workflow`, and `extensions/llm-task`). (#22471, #22495) Thanks @vincentkoc.
 - Dependencies/A2UI: harden dependency resolution after root cleanup (resolve `lit`, `@lit/context`, `@lit-labs/signals`, and `signal-utils` from workspace/root) and simplify bundling fallback behavior, including `pnpm dlx rolldown` compatibility. (#22481, #22507) Thanks @vincentkoc.
 
 ### Fixes
@@ -1728,7 +1728,7 @@ Docs: https://docs.vikiclow.ai
 - Auto-reply/Tool results: serialize tool-result delivery and keep the delivery chain progressing after individual failures so concurrent tool outputs preserve user-visible ordering. (#21231) thanks @ahdernasr.
 - Auto-reply/Prompt caching: restore prefix-cache stability by keeping inbound system metadata session-stable and moving per-message IDs (`message_id`, `message_id_full`, `reply_to_id`, `sender_id`) into untrusted conversation context. (#20597) Thanks @anisoptera.
 - iOS/Watch: add actionable watch approval/reject controls and quick-reply actions so watch-originated approvals and responses can be sent directly from notification flows. (#21996) Thanks @mbelinky.
-- iOS/Watch: refresh iOS and watch app icon assets with the lobster icon set to keep phone/watch branding aligned. (#21997) Thanks @mbelinky.
+- iOS/Watch: refresh iOS and watch app icon assets with the Viki icon set to keep phone/watch branding aligned. (#21997) Thanks @mbelinky.
 - CLI/Onboarding: fix Anthropic-compatible custom provider verification by normalizing base URLs to avoid duplicate `/v1` paths during setup checks. (#21336) Thanks @17jmumford.
 - iOS/Gateway/Tools: prefer uniquely connected node matches when duplicate display names exist, surface actionable `nodes invoke` pairing-required guidance with request IDs, and refresh active iOS gateway registration after location-capability setting changes so capability updates apply immediately. (#22120) thanks @mbelinky.
 - Gateway/Auth: require `gateway.trustedProxies` to include a loopback proxy address when `auth.mode="trusted-proxy"` and `bind="loopback"`, preventing same-host proxy misconfiguration from silently blocking auth. (#22082, follow-up to #20097) thanks @mbelinky.
@@ -1837,7 +1837,7 @@ Docs: https://docs.vikiclow.ai
 - Heartbeat/Cron: skip interval heartbeats when `HEARTBEAT.md` is missing or empty and no tagged cron events are queued, while preserving cron-event fallback for queued tagged reminders. (#20461) thanks @vikpos.
 - Browser/Relay: reuse an already-running extension relay when the relay port is occupied by another VikiClow process, while still failing on non-relay port collisions to avoid masking unrelated listeners. (#20035) Thanks @mbelinky.
 - Scripts: update vikidock helper command support to include `docker-compose.extra.yml` where available. (#17094) Thanks @zerone0x.
-- Workflow/Config: remove Workflow executable-path overrides (`lobsterPath`), require PATH-based execution, and add focused Windows wrapper-resolution tests to keep shell-free behavior stable.
+- Workflow/Config: remove workflow executable-path overrides, require PATH-based execution, and add focused Windows wrapper-resolution tests to keep shell-free behavior stable.
 - Gateway/WebChat: block `sessions.patch` and `sessions.delete` for WebChat clients so session-store mutations stay restricted to non-WebChat operator flows. Thanks @allsmog for reporting.
 - Gateway: clarify launchctl GUI domain bootstrap failure on macOS. (#13795) Thanks @vincentkoc.
 - Workflow/CI: fix flaky test Windows cmd shim script resolution. (#20833) Thanks @vincentkoc.
@@ -2298,7 +2298,7 @@ Docs: https://docs.vikiclow.ai
 
 ### Breaking
 
-- Config/State: removed legacy `.moltbot` auto-detection/migration and `moltbot.json` config candidates. If you still have state/config under `~/.moltbot`, move it to `~/.vikiclow` (recommended) or set `VIKICLOW_STATE_DIR` / `VIKICLOW_CONFIG_PATH` explicitly.
+- Config/State: removed legacy state-directory auto-detection/migration and old config filename candidates. If you still have state/config under a pre-rename directory, move it to `~/.vikiclow` (recommended) or set `VIKICLOW_STATE_DIR` / `VIKICLOW_CONFIG_PATH` explicitly.
 
 ### Fixes
 
@@ -2769,7 +2769,7 @@ Docs: https://docs.vikiclow.ai
 - Auto-reply: avoid referencing workspace files in /new greeting prompt. (#5706) Thanks @bravostation.
 - Tools: align tool execute adapters/signatures (legacy + parameter order + arg normalization).
 - Tools: treat "\*" tool allowlist entries as valid to avoid spurious unknown-entry warnings.
-- Skills: update session-logs paths from .vikiclowbot to .vikiclow. (#4502)
+- Skills: update session-logs paths from legacy state directories to `.vikiclow`. (#4502)
 - Slack: harden media fetch limits and Slack file URL validation. (#6639) Thanks @davidiach.
 - Lint: satisfy curly rule after import sorting. (#6310)
 - Process: resolve Windows `spawn()` failures for npm-family CLIs by appending `.cmd` when needed. (#5815) Thanks @thejhinvirtuoso.
@@ -2790,7 +2790,7 @@ Docs: https://docs.vikiclow.ai
 - Browser: secure Chrome extension relay CDP sessions.
 - Docker: use container port for gateway command instead of host port. (#5110) Thanks @mise42.
 - Docker: start gateway CMD by default for container deployments. (#6635) Thanks @kaizen403.
-- fix(lobster): block arbitrary exec via lobsterPath/cwd injection (GHSA-4mhr-g7xj-cg8j). (#5335) Thanks @vignesh07.
+- fix(workflow): block arbitrary exec via workflow path/cwd injection (GHSA-4mhr-g7xj-cg8j). (#5335) Thanks @vignesh07.
 - Security: sanitize WhatsApp accountId to prevent path traversal. (#4610)
 - Security: restrict MEDIA path extraction to prevent LFI. (#4930)
 - Security: validate message-tool filePath/path against sandbox root. (#6398)
@@ -2905,7 +2905,7 @@ Docs: https://docs.vikiclow.ai
 - Docs: add LINE channel guide. Thanks @thewilloftheshadow.
 - Docs: credit both contributors for Control UI refresh. (#1852) Thanks @EnzeD.
 - Docs: keep docs header sticky so navbar stays visible while scrolling. (#2445) Thanks @chenyuan99.
-- Docs: update exe.dev install instructions. (#https://github.com/vikiclow/vikiclow/pull/3047) Thanks @zackerthescar.
+- Docs: update exe.dev install instructions. (#https://github.com/rebootix-research/viki-clow/pull/3047) Thanks @zackerthescar.
 
 ### Breaking
 
@@ -3308,7 +3308,7 @@ Docs: https://docs.vikiclow.ai
 
 ### Fixes
 
-- Discovery: shorten Bonjour DNS-SD service type to `_moltbot-gw._tcp` and update discovery clients/docs.
+- Discovery: shorten the Bonjour DNS-SD service type and update discovery clients/docs.
 - Diagnostics: export OTLP logs, correct queue depth tracking, and document message-flow telemetry.
 - Diagnostics: emit message-flow diagnostics across channels via shared dispatch. (#1244)
 - Diagnostics: gate heartbeat/webhook logging. (#1244)

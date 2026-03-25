@@ -217,9 +217,9 @@ describe("applyPluginAutoEnable", () => {
     expect(result.changes).toEqual([]);
   });
 
-  describe("third-party channel plugins (pluginId ≠ channelId)", () => {
+  describe("third-party channel plugins (pluginId â‰  channelId)", () => {
     it("uses the plugin manifest id, not the channel id, for plugins.entries", () => {
-      // Reproduces: https://github.com/vikiclow/vikiclow/issues/25261
+      // Reproduces: https://github.com/rebootix-research/viki-clow/issues/25261
       // Plugin "apn-channel" declares channels: ["apn"]. Doctor must write
       // plugins.entries["apn-channel"], not plugins.entries["apn"].
       const result = applyWithApnChannelConfig();

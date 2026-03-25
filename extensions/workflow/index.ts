@@ -2,8 +2,8 @@ import type {
   AnyAgentTool,
   VikiClowPluginApi,
   VikiClowPluginToolFactory,
-} from "vikiclow/plugin-sdk/lobster";
-import { createLobsterTool, createWorkflowTool } from "./src/lobster-tool.js";
+} from "vikiclow/plugin-sdk/workflow";
+import { createWorkflowTool } from "./src/workflow-tool.js";
 
 export default function register(api: VikiClowPluginApi) {
   api.registerTool(
@@ -11,7 +11,7 @@ export default function register(api: VikiClowPluginApi) {
       if (ctx.sandboxed) {
         return null;
       }
-      return [createWorkflowTool(api), createLobsterTool(api)] as AnyAgentTool[];
+      return [createWorkflowTool(api)] as AnyAgentTool[];
     }) as VikiClowPluginToolFactory,
     { optional: true },
   );

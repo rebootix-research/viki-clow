@@ -1,6 +1,6 @@
-﻿# Repository Guidelines
+# Repository Guidelines
 
-- Repo: https://github.com/vikiclow/vikiclow
+- Repo: https://github.com/rebootix-research/viki-clow
 - In chat replies, file references must be repo-root relative only (example: `extensions/bluebubbles/src/channel.ts:80`); never absolute paths or `~/...`.
 - GitHub issues/comments/PR comments: use literal multiline strings or `-F - <<'EOF'` (or $'...') for real newlines; never embed "\\n".
 - GitHub comment footgun: never use `gh issue/pr comment -b "..."` when body contains backticks or shell chars. Always use single-quoted heredoc (`-F - <<'EOF'`) so no command substitution/escaping corruption.

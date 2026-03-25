@@ -1,8 +1,8 @@
 ---
 read_when:
-  - 你想为 /new、/reset、/stop 和智能体生命周期事件实现事件驱动自动化
-  - 你想构建、安装或调试 hooks
-summary: Hooks：用于命令和生命周期事件的事件驱动自动化
+  - ä½ æƒ³ä¸º /newã€/resetã€/stop å’Œæ™ºèƒ½ä½“ç”Ÿå‘½å‘¨æœŸäº‹ä»¶å®žçŽ°äº‹ä»¶é©±åŠ¨è‡ªåŠ¨åŒ–
+  - ä½ æƒ³æž„å»ºã€å®‰è£…æˆ–è°ƒè¯• hooks
+summary: Hooksï¼šç”¨äºŽå‘½ä»¤å’Œç”Ÿå‘½å‘¨æœŸäº‹ä»¶çš„äº‹ä»¶é©±åŠ¨è‡ªåŠ¨åŒ–
 title: Hooks
 x-i18n:
   generated_at: "2026-02-03T07:50:59Z"
@@ -15,100 +15,100 @@ x-i18n:
 
 # Hooks
 
-Hooks 提供了一个可扩展的事件驱动系统，用于响应智能体命令和事件自动执行操作。Hooks 从目录中自动发现，可以通过 CLI 命令管理，类似于 VikiClow 中 Skills 的工作方式。
+Hooks æä¾›äº†ä¸€ä¸ªå¯æ‰©å±•çš„äº‹ä»¶é©±åŠ¨ç³»ç»Ÿï¼Œç”¨äºŽå“åº”æ™ºèƒ½ä½“å‘½ä»¤å’Œäº‹ä»¶è‡ªåŠ¨æ‰§è¡Œæ“ä½œã€‚Hooks ä»Žç›®å½•ä¸­è‡ªåŠ¨å‘çŽ°ï¼Œå¯ä»¥é€šè¿‡ CLI å‘½ä»¤ç®¡ç†ï¼Œç±»ä¼¼äºŽ VikiClow ä¸­ Skills çš„å·¥ä½œæ–¹å¼ã€‚
 
-## 入门指南
+## å…¥é—¨æŒ‡å—
 
-Hooks 是在事件发生时运行的小脚本。有两种类型：
+Hooks æ˜¯åœ¨äº‹ä»¶å‘ç”Ÿæ—¶è¿è¡Œçš„å°è„šæœ¬ã€‚æœ‰ä¸¤ç§ç±»åž‹ï¼š
 
-- **Hooks**（本页）：当智能体事件触发时在 Gateway 网关内运行，如 `/new`、`/reset`、`/stop` 或生命周期事件。
-- **Webhooks**：外部 HTTP webhooks，让其他系统触发 VikiClow 中的工作。参见 [Webhook Hooks](/automation/webhook) 或使用 `vikiclow webhooks` 获取 Gmail 助手命令。
+- **Hooks**ï¼ˆæœ¬é¡µï¼‰ï¼šå½“æ™ºèƒ½ä½“äº‹ä»¶è§¦å‘æ—¶åœ¨ Gateway ç½‘å…³å†…è¿è¡Œï¼Œå¦‚ `/new`ã€`/reset`ã€`/stop` æˆ–ç”Ÿå‘½å‘¨æœŸäº‹ä»¶ã€‚
+- **Webhooks**ï¼šå¤–éƒ¨ HTTP webhooksï¼Œè®©å…¶ä»–ç³»ç»Ÿè§¦å‘ VikiClow ä¸­çš„å·¥ä½œã€‚å‚è§ [Webhook Hooks](/automation/webhook) æˆ–ä½¿ç”¨ `vikiclow webhooks` èŽ·å– Gmail åŠ©æ‰‹å‘½ä»¤ã€‚
 
-Hooks 也可以捆绑在插件中；参见 [插件](/tools/plugin#plugin-hooks)。
+Hooks ä¹Ÿå¯ä»¥æ†ç»‘åœ¨æ’ä»¶ä¸­ï¼›å‚è§ [æ’ä»¶](/tools/plugin#plugin-hooks)ã€‚
 
-常见用途：
+å¸¸è§ç”¨é€”ï¼š
 
-- 重置会话时保存记忆快照
-- 保留命令审计跟踪用于故障排除或合规
-- 会话开始或结束时触发后续自动化
-- 事件触发时向智能体工作区写入文件或调用外部 API
+- é‡ç½®ä¼šè¯æ—¶ä¿å­˜è®°å¿†å¿«ç…§
+- ä¿ç•™å‘½ä»¤å®¡è®¡è·Ÿè¸ªç”¨äºŽæ•…éšœæŽ’é™¤æˆ–åˆè§„
+- ä¼šè¯å¼€å§‹æˆ–ç»“æŸæ—¶è§¦å‘åŽç»­è‡ªåŠ¨åŒ–
+- äº‹ä»¶è§¦å‘æ—¶å‘æ™ºèƒ½ä½“å·¥ä½œåŒºå†™å…¥æ–‡ä»¶æˆ–è°ƒç”¨å¤–éƒ¨ API
 
-如果你能写一个小的 TypeScript 函数，你就能写一个 hook。Hooks 会自动发现，你可以通过 CLI 启用或禁用它们。
+å¦‚æžœä½ èƒ½å†™ä¸€ä¸ªå°çš„ TypeScript å‡½æ•°ï¼Œä½ å°±èƒ½å†™ä¸€ä¸ª hookã€‚Hooks ä¼šè‡ªåŠ¨å‘çŽ°ï¼Œä½ å¯ä»¥é€šè¿‡ CLI å¯ç”¨æˆ–ç¦ç”¨å®ƒä»¬ã€‚
 
-## 概述
+## æ¦‚è¿°
 
-hooks 系统允许你：
+hooks ç³»ç»Ÿå…è®¸ä½ ï¼š
 
-- 在发出 `/new` 时将会话上下文保存到记忆
-- 记录所有命令以供审计
-- 在智能体生命周期事件上触发自定义自动化
-- 在不修改核心代码的情况下扩展 VikiClow 的行为
+- åœ¨å‘å‡º `/new` æ—¶å°†ä¼šè¯ä¸Šä¸‹æ–‡ä¿å­˜åˆ°è®°å¿†
+- è®°å½•æ‰€æœ‰å‘½ä»¤ä»¥ä¾›å®¡è®¡
+- åœ¨æ™ºèƒ½ä½“ç”Ÿå‘½å‘¨æœŸäº‹ä»¶ä¸Šè§¦å‘è‡ªå®šä¹‰è‡ªåŠ¨åŒ–
+- åœ¨ä¸ä¿®æ”¹æ ¸å¿ƒä»£ç çš„æƒ…å†µä¸‹æ‰©å±• VikiClow çš„è¡Œä¸º
 
-## 入门
+## å…¥é—¨
 
-### 捆绑的 Hooks
+### æ†ç»‘çš„ Hooks
 
-VikiClow 附带三个自动发现的捆绑 hooks：
+VikiClow é™„å¸¦ä¸‰ä¸ªè‡ªåŠ¨å‘çŽ°çš„æ†ç»‘ hooksï¼š
 
-- **💾 session-memory**：当你发出 `/new` 时将会话上下文保存到智能体工作区（默认 `~/.vikiclow/workspace/memory/`）
-- **📝 command-logger**：将所有命令事件记录到 `~/.vikiclow/logs/commands.log`
-- **🚀 boot-md**：当 Gateway 网关启动时运行 `BOOT.md`（需要启用内部 hooks）
+- **ðŸ’¾ session-memory**ï¼šå½“ä½ å‘å‡º `/new` æ—¶å°†ä¼šè¯ä¸Šä¸‹æ–‡ä¿å­˜åˆ°æ™ºèƒ½ä½“å·¥ä½œåŒºï¼ˆé»˜è®¤ `~/.vikiclow/workspace/memory/`ï¼‰
+- **ðŸ“ command-logger**ï¼šå°†æ‰€æœ‰å‘½ä»¤äº‹ä»¶è®°å½•åˆ° `~/.vikiclow/logs/commands.log`
+- **ðŸš€ boot-md**ï¼šå½“ Gateway ç½‘å…³å¯åŠ¨æ—¶è¿è¡Œ `BOOT.md`ï¼ˆéœ€è¦å¯ç”¨å†…éƒ¨ hooksï¼‰
 
-列出可用的 hooks：
+åˆ—å‡ºå¯ç”¨çš„ hooksï¼š
 
 ```bash
 vikiclow hooks list
 ```
 
-启用一个 hook：
+å¯ç”¨ä¸€ä¸ª hookï¼š
 
 ```bash
 vikiclow hooks enable session-memory
 ```
 
-检查 hook 状态：
+æ£€æŸ¥ hook çŠ¶æ€ï¼š
 
 ```bash
 vikiclow hooks check
 ```
 
-获取详细信息：
+èŽ·å–è¯¦ç»†ä¿¡æ¯ï¼š
 
 ```bash
 vikiclow hooks info session-memory
 ```
 
-### 新手引导
+### æ–°æ‰‹å¼•å¯¼
 
-在新手引导期间（`vikiclow onboard`），你将被提示启用推荐的 hooks。向导会自动发现符合条件的 hooks 并呈现供选择。
+åœ¨æ–°æ‰‹å¼•å¯¼æœŸé—´ï¼ˆ`vikiclow onboard`ï¼‰ï¼Œä½ å°†è¢«æç¤ºå¯ç”¨æŽ¨èçš„ hooksã€‚å‘å¯¼ä¼šè‡ªåŠ¨å‘çŽ°ç¬¦åˆæ¡ä»¶çš„ hooks å¹¶å‘ˆçŽ°ä¾›é€‰æ‹©ã€‚
 
-## Hook 发现
+## Hook å‘çŽ°
 
-Hooks 从三个目录自动发现（按优先级顺序）：
+Hooks ä»Žä¸‰ä¸ªç›®å½•è‡ªåŠ¨å‘çŽ°ï¼ˆæŒ‰ä¼˜å…ˆçº§é¡ºåºï¼‰ï¼š
 
-1. **工作区 hooks**：`<workspace>/hooks/`（每智能体，最高优先级）
-2. **托管 hooks**：`~/.vikiclow/hooks/`（用户安装，跨工作区共享）
-3. **捆绑 hooks**：`<vikiclow>/dist/hooks/bundled/`（随 VikiClow 附带）
+1. **å·¥ä½œåŒº hooks**ï¼š`<workspace>/hooks/`ï¼ˆæ¯æ™ºèƒ½ä½“ï¼Œæœ€é«˜ä¼˜å…ˆçº§ï¼‰
+2. **æ‰˜ç®¡ hooks**ï¼š`~/.vikiclow/hooks/`ï¼ˆç”¨æˆ·å®‰è£…ï¼Œè·¨å·¥ä½œåŒºå…±äº«ï¼‰
+3. **æ†ç»‘ hooks**ï¼š`<vikiclow>/dist/hooks/bundled/`ï¼ˆéš VikiClow é™„å¸¦ï¼‰
 
-托管 hook 目录可以是**单个 hook** 或 **hook 包**（包目录）。
+æ‰˜ç®¡ hook ç›®å½•å¯ä»¥æ˜¯**å•ä¸ª hook** æˆ– **hook åŒ…**ï¼ˆåŒ…ç›®å½•ï¼‰ã€‚
 
-每个 hook 是一个包含以下内容的目录：
+æ¯ä¸ª hook æ˜¯ä¸€ä¸ªåŒ…å«ä»¥ä¸‹å†…å®¹çš„ç›®å½•ï¼š
 
 ```
 my-hook/
-├── HOOK.md          # 元数据 + 文档
-└── handler.ts       # 处理程序实现
+â”œâ”€â”€ HOOK.md          # å…ƒæ•°æ® + æ–‡æ¡£
+â””â”€â”€ handler.ts       # å¤„ç†ç¨‹åºå®žçŽ°
 ```
 
-## Hook 包（npm/archives）
+## Hook åŒ…ï¼ˆnpm/archivesï¼‰
 
-Hook 包是标准的 npm 包，通过 `package.json` 中的 `vikiclow.hooks` 导出一个或多个 hooks。使用以下命令安装：
+Hook åŒ…æ˜¯æ ‡å‡†çš„ npm åŒ…ï¼Œé€šè¿‡ `package.json` ä¸­çš„ `vikiclow.hooks` å¯¼å‡ºä¸€ä¸ªæˆ–å¤šä¸ª hooksã€‚ä½¿ç”¨ä»¥ä¸‹å‘½ä»¤å®‰è£…ï¼š
 
 ```bash
 vikiclow hooks install <path-or-spec>
 ```
 
-示例 `package.json`：
+ç¤ºä¾‹ `package.json`ï¼š
 
 ```json
 {
@@ -120,14 +120,14 @@ vikiclow hooks install <path-or-spec>
 }
 ```
 
-每个条目指向包含 `HOOK.md` 和 `handler.ts`（或 `index.ts`）的 hook 目录。
-Hook 包可以附带依赖；它们将安装在 `~/.vikiclow/hooks/<id>` 下。
+æ¯ä¸ªæ¡ç›®æŒ‡å‘åŒ…å« `HOOK.md` å’Œ `handler.ts`ï¼ˆæˆ– `index.ts`ï¼‰çš„ hook ç›®å½•ã€‚
+Hook åŒ…å¯ä»¥é™„å¸¦ä¾èµ–ï¼›å®ƒä»¬å°†å®‰è£…åœ¨ `~/.vikiclow/hooks/<id>` ä¸‹ã€‚
 
-## Hook 结构
+## Hook ç»“æž„
 
-### HOOK.md 格式
+### HOOK.md æ ¼å¼
 
-`HOOK.md` 文件在 YAML frontmatter 中包含元数据，加上 Markdown 文档：
+`HOOK.md` æ–‡ä»¶åœ¨ YAML frontmatter ä¸­åŒ…å«å…ƒæ•°æ®ï¼ŒåŠ ä¸Š Markdown æ–‡æ¡£ï¼š
 
 ```markdown
 ---
@@ -135,7 +135,7 @@ name: my-hook
 description: "Short description of what this hook does"
 homepage: https://docs.vikiclow.ai/automation/hooks#my-hook
 metadata:
-  { "vikiclow": { "emoji": "🔗", "events": ["command:new"], "requires": { "bins": ["node"] } } }
+  { "vikiclow": { "emoji": "ðŸ”—", "events": ["command:new"], "requires": { "bins": ["node"] } } }
 ---
 
 # My Hook
@@ -157,26 +157,26 @@ Detailed documentation goes here...
 No configuration needed.
 ```
 
-### 元数据字段
+### å…ƒæ•°æ®å­—æ®µ
 
-`metadata.vikiclow` 对象支持：
+`metadata.vikiclow` å¯¹è±¡æ”¯æŒï¼š
 
-- **`emoji`**：CLI 的显示表情符号（例如 `"💾"`）
-- **`events`**：要监听的事件数组（例如 `["command:new", "command:reset"]`）
-- **`export`**：要使用的命名导出（默认为 `"default"`）
-- **`homepage`**：文档 URL
-- **`requires`**：可选要求
-  - **`bins`**：PATH 中需要的二进制文件（例如 `["git", "node"]`）
-  - **`anyBins`**：这些二进制文件中至少有一个必须存在
-  - **`env`**：需要的环境变量
-  - **`config`**：需要的配置路径（例如 `["workspace.dir"]`）
-  - **`os`**：需要的平台（例如 `["darwin", "linux"]`）
-- **`always`**：绕过资格检查（布尔值）
-- **`install`**：安装方法（对于捆绑 hooks：`[{"id":"bundled","kind":"bundled"}]`）
+- **`emoji`**ï¼šCLI çš„æ˜¾ç¤ºè¡¨æƒ…ç¬¦å·ï¼ˆä¾‹å¦‚ `"ðŸ’¾"`ï¼‰
+- **`events`**ï¼šè¦ç›‘å¬çš„äº‹ä»¶æ•°ç»„ï¼ˆä¾‹å¦‚ `["command:new", "command:reset"]`ï¼‰
+- **`export`**ï¼šè¦ä½¿ç”¨çš„å‘½åå¯¼å‡ºï¼ˆé»˜è®¤ä¸º `"default"`ï¼‰
+- **`homepage`**ï¼šæ–‡æ¡£ URL
+- **`requires`**ï¼šå¯é€‰è¦æ±‚
+  - **`bins`**ï¼šPATH ä¸­éœ€è¦çš„äºŒè¿›åˆ¶æ–‡ä»¶ï¼ˆä¾‹å¦‚ `["git", "node"]`ï¼‰
+  - **`anyBins`**ï¼šè¿™äº›äºŒè¿›åˆ¶æ–‡ä»¶ä¸­è‡³å°‘æœ‰ä¸€ä¸ªå¿…é¡»å­˜åœ¨
+  - **`env`**ï¼šéœ€è¦çš„çŽ¯å¢ƒå˜é‡
+  - **`config`**ï¼šéœ€è¦çš„é…ç½®è·¯å¾„ï¼ˆä¾‹å¦‚ `["workspace.dir"]`ï¼‰
+  - **`os`**ï¼šéœ€è¦çš„å¹³å°ï¼ˆä¾‹å¦‚ `["darwin", "linux"]`ï¼‰
+- **`always`**ï¼šç»•è¿‡èµ„æ ¼æ£€æŸ¥ï¼ˆå¸ƒå°”å€¼ï¼‰
+- **`install`**ï¼šå®‰è£…æ–¹æ³•ï¼ˆå¯¹äºŽæ†ç»‘ hooksï¼š`[{"id":"bundled","kind":"bundled"}]`ï¼‰
 
-### 处理程序实现
+### å¤„ç†ç¨‹åºå®žçŽ°
 
-`handler.ts` 文件导出一个 `HookHandler` 函数：
+`handler.ts` æ–‡ä»¶å¯¼å‡ºä¸€ä¸ª `HookHandler` å‡½æ•°ï¼š
 
 ```typescript
 import type { HookHandler } from "../../src/hooks/hooks.js";
@@ -194,15 +194,15 @@ const myHandler: HookHandler = async (event) => {
   // Your custom logic here
 
   // Optionally send message to user
-  event.messages.push("✨ My hook executed!");
+  event.messages.push("âœ¨ My hook executed!");
 };
 
 export default myHandler;
 ```
 
-#### 事件上下文
+#### äº‹ä»¶ä¸Šä¸‹æ–‡
 
-每个事件包含：
+æ¯ä¸ªäº‹ä»¶åŒ…å«ï¼š
 
 ```typescript
 {
@@ -224,64 +224,64 @@ export default myHandler;
 }
 ```
 
-## 事件类型
+## äº‹ä»¶ç±»åž‹
 
-### 命令事件
+### å‘½ä»¤äº‹ä»¶
 
-当发出智能体命令时触发：
+å½“å‘å‡ºæ™ºèƒ½ä½“å‘½ä»¤æ—¶è§¦å‘ï¼š
 
-- **`command`**：所有命令事件（通用监听器）
-- **`command:new`**：当发出 `/new` 命令时
-- **`command:reset`**：当发出 `/reset` 命令时
-- **`command:stop`**：当发出 `/stop` 命令时
+- **`command`**ï¼šæ‰€æœ‰å‘½ä»¤äº‹ä»¶ï¼ˆé€šç”¨ç›‘å¬å™¨ï¼‰
+- **`command:new`**ï¼šå½“å‘å‡º `/new` å‘½ä»¤æ—¶
+- **`command:reset`**ï¼šå½“å‘å‡º `/reset` å‘½ä»¤æ—¶
+- **`command:stop`**ï¼šå½“å‘å‡º `/stop` å‘½ä»¤æ—¶
 
-### 智能体事件
+### æ™ºèƒ½ä½“äº‹ä»¶
 
-- **`agent:bootstrap`**：在注入工作区引导文件之前（hooks 可以修改 `context.bootstrapFiles`）
+- **`agent:bootstrap`**ï¼šåœ¨æ³¨å…¥å·¥ä½œåŒºå¼•å¯¼æ–‡ä»¶ä¹‹å‰ï¼ˆhooks å¯ä»¥ä¿®æ”¹ `context.bootstrapFiles`ï¼‰
 
-### Gateway 网关事件
+### Gateway ç½‘å…³äº‹ä»¶
 
-当 Gateway 网关启动时触发：
+å½“ Gateway ç½‘å…³å¯åŠ¨æ—¶è§¦å‘ï¼š
 
-- **`gateway:startup`**：在渠道启动和 hooks 加载之后
+- **`gateway:startup`**ï¼šåœ¨æ¸ é“å¯åŠ¨å’Œ hooks åŠ è½½ä¹‹åŽ
 
-### 工具结果 Hooks（插件 API）
+### å·¥å…·ç»“æžœ Hooksï¼ˆæ’ä»¶ APIï¼‰
 
-这些 hooks 不是事件流监听器；它们让插件在 VikiClow 持久化工具结果之前同步调整它们。
+è¿™äº› hooks ä¸æ˜¯äº‹ä»¶æµç›‘å¬å™¨ï¼›å®ƒä»¬è®©æ’ä»¶åœ¨ VikiClow æŒä¹…åŒ–å·¥å…·ç»“æžœä¹‹å‰åŒæ­¥è°ƒæ•´å®ƒä»¬ã€‚
 
-- **`tool_result_persist`**：在工具结果写入会话记录之前转换它们。必须是同步的；返回更新后的工具结果负载或 `undefined` 保持原样。参见 [智能体循环](/concepts/agent-loop)。
+- **`tool_result_persist`**ï¼šåœ¨å·¥å…·ç»“æžœå†™å…¥ä¼šè¯è®°å½•ä¹‹å‰è½¬æ¢å®ƒä»¬ã€‚å¿…é¡»æ˜¯åŒæ­¥çš„ï¼›è¿”å›žæ›´æ–°åŽçš„å·¥å…·ç»“æžœè´Ÿè½½æˆ– `undefined` ä¿æŒåŽŸæ ·ã€‚å‚è§ [æ™ºèƒ½ä½“å¾ªçŽ¯](/concepts/agent-loop)ã€‚
 
-### 未来事件
+### æœªæ¥äº‹ä»¶
 
-计划中的事件类型：
+è®¡åˆ’ä¸­çš„äº‹ä»¶ç±»åž‹ï¼š
 
-- **`session:start`**：当新会话开始时
-- **`session:end`**：当会话结束时
-- **`agent:error`**：当智能体遇到错误时
-- **`message:sent`**：当消息被发送时
-- **`message:received`**：当消息被接收时
+- **`session:start`**ï¼šå½“æ–°ä¼šè¯å¼€å§‹æ—¶
+- **`session:end`**ï¼šå½“ä¼šè¯ç»“æŸæ—¶
+- **`agent:error`**ï¼šå½“æ™ºèƒ½ä½“é‡åˆ°é”™è¯¯æ—¶
+- **`message:sent`**ï¼šå½“æ¶ˆæ¯è¢«å‘é€æ—¶
+- **`message:received`**ï¼šå½“æ¶ˆæ¯è¢«æŽ¥æ”¶æ—¶
 
-## 创建自定义 Hooks
+## åˆ›å»ºè‡ªå®šä¹‰ Hooks
 
-### 1. 选择位置
+### 1. é€‰æ‹©ä½ç½®
 
-- **工作区 hooks**（`<workspace>/hooks/`）：每智能体，最高优先级
-- **托管 hooks**（`~/.vikiclow/hooks/`）：跨工作区共享
+- **å·¥ä½œåŒº hooks**ï¼ˆ`<workspace>/hooks/`ï¼‰ï¼šæ¯æ™ºèƒ½ä½“ï¼Œæœ€é«˜ä¼˜å…ˆçº§
+- **æ‰˜ç®¡ hooks**ï¼ˆ`~/.vikiclow/hooks/`ï¼‰ï¼šè·¨å·¥ä½œåŒºå…±äº«
 
-### 2. 创建目录结构
+### 2. åˆ›å»ºç›®å½•ç»“æž„
 
 ```bash
 mkdir -p ~/.vikiclow/hooks/my-hook
 cd ~/.vikiclow/hooks/my-hook
 ```
 
-### 3. 创建 HOOK.md
+### 3. åˆ›å»º HOOK.md
 
 ```markdown
 ---
 name: my-hook
 description: "Does something useful"
-metadata: { "vikiclow": { "emoji": "🎯", "events": ["command:new"] } }
+metadata: { "vikiclow": { "emoji": "ðŸŽ¯", "events": ["command:new"] } }
 ---
 
 # My Custom Hook
@@ -289,7 +289,7 @@ metadata: { "vikiclow": { "emoji": "🎯", "events": ["command:new"] } }
 This hook does something useful when you issue `/new`.
 ```
 
-### 4. 创建 handler.ts
+### 4. åˆ›å»º handler.ts
 
 ```typescript
 import type { HookHandler } from "../../src/hooks/hooks.js";
@@ -306,7 +306,7 @@ const handler: HookHandler = async (event) => {
 export default handler;
 ```
 
-### 5. 启用并测试
+### 5. å¯ç”¨å¹¶æµ‹è¯•
 
 ```bash
 # Verify hook is discovered
@@ -321,9 +321,9 @@ vikiclow hooks enable my-hook
 # Send /new via your messaging channel
 ```
 
-## 配置
+## é…ç½®
 
-### 新配置格式（推荐）
+### æ–°é…ç½®æ ¼å¼ï¼ˆæŽ¨èï¼‰
 
 ```json
 {
@@ -339,9 +339,9 @@ vikiclow hooks enable my-hook
 }
 ```
 
-### 每 Hook 配置
+### æ¯ Hook é…ç½®
 
-Hooks 可以有自定义配置：
+Hooks å¯ä»¥æœ‰è‡ªå®šä¹‰é…ç½®ï¼š
 
 ```json
 {
@@ -361,9 +361,9 @@ Hooks 可以有自定义配置：
 }
 ```
 
-### 额外目录
+### é¢å¤–ç›®å½•
 
-从额外目录加载 hooks：
+ä»Žé¢å¤–ç›®å½•åŠ è½½ hooksï¼š
 
 ```json
 {
@@ -378,9 +378,9 @@ Hooks 可以有自定义配置：
 }
 ```
 
-### 遗留配置格式（仍然支持）
+### é—ç•™é…ç½®æ ¼å¼ï¼ˆä»ç„¶æ”¯æŒï¼‰
 
-旧配置格式仍然有效以保持向后兼容：
+æ—§é…ç½®æ ¼å¼ä»ç„¶æœ‰æ•ˆä»¥ä¿æŒå‘åŽå…¼å®¹ï¼š
 
 ```json
 {
@@ -399,11 +399,11 @@ Hooks 可以有自定义配置：
 }
 ```
 
-**迁移**：对新 hooks 使用基于发现的新系统。遗留处理程序在基于目录的 hooks 之后加载。
+**è¿ç§»**ï¼šå¯¹æ–° hooks ä½¿ç”¨åŸºäºŽå‘çŽ°çš„æ–°ç³»ç»Ÿã€‚é—ç•™å¤„ç†ç¨‹åºåœ¨åŸºäºŽç›®å½•çš„ hooks ä¹‹åŽåŠ è½½ã€‚
 
-## CLI 命令
+## CLI å‘½ä»¤
 
-### 列出 Hooks
+### åˆ—å‡º Hooks
 
 ```bash
 # List all hooks
@@ -419,7 +419,7 @@ vikiclow hooks list --verbose
 vikiclow hooks list --json
 ```
 
-### Hook 信息
+### Hook ä¿¡æ¯
 
 ```bash
 # Show detailed info about a hook
@@ -429,7 +429,7 @@ vikiclow hooks info session-memory
 vikiclow hooks info session-memory --json
 ```
 
-### 检查资格
+### æ£€æŸ¥èµ„æ ¼
 
 ```bash
 # Show eligibility summary
@@ -439,7 +439,7 @@ vikiclow hooks check
 vikiclow hooks check --json
 ```
 
-### 启用/禁用
+### å¯ç”¨/ç¦ç”¨
 
 ```bash
 # Enable a hook
@@ -449,26 +449,26 @@ vikiclow hooks enable session-memory
 vikiclow hooks disable command-logger
 ```
 
-## 捆绑的 Hooks
+## æ†ç»‘çš„ Hooks
 
 ### session-memory
 
-当你发出 `/new` 时将会话上下文保存到记忆。
+å½“ä½ å‘å‡º `/new` æ—¶å°†ä¼šè¯ä¸Šä¸‹æ–‡ä¿å­˜åˆ°è®°å¿†ã€‚
 
-**事件**：`command:new`
+**äº‹ä»¶**ï¼š`command:new`
 
-**要求**：必须配置 `workspace.dir`
+**è¦æ±‚**ï¼šå¿…é¡»é…ç½® `workspace.dir`
 
-**输出**：`<workspace>/memory/YYYY-MM-DD-slug.md`（默认为 `~/.vikiclow/workspace`）
+**è¾“å‡º**ï¼š`<workspace>/memory/YYYY-MM-DD-slug.md`ï¼ˆé»˜è®¤ä¸º `~/.vikiclow/workspace`ï¼‰
 
-**功能**：
+**åŠŸèƒ½**ï¼š
 
-1. 使用预重置会话条目定位正确的记录
-2. 提取最后 15 行对话
-3. 使用 LLM 生成描述性文件名 slug
-4. 将会话元数据保存到带日期的记忆文件
+1. ä½¿ç”¨é¢„é‡ç½®ä¼šè¯æ¡ç›®å®šä½æ­£ç¡®çš„è®°å½•
+2. æå–æœ€åŽ 15 è¡Œå¯¹è¯
+3. ä½¿ç”¨ LLM ç”Ÿæˆæè¿°æ€§æ–‡ä»¶å slug
+4. å°†ä¼šè¯å…ƒæ•°æ®ä¿å­˜åˆ°å¸¦æ—¥æœŸçš„è®°å¿†æ–‡ä»¶
 
-**示例输出**：
+**ç¤ºä¾‹è¾“å‡º**ï¼š
 
 ```markdown
 # Session: 2026-01-16 14:30:00 UTC
@@ -478,13 +478,13 @@ vikiclow hooks disable command-logger
 - **Source**: telegram
 ```
 
-**文件名示例**：
+**æ–‡ä»¶åç¤ºä¾‹**ï¼š
 
 - `2026-01-16-vendor-pitch.md`
 - `2026-01-16-api-design.md`
-- `2026-01-16-1430.md`（如果 slug 生成失败则回退到时间戳）
+- `2026-01-16-1430.md`ï¼ˆå¦‚æžœ slug ç”Ÿæˆå¤±è´¥åˆ™å›žé€€åˆ°æ—¶é—´æˆ³ï¼‰
 
-**启用**：
+**å¯ç”¨**ï¼š
 
 ```bash
 vikiclow hooks enable session-memory
@@ -492,28 +492,28 @@ vikiclow hooks enable session-memory
 
 ### command-logger
 
-将所有命令事件记录到集中审计文件。
+å°†æ‰€æœ‰å‘½ä»¤äº‹ä»¶è®°å½•åˆ°é›†ä¸­å®¡è®¡æ–‡ä»¶ã€‚
 
-**事件**：`command`
+**äº‹ä»¶**ï¼š`command`
 
-**要求**：无
+**è¦æ±‚**ï¼šæ— 
 
-**输出**：`~/.vikiclow/logs/commands.log`
+**è¾“å‡º**ï¼š`~/.vikiclow/logs/commands.log`
 
-**功能**：
+**åŠŸèƒ½**ï¼š
 
-1. 捕获事件详情（命令操作、时间戳、会话键、发送者 ID、来源）
-2. 以 JSONL 格式追加到日志文件
-3. 在后台静默运行
+1. æ•èŽ·äº‹ä»¶è¯¦æƒ…ï¼ˆå‘½ä»¤æ“ä½œã€æ—¶é—´æˆ³ã€ä¼šè¯é”®ã€å‘é€è€… IDã€æ¥æºï¼‰
+2. ä»¥ JSONL æ ¼å¼è¿½åŠ åˆ°æ—¥å¿—æ–‡ä»¶
+3. åœ¨åŽå°é™é»˜è¿è¡Œ
 
-**示例日志条目**：
+**ç¤ºä¾‹æ—¥å¿—æ¡ç›®**ï¼š
 
 ```jsonl
 {"timestamp":"2026-01-16T14:30:00.000Z","action":"new","sessionKey":"agent:main:main","senderId":"+1234567890","source":"telegram"}
 {"timestamp":"2026-01-16T15:45:22.000Z","action":"stop","sessionKey":"agent:main:main","senderId":"user@example.com","source":"whatsapp"}
 ```
 
-**查看日志**：
+**æŸ¥çœ‹æ—¥å¿—**ï¼š
 
 ```bash
 # View recent commands
@@ -526,7 +526,7 @@ cat ~/.vikiclow/logs/commands.log | jq .
 grep '"action":"new"' ~/.vikiclow/logs/commands.log | jq .
 ```
 
-**启用**：
+**å¯ç”¨**ï¼š
 
 ```bash
 vikiclow hooks enable command-logger
@@ -534,47 +534,47 @@ vikiclow hooks enable command-logger
 
 ### boot-md
 
-当 Gateway 网关启动时运行 `BOOT.md`（在渠道启动之后）。
-必须启用内部 hooks 才能运行。
+å½“ Gateway ç½‘å…³å¯åŠ¨æ—¶è¿è¡Œ `BOOT.md`ï¼ˆåœ¨æ¸ é“å¯åŠ¨ä¹‹åŽï¼‰ã€‚
+å¿…é¡»å¯ç”¨å†…éƒ¨ hooks æ‰èƒ½è¿è¡Œã€‚
 
-**事件**：`gateway:startup`
+**äº‹ä»¶**ï¼š`gateway:startup`
 
-**要求**：必须配置 `workspace.dir`
+**è¦æ±‚**ï¼šå¿…é¡»é…ç½® `workspace.dir`
 
-**功能**：
+**åŠŸèƒ½**ï¼š
 
-1. 从你的工作区读取 `BOOT.md`
-2. 通过智能体运行器运行指令
-3. 通过 message 工具发送任何请求的出站消息
+1. ä»Žä½ çš„å·¥ä½œåŒºè¯»å– `BOOT.md`
+2. é€šè¿‡æ™ºèƒ½ä½“è¿è¡Œå™¨è¿è¡ŒæŒ‡ä»¤
+3. é€šè¿‡ message å·¥å…·å‘é€ä»»ä½•è¯·æ±‚çš„å‡ºç«™æ¶ˆæ¯
 
-**启用**：
+**å¯ç”¨**ï¼š
 
 ```bash
 vikiclow hooks enable boot-md
 ```
 
-## 最佳实践
+## æœ€ä½³å®žè·µ
 
-### 保持处理程序快速
+### ä¿æŒå¤„ç†ç¨‹åºå¿«é€Ÿ
 
-Hooks 在命令处理期间运行。保持它们轻量：
+Hooks åœ¨å‘½ä»¤å¤„ç†æœŸé—´è¿è¡Œã€‚ä¿æŒå®ƒä»¬è½»é‡ï¼š
 
 ```typescript
-// ✓ Good - async work, returns immediately
+// âœ“ Good - async work, returns immediately
 const handler: HookHandler = async (event) => {
   void processInBackground(event); // Fire and forget
 };
 
-// ✗ Bad - blocks command processing
+// âœ— Bad - blocks command processing
 const handler: HookHandler = async (event) => {
   await slowDatabaseQuery(event);
   await evenSlowerAPICall(event);
 };
 ```
 
-### 优雅处理错误
+### ä¼˜é›…å¤„ç†é”™è¯¯
 
-始终包装有风险的操作：
+å§‹ç»ˆåŒ…è£…æœ‰é£Žé™©çš„æ“ä½œï¼š
 
 ```typescript
 const handler: HookHandler = async (event) => {
@@ -587,9 +587,9 @@ const handler: HookHandler = async (event) => {
 };
 ```
 
-### 尽早过滤事件
+### å°½æ—©è¿‡æ»¤äº‹ä»¶
 
-如果事件不相关则尽早返回：
+å¦‚æžœäº‹ä»¶ä¸ç›¸å…³åˆ™å°½æ—©è¿”å›žï¼š
 
 ```typescript
 const handler: HookHandler = async (event) => {
@@ -602,25 +602,25 @@ const handler: HookHandler = async (event) => {
 };
 ```
 
-### 使用特定事件键
+### ä½¿ç”¨ç‰¹å®šäº‹ä»¶é”®
 
-尽可能在元数据中指定确切事件：
+å°½å¯èƒ½åœ¨å…ƒæ•°æ®ä¸­æŒ‡å®šç¡®åˆ‡äº‹ä»¶ï¼š
 
 ```yaml
 metadata: { "vikiclow": { "events": ["command:new"] } } # Specific
 ```
 
-而不是：
+è€Œä¸æ˜¯ï¼š
 
 ```yaml
 metadata: { "vikiclow": { "events": ["command"] } } # General - more overhead
 ```
 
-## 调试
+## è°ƒè¯•
 
-### 启用 Hook 日志
+### å¯ç”¨ Hook æ—¥å¿—
 
-Gateway 网关在启动时记录 hook 加载：
+Gateway ç½‘å…³åœ¨å¯åŠ¨æ—¶è®°å½• hook åŠ è½½ï¼š
 
 ```
 Registered hook: session-memory -> command:new
@@ -628,17 +628,17 @@ Registered hook: command-logger -> command
 Registered hook: boot-md -> gateway:startup
 ```
 
-### 检查发现
+### æ£€æŸ¥å‘çŽ°
 
-列出所有发现的 hooks：
+åˆ—å‡ºæ‰€æœ‰å‘çŽ°çš„ hooksï¼š
 
 ```bash
 vikiclow hooks list --verbose
 ```
 
-### 检查注册
+### æ£€æŸ¥æ³¨å†Œ
 
-在你的处理程序中，记录它被调用的时间：
+åœ¨ä½ çš„å¤„ç†ç¨‹åºä¸­ï¼Œè®°å½•å®ƒè¢«è°ƒç”¨çš„æ—¶é—´ï¼š
 
 ```typescript
 const handler: HookHandler = async (event) => {
@@ -647,21 +647,21 @@ const handler: HookHandler = async (event) => {
 };
 ```
 
-### 验证资格
+### éªŒè¯èµ„æ ¼
 
-检查为什么 hook 不符合条件：
+æ£€æŸ¥ä¸ºä»€ä¹ˆ hook ä¸ç¬¦åˆæ¡ä»¶ï¼š
 
 ```bash
 vikiclow hooks info my-hook
 ```
 
-在输出中查找缺失的要求。
+åœ¨è¾“å‡ºä¸­æŸ¥æ‰¾ç¼ºå¤±çš„è¦æ±‚ã€‚
 
-## 测试
+## æµ‹è¯•
 
-### Gateway 网关日志
+### Gateway ç½‘å…³æ—¥å¿—
 
-监控 Gateway 网关日志以查看 hook 执行：
+ç›‘æŽ§ Gateway ç½‘å…³æ—¥å¿—ä»¥æŸ¥çœ‹ hook æ‰§è¡Œï¼š
 
 ```bash
 # macOS
@@ -671,9 +671,9 @@ vikiclow hooks info my-hook
 tail -f ~/.vikiclow/gateway.log
 ```
 
-### 直接测试 Hooks
+### ç›´æŽ¥æµ‹è¯• Hooks
 
-隔离测试你的处理程序：
+éš”ç¦»æµ‹è¯•ä½ çš„å¤„ç†ç¨‹åºï¼š
 
 ```typescript
 import { test } from "vitest";
@@ -691,120 +691,120 @@ test("my handler works", async () => {
 });
 ```
 
-## 架构
+## æž¶æž„
 
-### 核心组件
+### æ ¸å¿ƒç»„ä»¶
 
-- **`src/hooks/types.ts`**：类型定义
-- **`src/hooks/workspace.ts`**：目录扫描和加载
-- **`src/hooks/frontmatter.ts`**：HOOK.md 元数据解析
-- **`src/hooks/config.ts`**：资格检查
-- **`src/hooks/hooks-status.ts`**：状态报告
-- **`src/hooks/loader.ts`**：动态模块加载器
-- **`src/cli/hooks-cli.ts`**：CLI 命令
-- **`src/gateway/server-startup.ts`**：在 Gateway 网关启动时加载 hooks
-- **`src/auto-reply/reply/commands-core.ts`**：触发命令事件
+- **`src/hooks/types.ts`**ï¼šç±»åž‹å®šä¹‰
+- **`src/hooks/workspace.ts`**ï¼šç›®å½•æ‰«æå’ŒåŠ è½½
+- **`src/hooks/frontmatter.ts`**ï¼šHOOK.md å…ƒæ•°æ®è§£æž
+- **`src/hooks/config.ts`**ï¼šèµ„æ ¼æ£€æŸ¥
+- **`src/hooks/hooks-status.ts`**ï¼šçŠ¶æ€æŠ¥å‘Š
+- **`src/hooks/loader.ts`**ï¼šåŠ¨æ€æ¨¡å—åŠ è½½å™¨
+- **`src/cli/hooks-cli.ts`**ï¼šCLI å‘½ä»¤
+- **`src/gateway/server-startup.ts`**ï¼šåœ¨ Gateway ç½‘å…³å¯åŠ¨æ—¶åŠ è½½ hooks
+- **`src/auto-reply/reply/commands-core.ts`**ï¼šè§¦å‘å‘½ä»¤äº‹ä»¶
 
-### 发现流程
-
-```
-Gateway 网关启动
-    ↓
-扫描目录（工作区 → 托管 → 捆绑）
-    ↓
-解析 HOOK.md 文件
-    ↓
-检查资格（bins、env、config、os）
-    ↓
-从符合条件的 hooks 加载处理程序
-    ↓
-为事件注册处理程序
-```
-
-### 事件流程
+### å‘çŽ°æµç¨‹
 
 ```
-用户发送 /new
-    ↓
-命令验证
-    ↓
-创建 hook 事件
-    ↓
-触发 hook（所有注册的处理程序）
-    ↓
-命令处理继续
-    ↓
-会话重置
+Gateway ç½‘å…³å¯åŠ¨
+    â†“
+æ‰«æç›®å½•ï¼ˆå·¥ä½œåŒº â†’ æ‰˜ç®¡ â†’ æ†ç»‘ï¼‰
+    â†“
+è§£æž HOOK.md æ–‡ä»¶
+    â†“
+æ£€æŸ¥èµ„æ ¼ï¼ˆbinsã€envã€configã€osï¼‰
+    â†“
+ä»Žç¬¦åˆæ¡ä»¶çš„ hooks åŠ è½½å¤„ç†ç¨‹åº
+    â†“
+ä¸ºäº‹ä»¶æ³¨å†Œå¤„ç†ç¨‹åº
 ```
 
-## 故障排除
+### äº‹ä»¶æµç¨‹
 
-### Hook 未被发现
+```
+ç”¨æˆ·å‘é€ /new
+    â†“
+å‘½ä»¤éªŒè¯
+    â†“
+åˆ›å»º hook äº‹ä»¶
+    â†“
+è§¦å‘ hookï¼ˆæ‰€æœ‰æ³¨å†Œçš„å¤„ç†ç¨‹åºï¼‰
+    â†“
+å‘½ä»¤å¤„ç†ç»§ç»­
+    â†“
+ä¼šè¯é‡ç½®
+```
 
-1. 检查目录结构：
+## æ•…éšœæŽ’é™¤
+
+### Hook æœªè¢«å‘çŽ°
+
+1. æ£€æŸ¥ç›®å½•ç»“æž„ï¼š
 
    ```bash
    ls -la ~/.vikiclow/hooks/my-hook/
    # Should show: HOOK.md, handler.ts
    ```
 
-2. 验证 HOOK.md 格式：
+2. éªŒè¯ HOOK.md æ ¼å¼ï¼š
 
    ```bash
    cat ~/.vikiclow/hooks/my-hook/HOOK.md
    # Should have YAML frontmatter with name and metadata
    ```
 
-3. 列出所有发现的 hooks：
+3. åˆ—å‡ºæ‰€æœ‰å‘çŽ°çš„ hooksï¼š
    ```bash
    vikiclow hooks list
    ```
 
-### Hook 不符合条件
+### Hook ä¸ç¬¦åˆæ¡ä»¶
 
-检查要求：
+æ£€æŸ¥è¦æ±‚ï¼š
 
 ```bash
 vikiclow hooks info my-hook
 ```
 
-查找缺失的：
+æŸ¥æ‰¾ç¼ºå¤±çš„ï¼š
 
-- 二进制文件（检查 PATH）
-- 环境变量
-- 配置值
-- 操作系统兼容性
+- äºŒè¿›åˆ¶æ–‡ä»¶ï¼ˆæ£€æŸ¥ PATHï¼‰
+- çŽ¯å¢ƒå˜é‡
+- é…ç½®å€¼
+- æ“ä½œç³»ç»Ÿå…¼å®¹æ€§
 
-### Hook 未执行
+### Hook æœªæ‰§è¡Œ
 
-1. 验证 hook 已启用：
+1. éªŒè¯ hook å·²å¯ç”¨ï¼š
 
    ```bash
    vikiclow hooks list
-   # Should show ✓ next to enabled hooks
+   # Should show âœ“ next to enabled hooks
    ```
 
-2. 重启你的 Gateway 网关进程以重新加载 hooks。
+2. é‡å¯ä½ çš„ Gateway ç½‘å…³è¿›ç¨‹ä»¥é‡æ–°åŠ è½½ hooksã€‚
 
-3. 检查 Gateway 网关日志中的错误：
+3. æ£€æŸ¥ Gateway ç½‘å…³æ—¥å¿—ä¸­çš„é”™è¯¯ï¼š
    ```bash
    ./scripts/clawlog.sh | grep hook
    ```
 
-### 处理程序错误
+### å¤„ç†ç¨‹åºé”™è¯¯
 
-检查 TypeScript/import 错误：
+æ£€æŸ¥ TypeScript/import é”™è¯¯ï¼š
 
 ```bash
 # Test import directly
 node -e "import('./path/to/handler.ts').then(console.log)"
 ```
 
-## 迁移指南
+## è¿ç§»æŒ‡å—
 
-### 从遗留配置到发现
+### ä»Žé—ç•™é…ç½®åˆ°å‘çŽ°
 
-**之前**：
+**ä¹‹å‰**ï¼š
 
 ```json
 {
@@ -822,22 +822,22 @@ node -e "import('./path/to/handler.ts').then(console.log)"
 }
 ```
 
-**之后**：
+**ä¹‹åŽ**ï¼š
 
-1. 创建 hook 目录：
+1. åˆ›å»º hook ç›®å½•ï¼š
 
    ```bash
    mkdir -p ~/.vikiclow/hooks/my-hook
    mv ./hooks/handlers/my-handler.ts ~/.vikiclow/hooks/my-hook/handler.ts
    ```
 
-2. 创建 HOOK.md：
+2. åˆ›å»º HOOK.mdï¼š
 
    ```markdown
    ---
    name: my-hook
    description: "My custom hook"
-   metadata: { "vikiclow": { "emoji": "🎯", "events": ["command:new"] } }
+   metadata: { "vikiclow": { "emoji": "ðŸŽ¯", "events": ["command:new"] } }
    ---
 
    # My Hook
@@ -845,7 +845,7 @@ node -e "import('./path/to/handler.ts').then(console.log)"
    Does something useful.
    ```
 
-3. 更新配置：
+3. æ›´æ–°é…ç½®ï¼š
 
    ```json
    {
@@ -860,23 +860,23 @@ node -e "import('./path/to/handler.ts').then(console.log)"
    }
    ```
 
-4. 验证并重启你的 Gateway 网关进程：
+4. éªŒè¯å¹¶é‡å¯ä½ çš„ Gateway ç½‘å…³è¿›ç¨‹ï¼š
    ```bash
    vikiclow hooks list
-   # Should show: 🎯 my-hook ✓
+   # Should show: ðŸŽ¯ my-hook âœ“
    ```
 
-**迁移的好处**：
+**è¿ç§»çš„å¥½å¤„**ï¼š
 
-- 自动发现
-- CLI 管理
-- 资格检查
-- 更好的文档
-- 一致的结构
+- è‡ªåŠ¨å‘çŽ°
+- CLI ç®¡ç†
+- èµ„æ ¼æ£€æŸ¥
+- æ›´å¥½çš„æ–‡æ¡£
+- ä¸€è‡´çš„ç»“æž„
 
-## 另请参阅
+## å¦è¯·å‚é˜…
 
-- [CLI 参考：hooks](/cli/hooks)
-- [捆绑 Hooks README](https://github.com/vikiclow/vikiclow/tree/main/src/hooks/bundled)
+- [CLI å‚è€ƒï¼šhooks](/cli/hooks)
+- [æ†ç»‘ Hooks README](https://github.com/rebootix-research/viki-clow/tree/main/src/hooks/bundled)
 - [Webhook Hooks](/automation/webhook)
-- [配置](/gateway/configuration#hooks)
+- [é…ç½®](/gateway/configuration#hooks)

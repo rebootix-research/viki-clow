@@ -245,6 +245,9 @@ importers:
       oxlint-tsgolint:
         specifier: ^0.16.0
         version: 0.16.0
+      postject:
+        specifier: 1.0.0-alpha.6
+        version: 1.0.0-alpha.6
       signal-utils:
         specifier: 0.21.1
         version: 0.21.1(signal-polyfill@0.2.2)
@@ -370,12 +373,6 @@ importers:
       ajv:
         specifier: ^8.18.0
         version: 8.18.0
-
-  extensions/lobster:
-    dependencies:
-      '@sinclair/typebox':
-        specifier: 0.34.48
-        version: 0.34.48
 
   extensions/matrix:
     dependencies:
@@ -511,6 +508,15 @@ importers:
         version: 4.3.6
 
   extensions/whatsapp: {}
+
+  extensions/workflow:
+    dependencies:
+      '@sinclair/typebox':
+        specifier: 0.34.48
+        version: 0.34.48
+      vikiclow:
+        specifier: workspace:*
+        version: link:../..
 
   extensions/zalo:
     dependencies:
@@ -3895,6 +3901,10 @@ packages:
     resolution: {integrity: sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==}
     engines: {node: '>= 6'}
 
+  commander@9.5.0:
+    resolution: {integrity: sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==}
+    engines: {node: ^12.20.0 || >=14}
+
   console-control-strings@1.1.0:
     resolution: {integrity: sha512-ty/fTekppD2fIwRvnZAVdeOiGd1c7YXEixbgJTNzqcxJWKQnjJ/V1bNEEE6hygpM3WjwHFUVK6HTjWSzV4a8sQ==}
 
@@ -5510,6 +5520,11 @@ packages:
   postgres@3.4.8:
     resolution: {integrity: sha512-d+JFcLM17njZaOLkv6SCev7uoLaBtfK86vMUXhW1Z4glPWh4jozno9APvW/XKFJ3CCxVoC7OL38BqRydtu5nGg==}
     engines: {node: '>=12'}
+
+  postject@1.0.0-alpha.6:
+    resolution: {integrity: sha512-b9Eb8h2eVqNE8edvKdwqkrY6O7kAwmI8kcnBv1NScolYJbo59XUF0noFq+lxbC1yN20bmC0WBEbDC5H/7ASb0A==}
+    engines: {node: '>=14.0.0'}
+    hasBin: true
 
   pretty-bytes@6.1.1:
     resolution: {integrity: sha512-mQUvGU6aUFQ+rNvTIAcZuWGRT9a6f6Yrg9bHs4ImKF+HZCEK+plBvnAZYSIQztknZF2qnzNtr6F8s0+IuptdlQ==}
@@ -10777,6 +10792,8 @@ snapshots:
 
   commander@5.1.0: {}
 
+  commander@9.5.0: {}
+
   console-control-strings@1.1.0:
     optional: true
 
@@ -12563,6 +12580,10 @@ snapshots:
       source-map-js: 1.2.1
 
   postgres@3.4.8: {}
+
+  postject@1.0.0-alpha.6:
+    dependencies:
+      commander: 9.5.0
 
   pretty-bytes@6.1.1: {}
 

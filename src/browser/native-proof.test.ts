@@ -180,7 +180,7 @@ describe("native Viki Browser proof", () => {
     });
   });
 
-  it("fails when the manifest does not have a ready session vault", async () => {
+  it("repairs the manifest by materializing a missing session vault directory", async () => {
     await withTempHome(async () => {
       const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "vikiclow-browser-proof-nosession-"));
       tempRoots.push(rootDir);
@@ -218,8 +218,9 @@ describe("native Viki Browser proof", () => {
         },
       });
 
-      expect(proof.passed).toBe(false);
-      expect(proof.notes).toContain("browserd manifest does not include a ready session vault");
+      expect(proof.passed).toBe(true);
+      expect(proof.sessionVaultReady).toBe(true);
+      await expect(fs.stat(manifest.profiles[0]!.sessionVaultDir)).resolves.toBeDefined();
     });
   });
 });

@@ -170,7 +170,7 @@ const mergeUsageIntoAccumulator = (
     (usage.input ?? 0) + (usage.output ?? 0) + (usage.cacheRead ?? 0) + (usage.cacheWrite ?? 0);
   // Track the most recent API call's cache fields for accurate context-size reporting.
   // Accumulated cache totals inflate context size when there are multiple tool-call round-trips,
-  // since each call reports cacheRead ≈ current_context_size.
+  // since each call reports cacheRead â‰ˆ current_context_size.
   target.lastCacheRead = usage.cacheRead ?? 0;
   target.lastCacheWrite = usage.cacheWrite ?? 0;
   target.lastInput = usage.input ?? 0;
@@ -188,9 +188,9 @@ const toNormalizedUsage = (usage: UsageAccumulator) => {
   }
   // Use the LAST API call's cache fields for context-size calculation.
   // The accumulated cacheRead/cacheWrite inflate context size because each tool-call
-  // round-trip reports cacheRead ≈ current_context_size, and summing N calls gives
-  // N × context_size which gets clamped to contextWindow (e.g. 200k).
-  // See: https://github.com/vikiclow/vikiclow/issues/13698
+  // round-trip reports cacheRead â‰ˆ current_context_size, and summing N calls gives
+  // N Ã— context_size which gets clamped to contextWindow (e.g. 200k).
+  // See: https://github.com/rebootix-research/viki-clow/issues/13698
   //
   // We use lastInput/lastCacheRead/lastCacheWrite (from the most recent API call) for
   // cache-related fields, but keep accumulated output (total generated text this turn).
@@ -1103,7 +1103,7 @@ export async function runEmbeddedPiAgent(
                   log.info(
                     `[context-overflow-recovery] Truncated ${truncResult.truncatedCount} tool result(s); retrying prompt`,
                   );
-                  // Do NOT reset overflowCompactionAttempts here — the global cap must remain
+                  // Do NOT reset overflowCompactionAttempts here â€” the global cap must remain
                   // enforced across all iterations to prevent unbounded compaction cycles (OC-65).
                   continue;
                 }

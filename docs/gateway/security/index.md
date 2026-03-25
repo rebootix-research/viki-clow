@@ -5,16 +5,16 @@ read_when:
 title: "Security"
 ---
 
-# Security 🔒
+# Security
 
 > [!WARNING]
-> **Personal assistant trust model:** this guidance assumes one trusted operator boundary per gateway (single-user/personal assistant model).
+> **Single-operator trust model:** this guidance assumes one trusted operator boundary per gateway.
 > VikiClow is **not** a hostile multi-tenant security boundary for multiple adversarial users sharing one agent/gateway.
 > If you need mixed-trust or adversarial-user operation, split trust boundaries (separate gateway + credentials, ideally separate OS users/hosts).
 
-## Scope first: personal assistant security model
+## Scope first: single-operator security model
 
-VikiClow security guidance assumes a **personal assistant** deployment: one trusted operator boundary, potentially many agents.
+VikiClow security guidance assumes a **single-operator** deployment: one trusted operator boundary, potentially many agents.
 
 - Supported security posture: one user/trust boundary per gateway (prefer one OS user/host/VPS per boundary).
 - Not a supported security boundary: one shared gateway/agent used by mutually untrusted or adversarial users.
@@ -38,11 +38,11 @@ vikiclow security audit --json
 
 It flags common footguns (Gateway auth exposure, browser control exposure, elevated allowlists, filesystem permissions).
 
-VikiClow is both a product and an experiment: you’re wiring frontier-model behavior into real messaging surfaces and real tools. **There is no “perfectly secure” setup.** The goal is to be deliberate about:
+VikiClow is both a product and an experiment: you're wiring frontier-model behavior into real messaging surfaces and real tools. **There is no "perfectly secure" setup.** The goal is to be deliberate about:
 
-- who can talk to your bot
-- where the bot is allowed to act
-- what the bot can touch
+- who can reach the runtime
+- where the runtime is allowed to act
+- what the runtime can touch
 
 Start with the smallest access that still works, then widen it as you gain confidence.
 
@@ -67,9 +67,9 @@ Inside one Gateway instance, authenticated operator access is a trusted control-
 - If you need adversarial-user isolation, run separate gateways per trust boundary.
 - Multiple gateways on one machine are technically possible, but not the recommended baseline for multi-user isolation.
 
-## Personal assistant model (not a multi-tenant bus)
+## Single-operator model (not a multi-tenant bus)
 
-VikiClow is designed as a personal assistant security model: one trusted operator boundary, potentially many agents.
+VikiClow is designed as a single-operator execution system: one trusted operator boundary, potentially many agents.
 
 - If several people can message one tool-enabled agent, each of them can steer that same permission set.
 - Per-user session/memory isolation helps privacy, but does not convert a shared agent into per-user host authorization.
@@ -77,7 +77,7 @@ VikiClow is designed as a personal assistant security model: one trusted operato
 
 ### Shared Slack workspace: real risk
 
-If "everyone in Slack can message the bot," the core risk is delegated tool authority:
+If "everyone in Slack can message the runtime," the core risk is delegated tool authority:
 
 - any allowed sender can induce tool calls (`exec`, browser, network/file tools) within the agent's policy;
 - prompt/content injection from one sender can cause actions that affect shared state, devices, or outputs;
@@ -139,7 +139,7 @@ Before opening a GHSA, verify all of these:
 1. Repro still works on latest `main` or latest release.
 2. Report includes exact code path (`file`, function, line range) and tested version/commit.
 3. Impact crosses a documented trust boundary (not just prompt injection).
-4. Claim is not listed in [Out of Scope](https://github.com/vikiclow/vikiclow/blob/main/SECURITY.md#out-of-scope).
+4. Claim is not listed in [Out of Scope](https://github.com/rebootix-research/viki-clow/blob/main/SECURITY.md#out-of-scope).
 5. Existing advisories were checked for duplicates (reuse canonical GHSA when applicable).
 6. Deployment assumptions are explicit (loopback/local vs exposed, trusted vs untrusted operators).
 
@@ -385,7 +385,7 @@ Treat skill folders as **trusted code** and restrict who can modify them.
 
 ## The Threat Model
 
-Your AI assistant can:
+A tool-enabled VikiClow runtime can:
 
 - Execute arbitrary shell commands
 - Read/write files
@@ -584,7 +584,7 @@ Recommendations:
 - **Do not use older/weaker/smaller tiers** for tool-enabled agents or untrusted inboxes; the prompt-injection risk is too high.
 - If you must use a smaller model, **reduce blast radius** (read-only tools, strong sandboxing, minimal filesystem access, strict allowlists).
 - When running small models, **enable sandboxing for all sessions** and **disable web_search/web_fetch/browser** unless inputs are tightly controlled.
-- For chat-only personal assistants with trusted input and no tools, smaller models are usually fine.
+- For chat-only single-operator deployments with trusted input and no tools, smaller models are usually fine.
 
 ## Reasoning & verbose output in groups
 
@@ -1205,3 +1205,4 @@ Found a vulnerability in VikiClow? Please report responsibly:
 1. Email: [security@vikiclow.ai](mailto:security@vikiclow.ai)
 2. Don't post publicly until fixed
 3. We'll credit you (unless you prefer anonymity)
+

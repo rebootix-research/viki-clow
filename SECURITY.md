@@ -6,12 +6,12 @@ If you believe you've found a security issue in VikiClow, please report it priva
 
 Report vulnerabilities directly to the repository where the issue lives:
 
-- **Core CLI and gateway** — [vikiclow/vikiclow](https://github.com/vikiclow/vikiclow)
-- **macOS desktop app** — [vikiclow/vikiclow](https://github.com/vikiclow/vikiclow) (apps/macos)
-- **iOS app** — [vikiclow/vikiclow](https://github.com/vikiclow/vikiclow) (apps/ios)
-- **Android app** — [vikiclow/vikiclow](https://github.com/vikiclow/vikiclow) (apps/android)
-- **VikiClow Skills Registry** — [vikiclow/vikiclow-skills](https://github.com/vikiclow/vikiclow-skills)
-- **Trust and threat model** — [vikiclow/trust](https://github.com/vikiclow/trust)
+- **Core CLI and gateway** â€” [vikiclow/vikiclow](https://github.com/rebootix-research/viki-clow)
+- **macOS desktop app** â€” [vikiclow/vikiclow](https://github.com/rebootix-research/viki-clow) (apps/macos)
+- **iOS app** â€” [vikiclow/vikiclow](https://github.com/rebootix-research/viki-clow) (apps/ios)
+- **Android app** â€” [vikiclow/vikiclow](https://github.com/rebootix-research/viki-clow) (apps/android)
+- **VikiClow Skills Registry** â€” [vikiclow/vikiclow-skills](https://github.com/rebootix-research/viki-clow-skills)
+- **Trust and threat model** â€” [vikiclow/trust](https://github.com/vikiclow/trust)
 
 For issues that don't fit a specific repo, or if you're unsure, email **[security@vikiclow.ai](mailto:security@vikiclow.ai)** and we'll route it.
 

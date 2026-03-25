@@ -1,7 +1,7 @@
 {
-  "id": "lobster",
+  "id": "workflow",
   "name": "Viki Workflow",
-  "description": "Typed workflow tool with resumable approvals. Legacy plugin id retained for compatibility.",
+  "description": "Typed workflow tool with resumable approvals.",
   "configSchema": {
     "type": "object",
     "additionalProperties": false,

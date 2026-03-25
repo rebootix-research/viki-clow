@@ -28,11 +28,11 @@ describe("evolution github webhook", () => {
       release: {
         name: "vikiclow 2026.3.10",
         tag_name: "v2026.3.10",
-        html_url: "https://github.com/vikiclow/vikiclow/releases/tag/v2026.3.10",
+        html_url: "https://github.com/rebootix-research/viki-clow/releases/tag/v2026.3.10",
       },
       repository: {
         full_name: "vikiclow/vikiclow",
-        html_url: "https://github.com/vikiclow/vikiclow",
+        html_url: "https://github.com/rebootix-research/viki-clow",
       },
     });
     const candidate = parseGitHubWebhookCandidate({

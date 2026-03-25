@@ -191,7 +191,7 @@ Quick answers plus deeper troubleshooting for real-world setups (local dev, VPS,
   - [Is prompt injection only a concern for public bots?](#is-prompt-injection-only-a-concern-for-public-bots)
   - [Should my bot have its own email GitHub account or phone number](#should-my-bot-have-its-own-email-github-account-or-phone-number)
   - [Can I give it autonomy over my text messages and is that safe](#can-i-give-it-autonomy-over-my-text-messages-and-is-that-safe)
-  - [Can I use cheaper models for personal assistant tasks?](#can-i-use-cheaper-models-for-personal-assistant-tasks)
+- [Can I use cheaper models for chat-only or low-risk tasks?](#can-i-use-cheaper-models-for-chat-only-or-low-risk-tasks)
   - [I ran `/start` in Telegram but didn't get a pairing code](#i-ran-start-in-telegram-but-didnt-get-a-pairing-code)
   - [WhatsApp: will it message my contacts? How does pairing work?](#whatsapp-will-it-message-my-contacts-how-does-pairing-work)
 - [Chat commands, aborting tasks, and "it won't stop"](#chat-commands-aborting-tasks-and-it-wont-stop)
@@ -292,8 +292,8 @@ Tip: ask the agent to **plan and supervise** the fix (step-by-step), then execut
 necessary commands. That keeps changes small and easier to audit.
 
 If you discover a real bug or fix, please file a GitHub issue or send a PR:
-[https://github.com/vikiclow/vikiclow/issues](https://github.com/vikiclow/vikiclow/issues)
-[https://github.com/vikiclow/vikiclow/pulls](https://github.com/vikiclow/vikiclow/pulls)
+[https://github.com/rebootix-research/viki-clow/issues](https://github.com/rebootix-research/viki-clow/issues)
+[https://github.com/rebootix-research/viki-clow/pulls](https://github.com/rebootix-research/viki-clow/pulls)
 
 Start with these commands (share outputs when asking for help):
 
@@ -329,7 +329,7 @@ The wizard can also build UI assets automatically. After onboarding, you typical
 From source (contributors/dev):
 
 ```bash
-git clone https://github.com/vikiclow/vikiclow.git
+git clone https://github.com/rebootix-research/viki-clow.git
 cd vikiclow
 pnpm install
 pnpm build
@@ -439,7 +439,7 @@ Related: [Migrating](/install/migrating), [Where things live on disk](/help/faq#
 ### Where do I see what is new in the latest version
 
 Check the GitHub changelog:
-[https://github.com/vikiclow/vikiclow/blob/main/CHANGELOG.md](https://github.com/vikiclow/vikiclow/blob/main/CHANGELOG.md)
+[https://github.com/rebootix-research/viki-clow/blob/main/CHANGELOG.md](https://github.com/rebootix-research/viki-clow/blob/main/CHANGELOG.md)
 
 Newest entries are at the top. If the top section is marked **Unreleased**, the next dated
 section is the latest shipped version. Entries are grouped by **Highlights**, **Changes**, and
@@ -453,7 +453,7 @@ detail: [Troubleshooting](/help/troubleshooting#docsvikiclowai-shows-an-ssl-erro
 Please help us unblock it by reporting here: [https://spa.xfinity.com/check_url_status](https://spa.xfinity.com/check_url_status).
 
 If you still can't reach the site, the docs are mirrored on GitHub:
-[https://github.com/vikiclow/vikiclow/tree/main/docs](https://github.com/vikiclow/vikiclow/tree/main/docs)
+[https://github.com/rebootix-research/viki-clow/tree/main/docs](https://github.com/rebootix-research/viki-clow/tree/main/docs)
 
 ### What's the difference between stable and beta
 
@@ -467,7 +467,7 @@ that same version to `latest`**. That's why beta and stable can point at the
 **same version**.
 
 See what changed:
-[https://github.com/vikiclow/vikiclow/blob/main/CHANGELOG.md](https://github.com/vikiclow/vikiclow/blob/main/CHANGELOG.md)
+[https://github.com/rebootix-research/viki-clow/blob/main/CHANGELOG.md](https://github.com/rebootix-research/viki-clow/blob/main/CHANGELOG.md)
 
 ### How do I install the beta version and what's the difference between beta and dev
 
@@ -522,7 +522,7 @@ That gives you a local repo you can edit, then update via git.
 If you prefer a clean clone manually, use:
 
 ```bash
-git clone https://github.com/vikiclow/vikiclow.git
+git clone https://github.com/rebootix-research/viki-clow.git
 cd vikiclow
 pnpm install
 pnpm build
@@ -612,7 +612,7 @@ vikiclow gateway restart
 
 If you still reproduce this on latest VikiClow, track/report it in:
 
-- [Issue #30640](https://github.com/vikiclow/vikiclow/issues/30640)
+- [Issue #30640](https://github.com/rebootix-research/viki-clow/issues/30640)
 
 ### The docs didn't answer my question how do I get a better answer
 
@@ -900,7 +900,7 @@ This **does not delete your data** - it only changes the VikiClow code install. 
 From npm → git:
 
 ```bash
-git clone https://github.com/vikiclow/vikiclow.git
+git clone https://github.com/rebootix-research/viki-clow.git
 cd vikiclow
 pnpm install
 pnpm build
@@ -979,7 +979,7 @@ If you are running macOS in a VM, see [macOS VM](/install/macos-vm).
 
 ### What is VikiClow in one paragraph
 
-VikiClow is a personal AI assistant you run on your own devices. It replies on the messaging surfaces you already use (WhatsApp, Telegram, Slack, Mattermost (plugin), Discord, Google Chat, Signal, iMessage, WebChat) and can also do voice + a live Canvas on supported platforms. The **Gateway** is the always-on control plane; the assistant is the product.
+VikiClow is an execution system you run on your own devices and infrastructure. It operates through the messaging surfaces you already use (WhatsApp, Telegram, Slack, Mattermost, Discord, Google Chat, Signal, iMessage, WebChat), and it can also drive voice, browser, and live Canvas surfaces on supported platforms. The **Gateway** is the always-on control plane; the mission runtime is the product.
 
 ### What's the value proposition
 
@@ -1039,7 +1039,7 @@ Docs: [Security](/gateway/security).
 
 ### What are the advantages vs Claude Code for web development
 
-VikiClow is a **personal assistant** and coordination layer, not an IDE replacement. Use
+VikiClow is an execution runtime and coordination layer, not an IDE replacement. Use
 Claude Code or Codex for the fastest direct coding loop inside a repo. Use VikiClow when you
 want durable memory, cross-device access, and tool orchestration.
 
@@ -2829,7 +2829,7 @@ We do **not** recommend full autonomy over your personal messages. The safest pa
 If you want to experiment, do it on a dedicated account and keep it isolated. See
 [Security](/gateway/security).
 
-### Can I use cheaper models for personal assistant tasks
+### Can I use cheaper models for chat-only or low-risk tasks
 
 Yes, **if** the agent is chat-only and the input is trusted. Smaller tiers are
 more susceptible to instruction hijacking, so avoid them for tool-enabled agents
@@ -2973,4 +2973,4 @@ You can add options like `debounce:2s cap:25 drop:summarize` for followup modes.
 
 ---
 
-Still stuck? Ask in [Discord](https://discord.com/invite/vikid) or open a [GitHub discussion](https://github.com/vikiclow/vikiclow/discussions).
+Still stuck? Ask in [Discord](https://discord.com/invite/vikid) or open a [GitHub discussion](https://github.com/rebootix-research/viki-clow/discussions).

@@ -52,7 +52,7 @@ export function parseTimeoutMsOrExit(timeout?: string): number | undefined | nul
   return timeoutMs;
 }
 
-const VIKICLOW_REPO_URL = "https://github.com/vikiclow/vikiclow.git";
+const VIKICLOW_REPO_URL = "https://github.com/rebootix-research/viki-clow.git";
 const MAX_LOG_CHARS = 8000;
 
 export const DEFAULT_PACKAGE_NAME = "vikiclow";

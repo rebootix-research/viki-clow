@@ -7,7 +7,7 @@ title: "Podman"
 
 # Podman
 
-Run the VikiClow gateway in a **rootless** Podman container. Uses the same image as Docker (build from the repo [Dockerfile](https://github.com/vikiclow/vikiclow/blob/main/Dockerfile)).
+Run the VikiClow gateway in a **rootless** Podman container. Uses the same image as Docker (build from the repo [Dockerfile](https://github.com/rebootix-research/viki-clow/blob/main/Dockerfile)).
 
 ## Requirements
 

@@ -9,28 +9,28 @@ title: "Ansible"
 
 # Ansible Installation
 
-The recommended way to deploy VikiClow to production servers is via **[vikiclow-ansible](https://github.com/vikiclow/vikiclow-ansible)** — an automated installer with security-first architecture.
+The recommended way to deploy VikiClow to production servers is via **[vikiclow-ansible](https://github.com/rebootix-research/viki-clow-ansible)** â€” an automated installer with security-first architecture.
 
 ## Quick Start
 
 One-command install:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/vikiclow/vikiclow-ansible/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/rebootix-research/viki-clow-ansible/main/install.sh | bash
 ```
 
-> **📦 Full guide: [github.com/vikiclow/vikiclow-ansible](https://github.com/vikiclow/vikiclow-ansible)**
+> **ðŸ“¦ Full guide: [github.com/vikiclow/vikiclow-ansible](https://github.com/rebootix-research/viki-clow-ansible)**
 >
 > The vikiclow-ansible repo is the source of truth for Ansible deployment. This page is a quick overview.
 
 ## What You Get
 
-- 🔒 **Firewall-first security**: UFW + Docker isolation (only SSH + Tailscale accessible)
-- 🔐 **Tailscale VPN**: Secure remote access without exposing services publicly
-- 🐳 **Docker**: Isolated sandbox containers, localhost-only bindings
-- 🛡️ **Defense in depth**: 4-layer security architecture
-- 🚀 **One-command setup**: Complete deployment in minutes
-- 🔧 **Systemd integration**: Auto-start on boot with hardening
+- ðŸ”’ **Firewall-first security**: UFW + Docker isolation (only SSH + Tailscale accessible)
+- ðŸ” **Tailscale VPN**: Secure remote access without exposing services publicly
+- ðŸ³ **Docker**: Isolated sandbox containers, localhost-only bindings
+- ðŸ›¡ï¸ **Defense in depth**: 4-layer security architecture
+- ðŸš€ **One-command setup**: Complete deployment in minutes
+- ðŸ”§ **Systemd integration**: Auto-start on boot with hardening
 
 ## Requirements
 
@@ -118,7 +118,7 @@ If you prefer manual control over the automation:
 sudo apt update && sudo apt install -y ansible git
 
 # 2. Clone repository
-git clone https://github.com/vikiclow/vikiclow-ansible.git
+git clone https://github.com/rebootix-research/viki-clow-ansible.git
 cd vikiclow-ansible
 
 # 3. Install Ansible collections
@@ -196,13 +196,13 @@ vikiclow channels login
 
 For detailed security architecture and troubleshooting:
 
-- [Security Architecture](https://github.com/vikiclow/vikiclow-ansible/blob/main/docs/security.md)
-- [Technical Details](https://github.com/vikiclow/vikiclow-ansible/blob/main/docs/architecture.md)
-- [Troubleshooting Guide](https://github.com/vikiclow/vikiclow-ansible/blob/main/docs/troubleshooting.md)
+- [Security Architecture](https://github.com/rebootix-research/viki-clow-ansible/blob/main/docs/security.md)
+- [Technical Details](https://github.com/rebootix-research/viki-clow-ansible/blob/main/docs/architecture.md)
+- [Troubleshooting Guide](https://github.com/rebootix-research/viki-clow-ansible/blob/main/docs/troubleshooting.md)
 
 ## Related
 
-- [vikiclow-ansible](https://github.com/vikiclow/vikiclow-ansible) — full deployment guide
-- [Docker](/install/docker) — containerized gateway setup
-- [Sandboxing](/gateway/sandboxing) — agent sandbox configuration
-- [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) — per-agent isolation
+- [vikiclow-ansible](https://github.com/rebootix-research/viki-clow-ansible) â€” full deployment guide
+- [Docker](/install/docker) â€” containerized gateway setup
+- [Sandboxing](/gateway/sandboxing) â€” agent sandbox configuration
+- [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) â€” per-agent isolation

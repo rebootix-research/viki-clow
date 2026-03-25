@@ -56,6 +56,7 @@ const configPath = path.join(tempRoot, "vikiclow.json");
 const proofPath = path.join(outDir, "runtime-stack-proof.json");
 const temporalHostPort = "17233";
 const neo4jHostPort = "17687";
+const langGraphHostPort = "12024";
 
 const config: VikiClowConfig = {
   agents: {
@@ -80,6 +81,8 @@ const envPatch: Record<string, string> = {
   VIKICLOW_GRAPHITI_NEO4J_PASSWORD: "vikiclow-dev-password",
   VIKICLOW_GRAPHITI_NEO4J_DATABASE: "neo4j",
   VIKICLOW_TEMPORAL_ADDRESS: `127.0.0.1:${temporalHostPort}`,
+  VIKICLOW_LANGGRAPH_ENDPOINT: `http://127.0.0.1:${langGraphHostPort}`,
+  VIKICLOW_LANGGRAPH_HEALTHCHECK_PATH: "/ok",
 };
 
 function renderMarkdownProof(proof: {
@@ -119,6 +122,13 @@ function renderMarkdownProof(proof: {
     hits: number;
     firstCitation: string | null;
   };
+  langGraphProbe?: {
+    service: string | null;
+    version: string | null;
+    runtime: string | null;
+    graphId: string | null;
+    invokedTrace: string[];
+  };
 }) {
   return [
     "# Runtime Stack Proof",
@@ -145,6 +155,14 @@ function renderMarkdownProof(proof: {
     `- Endpoint: ${proof.mission.langGraph.endpoint ?? "not configured"}`,
     `- Descriptor: ${proof.mission.langGraph.descriptorPath ?? "not generated"}`,
     `- Last sync error: ${proof.mission.langGraph.lastSyncError ?? "none"}`,
+    `- Probe version: ${proof.langGraphProbe?.version ?? "unknown"}`,
+    `- Probe runtime: ${proof.langGraphProbe?.runtime ?? "unknown"}`,
+    `- Probe graph: ${proof.langGraphProbe?.graphId ?? "unknown"}`,
+    `- Probe trace: ${
+      proof.langGraphProbe && proof.langGraphProbe.invokedTrace.length > 0
+        ? proof.langGraphProbe.invokedTrace.join(" -> ")
+        : "none"
+    }`,
     "",
     "## Memory",
     `- Configured: ${proof.mission.memory.configured}`,
@@ -173,9 +191,10 @@ await writeJson(configPath, config);
 
 let composeLogs = "";
 try {
-  sh("docker", ["compose", "-f", composePath, "up", "-d"]);
+  sh("docker", ["compose", "-f", composePath, "up", "-d", "--build", "--force-recreate"]);
   await waitForPort("127.0.0.1", Number(temporalHostPort), 120_000);
   await waitForPort("127.0.0.1", Number(neo4jHostPort), 120_000);
+  await waitForPort("127.0.0.1", Number(langGraphHostPort), 120_000);
 
   const tracker = await beginMissionRun({
     objective: "Runtime stack proof mission for Temporal and Graphiti-backed execution",
@@ -208,12 +227,48 @@ try {
     config: memoryConfig,
     env: process.env,
   });
+  const langGraphMetadataResponse = await fetch(`http://127.0.0.1:${langGraphHostPort}/metadata`, {
+    method: "GET",
+    headers: { accept: "application/json" },
+  });
+  if (!langGraphMetadataResponse.ok) {
+    throw new Error(`LangGraph metadata probe returned ${langGraphMetadataResponse.status}`);
+  }
+  const langGraphMetadata = (await langGraphMetadataResponse.json()) as {
+    service?: string;
+    langgraph_version?: string;
+    runtime?: string;
+    graph_id?: string;
+    nodes?: string[];
+  };
+  const langGraphInvokeResponse = await fetch(`http://127.0.0.1:${langGraphHostPort}/invoke`, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      mission_id: stored.id,
+      trace: ["proof-start"],
+    }),
+  });
+  if (!langGraphInvokeResponse.ok) {
+    throw new Error(`LangGraph invoke probe returned ${langGraphInvokeResponse.status}`);
+  }
+  const langGraphInvoke = (await langGraphInvokeResponse.json()) as {
+    ok?: boolean;
+    result?: { trace?: string[] };
+    graph_id?: string;
+  };
+  if (langGraphInvoke.ok !== true) {
+    throw new Error("LangGraph invoke probe returned an invalid payload");
+  }
 
   const proof = {
     generatedAt: new Date().toISOString(),
     compose: {
       file: composePath,
-      services: ["temporal", "neo4j"],
+      services: ["temporal", "neo4j", "langgraph"],
     },
     mission: {
       id: stored.id,
@@ -249,6 +304,13 @@ try {
       hits: graphResults.length,
       firstCitation: graphResults[0]?.citation ?? null,
     },
+    langGraphProbe: {
+      service: langGraphMetadata.service ?? null,
+      version: langGraphMetadata.langgraph_version ?? null,
+      runtime: langGraphMetadata.runtime ?? null,
+      graphId: langGraphMetadata.graph_id ?? langGraphInvoke.graph_id ?? null,
+      invokedTrace: Array.isArray(langGraphInvoke.result?.trace) ? langGraphInvoke.result.trace : [],
+    },
   };
 
   await writeJson(proofPath, proof);
@@ -266,6 +328,11 @@ try {
   if (!proof.mission.memory.connected) {
     throw new Error(
       `Neo4j did not connect${proof.mission.memory.lastSyncError ? `: ${proof.mission.memory.lastSyncError}` : ""}`,
+    );
+  }
+  if (!proof.mission.langGraph.connected) {
+    throw new Error(
+      `LangGraph did not connect${proof.mission.langGraph.lastSyncError ? `: ${proof.mission.langGraph.lastSyncError}` : ""}`,
     );
   }
 } finally {

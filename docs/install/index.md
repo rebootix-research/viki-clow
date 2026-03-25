@@ -109,10 +109,10 @@ For VPS/cloud hosts, avoid third-party "1-click" marketplace images when possibl
 
     <Steps>
       <Step title="Clone and build">
-        Clone the [VikiClow repo](https://github.com/vikiclow/vikiclow) and build:
+        Clone the [VikiClow repo](https://github.com/rebootix-research/viki-clow) and build:
 
         ```bash
-        git clone https://github.com/vikiclow/vikiclow.git
+        git clone https://github.com/rebootix-research/viki-clow.git
         cd vikiclow
         pnpm install
         pnpm ui:build

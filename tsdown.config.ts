@@ -63,7 +63,6 @@ const pluginSdkEntrypoints = [
   "googlechat",
   "irc",
   "llm-task",
-  "lobster",
   "workflow-runtime",
   "workflow",
   "matrix",

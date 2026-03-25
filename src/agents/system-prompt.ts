@@ -143,9 +143,9 @@ function buildMessagingSection(params: {
   }
   return [
     "## Messaging",
-    "- Reply in current session → automatically routes to the source channel (Signal, Telegram, etc.)",
-    "- Cross-session messaging → use sessions_send(sessionKey, message)",
-    "- Sub-agent orchestration → use subagents(action=list|steer|kill)",
+    "- Reply in current session â†’ automatically routes to the source channel (Signal, Telegram, etc.)",
+    "- Cross-session messaging â†’ use sessions_send(sessionKey, message)",
+    "- Sub-agent orchestration â†’ use subagents(action=list|steer|kill)",
     `- Runtime-generated completion events may ask for a user update. Rewrite those in your normal assistant voice and send the update (do not forward raw internal metadata or default to ${SILENT_REPLY_TOKEN}).`,
     "- Never use exec/curl for provider messaging; VikiClow handles all routing internally.",
     params.availableTools.has("message")
@@ -190,7 +190,7 @@ function buildDocsSection(params: { docsPath?: string; isMinimal: boolean; readT
     "## Documentation",
     `VikiClow docs: ${docsPath}`,
     "Mirror: https://docs.vikiclow.ai",
-    "Source: https://github.com/vikiclow/vikiclow",
+    "Source: https://github.com/rebootix-research/viki-clow",
     "Community: https://discord.com/invite/vikid",
     "Skills: use workspace skills, bundled skills, or the built-in skills CLI surfaces.",
     "For VikiClow behavior, commands, config, or architecture: consult local docs first.",
@@ -280,7 +280,7 @@ export function buildAgentSystemPrompt(params: {
       : "Spawn an isolated sub-agent session",
     subagents: "List, steer, or kill sub-agent runs for this requester session",
     session_status:
-      "Show a /status-equivalent status card (usage + time + Reasoning/Verbose/Elevated); use for model-use questions (📊 session_status); optional per-session model override",
+      "Show a /status-equivalent status card (usage + time + Reasoning/Verbose/Elevated); use for model-use questions (ðŸ“Š session_status); optional per-session model override",
     image: "Analyze an image with the configured image model",
   };
 
@@ -519,7 +519,7 @@ export function buildAgentSystemPrompt(params: {
       : "",
     params.modelAliasLines && params.modelAliasLines.length > 0 && !isMinimal ? "" : "",
     userTimezone
-      ? "If you need the current date, time, or day of week, run session_status (📊 session_status)."
+      ? "If you need the current date, time, or day of week, run session_status (ðŸ“Š session_status)."
       : "",
     "## Workspace",
     `Your working directory is: ${displayWorkspaceDir}`,
@@ -651,7 +651,7 @@ export function buildAgentSystemPrompt(params: {
       lines.push("");
     }
     if (bootstrapTruncationWarningLines.length > 0) {
-      lines.push("⚠ Bootstrap truncation warning:");
+      lines.push("âš  Bootstrap truncation warning:");
       for (const warningLine of bootstrapTruncationWarningLines) {
         lines.push(`- ${warningLine}`);
       }
@@ -668,14 +668,14 @@ export function buildAgentSystemPrompt(params: {
       "## Silent Replies",
       `When you have nothing to say, respond with ONLY: ${SILENT_REPLY_TOKEN}`,
       "",
-      "⚠️ Rules:",
-      "- It must be your ENTIRE message — nothing else",
+      "âš ï¸ Rules:",
+      "- It must be your ENTIRE message â€” nothing else",
       `- Never append it to an actual response (never include "${SILENT_REPLY_TOKEN}" in real replies)`,
       "- Never wrap it in markdown or code blocks",
       "",
-      `❌ Wrong: "Here's help... ${SILENT_REPLY_TOKEN}"`,
-      `❌ Wrong: "${SILENT_REPLY_TOKEN}"`,
-      `✅ Right: ${SILENT_REPLY_TOKEN}`,
+      `âŒ Wrong: "Here's help... ${SILENT_REPLY_TOKEN}"`,
+      `âŒ Wrong: "${SILENT_REPLY_TOKEN}"`,
+      `âœ… Right: ${SILENT_REPLY_TOKEN}`,
       "",
     );
   }

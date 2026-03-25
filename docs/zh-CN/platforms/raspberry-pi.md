@@ -1,9 +1,9 @@
 ---
 read_when:
-  - 在 Raspberry Pi 上设置 VikiClow 时
-  - 在 ARM 设备上运行 VikiClow 时
-  - 构建低成本常驻个人 AI 时
-summary: 在 Raspberry Pi 上运行 VikiClow（低成本自托管设置）
+  - åœ¨ Raspberry Pi ä¸Šè®¾ç½® VikiClow æ—¶
+  - åœ¨ ARM è®¾å¤‡ä¸Šè¿è¡Œ VikiClow æ—¶
+  - æž„å»ºä½Žæˆæœ¬å¸¸é©»ä¸ªäºº AI æ—¶
+summary: åœ¨ Raspberry Pi ä¸Šè¿è¡Œ VikiClowï¼ˆä½Žæˆæœ¬è‡ªæ‰˜ç®¡è®¾ç½®ï¼‰
 title: Raspberry Pi
 x-i18n:
   generated_at: "2026-02-03T07:53:30Z"
@@ -14,246 +14,246 @@ x-i18n:
   workflow: 15
 ---
 
-# 在 Raspberry Pi 上运行 VikiClow
+# åœ¨ Raspberry Pi ä¸Šè¿è¡Œ VikiClow
 
-## 目标
+## ç›®æ ‡
 
-在 Raspberry Pi 上运行持久、常驻的 VikiClow Gateway 网关，**一次性成本约 $35-80**（无月费）。
+åœ¨ Raspberry Pi ä¸Šè¿è¡ŒæŒä¹…ã€å¸¸é©»çš„ VikiClow Gateway ç½‘å…³ï¼Œ**ä¸€æ¬¡æ€§æˆæœ¬çº¦ $35-80**ï¼ˆæ— æœˆè´¹ï¼‰ã€‚
 
-适用于：
+é€‚ç”¨äºŽï¼š
 
-- 24/7 个人 AI 助手
-- 家庭自动化中心
-- 低功耗、随时可用的 Telegram/WhatsApp 机器人
+- 24/7 ä¸ªäºº AI åŠ©æ‰‹
+- å®¶åº­è‡ªåŠ¨åŒ–ä¸­å¿ƒ
+- ä½ŽåŠŸè€—ã€éšæ—¶å¯ç”¨çš„ Telegram/WhatsApp æœºå™¨äºº
 
-## 硬件要求
+## ç¡¬ä»¶è¦æ±‚
 
-| Pi 型号         | 内存    | 是否可用？ | 说明                       |
+| Pi åž‹å·         | å†…å­˜    | æ˜¯å¦å¯ç”¨ï¼Ÿ | è¯´æ˜Ž                       |
 | --------------- | ------- | ---------- | -------------------------- |
-| **Pi 5**        | 4GB/8GB | ✅ 最佳    | 最快，推荐                 |
-| **Pi 4**        | 4GB     | ✅ 良好    | 大多数用户的最佳选择       |
-| **Pi 4**        | 2GB     | ✅ 可以    | 可用，添加交换空间         |
-| **Pi 4**        | 1GB     | ⚠️ 紧张    | 使用交换空间可行，最小配置 |
-| **Pi 3B+**      | 1GB     | ⚠️ 慢      | 可用但较慢                 |
-| **Pi Zero 2 W** | 512MB   | ❌         | 不推荐                     |
+| **Pi 5**        | 4GB/8GB | âœ… æœ€ä½³    | æœ€å¿«ï¼ŒæŽ¨è                 |
+| **Pi 4**        | 4GB     | âœ… è‰¯å¥½    | å¤§å¤šæ•°ç”¨æˆ·çš„æœ€ä½³é€‰æ‹©       |
+| **Pi 4**        | 2GB     | âœ… å¯ä»¥    | å¯ç”¨ï¼Œæ·»åŠ äº¤æ¢ç©ºé—´         |
+| **Pi 4**        | 1GB     | âš ï¸ ç´§å¼     | ä½¿ç”¨äº¤æ¢ç©ºé—´å¯è¡Œï¼Œæœ€å°é…ç½® |
+| **Pi 3B+**      | 1GB     | âš ï¸ æ…¢      | å¯ç”¨ä½†è¾ƒæ…¢                 |
+| **Pi Zero 2 W** | 512MB   | âŒ         | ä¸æŽ¨è                     |
 
-**最低配置：** 1GB 内存，1 核，500MB 磁盘  
-**推荐：** 2GB+ 内存，64 位系统，16GB+ SD 卡（或 USB SSD）
+**æœ€ä½Žé…ç½®ï¼š** 1GB å†…å­˜ï¼Œ1 æ ¸ï¼Œ500MB ç£ç›˜  
+**æŽ¨èï¼š** 2GB+ å†…å­˜ï¼Œ64 ä½ç³»ç»Ÿï¼Œ16GB+ SD å¡ï¼ˆæˆ– USB SSDï¼‰
 
-## 你需要准备
+## ä½ éœ€è¦å‡†å¤‡
 
-- Raspberry Pi 4 或 5（推荐 2GB+）
-- MicroSD 卡（16GB+）或 USB SSD（性能更好）
-- 电源（推荐官方 Pi 电源）
-- 网络连接（以太网或 WiFi）
-- 约 30 分钟
+- Raspberry Pi 4 æˆ– 5ï¼ˆæŽ¨è 2GB+ï¼‰
+- MicroSD å¡ï¼ˆ16GB+ï¼‰æˆ– USB SSDï¼ˆæ€§èƒ½æ›´å¥½ï¼‰
+- ç”µæºï¼ˆæŽ¨èå®˜æ–¹ Pi ç”µæºï¼‰
+- ç½‘ç»œè¿žæŽ¥ï¼ˆä»¥å¤ªç½‘æˆ– WiFiï¼‰
+- çº¦ 30 åˆ†é’Ÿ
 
-## 1) 刷写系统
+## 1) åˆ·å†™ç³»ç»Ÿ
 
-使用 **Raspberry Pi OS Lite (64-bit)** — 无头服务器不需要桌面。
+ä½¿ç”¨ **Raspberry Pi OS Lite (64-bit)** â€” æ— å¤´æœåŠ¡å™¨ä¸éœ€è¦æ¡Œé¢ã€‚
 
-1. 下载 [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
-2. 选择系统：**Raspberry Pi OS Lite (64-bit)**
-3. 点击齿轮图标（⚙️）预配置：
-   - 设置主机名：`gateway-host`
-   - 启用 SSH
-   - 设置用户名/密码
-   - 配置 WiFi（如果不使用以太网）
-4. 刷写到你的 SD 卡 / USB 驱动器
-5. 插入并启动 Pi
+1. ä¸‹è½½ [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
+2. é€‰æ‹©ç³»ç»Ÿï¼š**Raspberry Pi OS Lite (64-bit)**
+3. ç‚¹å‡»é½¿è½®å›¾æ ‡ï¼ˆâš™ï¸ï¼‰é¢„é…ç½®ï¼š
+   - è®¾ç½®ä¸»æœºåï¼š`gateway-host`
+   - å¯ç”¨ SSH
+   - è®¾ç½®ç”¨æˆ·å/å¯†ç 
+   - é…ç½® WiFiï¼ˆå¦‚æžœä¸ä½¿ç”¨ä»¥å¤ªç½‘ï¼‰
+4. åˆ·å†™åˆ°ä½ çš„ SD å¡ / USB é©±åŠ¨å™¨
+5. æ’å…¥å¹¶å¯åŠ¨ Pi
 
-## 2) 通过 SSH 连接
+## 2) é€šè¿‡ SSH è¿žæŽ¥
 
 ```bash
 ssh user@gateway-host
-# 或使用 IP 地址
+# æˆ–ä½¿ç”¨ IP åœ°å€
 ssh user@192.168.x.x
 ```
 
-## 3) 系统设置
+## 3) ç³»ç»Ÿè®¾ç½®
 
 ```bash
-# 更新系统
+# æ›´æ–°ç³»ç»Ÿ
 sudo apt update && sudo apt upgrade -y
 
-# 安装必要软件包
+# å®‰è£…å¿…è¦è½¯ä»¶åŒ…
 sudo apt install -y git curl build-essential
 
-# 设置时区（对 cron/提醒很重要）
-sudo timedatectl set-timezone America/Chicago  # 改成你的时区
+# è®¾ç½®æ—¶åŒºï¼ˆå¯¹ cron/æé†’å¾ˆé‡è¦ï¼‰
+sudo timedatectl set-timezone America/Chicago  # æ”¹æˆä½ çš„æ—¶åŒº
 ```
 
-## 4) 安装 Node.js 22（ARM64）
+## 4) å®‰è£… Node.js 22ï¼ˆARM64ï¼‰
 
 ```bash
-# 通过 NodeSource 安装 Node.js
+# é€šè¿‡ NodeSource å®‰è£… Node.js
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs
 
-# 验证
-node --version  # 应显示 v22.x.x
+# éªŒè¯
+node --version  # åº”æ˜¾ç¤º v22.x.x
 npm --version
 ```
 
-## 5) 添加交换空间（2GB 或更少内存时很重要）
+## 5) æ·»åŠ äº¤æ¢ç©ºé—´ï¼ˆ2GB æˆ–æ›´å°‘å†…å­˜æ—¶å¾ˆé‡è¦ï¼‰
 
-交换空间可防止内存不足崩溃：
+äº¤æ¢ç©ºé—´å¯é˜²æ­¢å†…å­˜ä¸è¶³å´©æºƒï¼š
 
 ```bash
-# 创建 2GB 交换文件
+# åˆ›å»º 2GB äº¤æ¢æ–‡ä»¶
 sudo fallocate -l 2G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
 
-# 永久生效
+# æ°¸ä¹…ç”Ÿæ•ˆ
 echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
-# 优化低内存（降低 swappiness）
+# ä¼˜åŒ–ä½Žå†…å­˜ï¼ˆé™ä½Ž swappinessï¼‰
 echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
 ```
 
-## 6) 安装 VikiClow
+## 6) å®‰è£… VikiClow
 
-### 选项 A：标准安装（推荐）
+### é€‰é¡¹ Aï¼šæ ‡å‡†å®‰è£…ï¼ˆæŽ¨èï¼‰
 
 ```bash
 curl -fsSL https://vikiclow.ai/install.sh | bash
 ```
 
-### 选项 B：可修改安装（用于调试）
+### é€‰é¡¹ Bï¼šå¯ä¿®æ”¹å®‰è£…ï¼ˆç”¨äºŽè°ƒè¯•ï¼‰
 
 ```bash
-git clone https://github.com/vikiclow/vikiclow.git
+git clone https://github.com/rebootix-research/viki-clow.git
 cd vikiclow
 npm install
 npm run build
 npm link
 ```
 
-可修改安装让你可以直接访问日志和代码 — 对调试 ARM 特定问题很有用。
+å¯ä¿®æ”¹å®‰è£…è®©ä½ å¯ä»¥ç›´æŽ¥è®¿é—®æ—¥å¿—å’Œä»£ç  â€” å¯¹è°ƒè¯• ARM ç‰¹å®šé—®é¢˜å¾ˆæœ‰ç”¨ã€‚
 
-## 7) 运行新手引导
+## 7) è¿è¡Œæ–°æ‰‹å¼•å¯¼
 
 ```bash
 vikiclow onboard --install-daemon
 ```
 
-按照向导操作：
+æŒ‰ç…§å‘å¯¼æ“ä½œï¼š
 
-1. **Gateway 网关模式：** Local
-2. **认证：** 推荐 API 密钥（OAuth 在无头 Pi 上可能不稳定）
-3. **渠道：** Telegram 最容易上手
-4. **守护进程：** 是（systemd）
+1. **Gateway ç½‘å…³æ¨¡å¼ï¼š** Local
+2. **è®¤è¯ï¼š** æŽ¨è API å¯†é’¥ï¼ˆOAuth åœ¨æ— å¤´ Pi ä¸Šå¯èƒ½ä¸ç¨³å®šï¼‰
+3. **æ¸ é“ï¼š** Telegram æœ€å®¹æ˜“ä¸Šæ‰‹
+4. **å®ˆæŠ¤è¿›ç¨‹ï¼š** æ˜¯ï¼ˆsystemdï¼‰
 
-## 8) 验证安装
+## 8) éªŒè¯å®‰è£…
 
 ```bash
-# 检查状态
+# æ£€æŸ¥çŠ¶æ€
 vikiclow status
 
-# 检查服务
+# æ£€æŸ¥æœåŠ¡
 sudo systemctl status vikiclow
 
-# 查看日志
+# æŸ¥çœ‹æ—¥å¿—
 journalctl -u vikiclow -f
 ```
 
-## 9) 访问仪表板
+## 9) è®¿é—®ä»ªè¡¨æ¿
 
-由于 Pi 是无头的，使用 SSH 隧道：
+ç”±äºŽ Pi æ˜¯æ— å¤´çš„ï¼Œä½¿ç”¨ SSH éš§é“ï¼š
 
 ```bash
-# 从你的笔记本电脑/台式机
+# ä»Žä½ çš„ç¬”è®°æœ¬ç”µè„‘/å°å¼æœº
 ssh -L 18789:localhost:18789 user@gateway-host
 
-# 然后在浏览器中打开
+# ç„¶åŽåœ¨æµè§ˆå™¨ä¸­æ‰“å¼€
 open http://localhost:18789
 ```
 
-或使用 Tailscale 实现常驻访问：
+æˆ–ä½¿ç”¨ Tailscale å®žçŽ°å¸¸é©»è®¿é—®ï¼š
 
 ```bash
-# 在 Pi 上
+# åœ¨ Pi ä¸Š
 curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up
 
-# 更新配置
+# æ›´æ–°é…ç½®
 vikiclow config set gateway.bind tailnet
 sudo systemctl restart vikiclow
 ```
 
 ---
 
-## 性能优化
+## æ€§èƒ½ä¼˜åŒ–
 
-### 使用 USB SSD（巨大改进）
+### ä½¿ç”¨ USB SSDï¼ˆå·¨å¤§æ”¹è¿›ï¼‰
 
-SD 卡速度慢且会磨损。USB SSD 可大幅提升性能：
+SD å¡é€Ÿåº¦æ…¢ä¸”ä¼šç£¨æŸã€‚USB SSD å¯å¤§å¹…æå‡æ€§èƒ½ï¼š
 
 ```bash
-# 检查是否从 USB 启动
+# æ£€æŸ¥æ˜¯å¦ä»Ž USB å¯åŠ¨
 lsblk
 ```
 
-设置请参见 [Pi USB 启动指南](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#usb-mass-storage-boot)。
+è®¾ç½®è¯·å‚è§ [Pi USB å¯åŠ¨æŒ‡å—](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#usb-mass-storage-boot)ã€‚
 
-### 减少内存使用
+### å‡å°‘å†…å­˜ä½¿ç”¨
 
 ```bash
-# 禁用 GPU 内存分配（无头模式）
+# ç¦ç”¨ GPU å†…å­˜åˆ†é…ï¼ˆæ— å¤´æ¨¡å¼ï¼‰
 echo 'gpu_mem=16' | sudo tee -a /boot/config.txt
 
-# 如不需要则禁用蓝牙
+# å¦‚ä¸éœ€è¦åˆ™ç¦ç”¨è“ç‰™
 sudo systemctl disable bluetooth
 ```
 
-### 监控资源
+### ç›‘æŽ§èµ„æº
 
 ```bash
-# 检查内存
+# æ£€æŸ¥å†…å­˜
 free -h
 
-# 检查 CPU 温度
+# æ£€æŸ¥ CPU æ¸©åº¦
 vcgencmd measure_temp
 
-# 实时监控
+# å®žæ—¶ç›‘æŽ§
 htop
 ```
 
 ---
 
-## ARM 特定说明
+## ARM ç‰¹å®šè¯´æ˜Ž
 
-### 二进制兼容性
+### äºŒè¿›åˆ¶å…¼å®¹æ€§
 
-大多数 VikiClow 功能在 ARM64 上可用，但某些外部二进制文件可能需要 ARM 构建：
+å¤§å¤šæ•° VikiClow åŠŸèƒ½åœ¨ ARM64 ä¸Šå¯ç”¨ï¼Œä½†æŸäº›å¤–éƒ¨äºŒè¿›åˆ¶æ–‡ä»¶å¯èƒ½éœ€è¦ ARM æž„å»ºï¼š
 
-| 工具               | ARM64 状态 | 说明                                |
+| å·¥å…·               | ARM64 çŠ¶æ€ | è¯´æ˜Ž                                |
 | ------------------ | ---------- | ----------------------------------- |
-| Node.js            | ✅         | 运行良好                            |
-| WhatsApp (Baileys) | ✅         | 纯 JS，无问题                       |
-| Telegram           | ✅         | 纯 JS，无问题                       |
-| gog (Gmail CLI)    | ⚠️         | 检查是否有 ARM 版本                 |
-| Chromium (browser) | ✅         | `sudo apt install chromium-browser` |
+| Node.js            | âœ…         | è¿è¡Œè‰¯å¥½                            |
+| WhatsApp (Baileys) | âœ…         | çº¯ JSï¼Œæ— é—®é¢˜                       |
+| Telegram           | âœ…         | çº¯ JSï¼Œæ— é—®é¢˜                       |
+| gog (Gmail CLI)    | âš ï¸         | æ£€æŸ¥æ˜¯å¦æœ‰ ARM ç‰ˆæœ¬                 |
+| Chromium (browser) | âœ…         | `sudo apt install chromium-browser` |
 
-如果某个 skill 失败，检查其二进制文件是否有 ARM 构建。许多 Go/Rust 工具有；有些没有。
+å¦‚æžœæŸä¸ª skill å¤±è´¥ï¼Œæ£€æŸ¥å…¶äºŒè¿›åˆ¶æ–‡ä»¶æ˜¯å¦æœ‰ ARM æž„å»ºã€‚è®¸å¤š Go/Rust å·¥å…·æœ‰ï¼›æœ‰äº›æ²¡æœ‰ã€‚
 
-### 32 位 vs 64 位
+### 32 ä½ vs 64 ä½
 
-**始终使用 64 位系统。** Node.js 和许多现代工具需要它。使用以下命令检查：
+**å§‹ç»ˆä½¿ç”¨ 64 ä½ç³»ç»Ÿã€‚** Node.js å’Œè®¸å¤šçŽ°ä»£å·¥å…·éœ€è¦å®ƒã€‚ä½¿ç”¨ä»¥ä¸‹å‘½ä»¤æ£€æŸ¥ï¼š
 
 ```bash
 uname -m
-# 应显示：aarch64（64 位）而不是 armv7l（32 位）
+# åº”æ˜¾ç¤ºï¼šaarch64ï¼ˆ64 ä½ï¼‰è€Œä¸æ˜¯ armv7lï¼ˆ32 ä½ï¼‰
 ```
 
 ---
 
-## 推荐的模型设置
+## æŽ¨èçš„æ¨¡åž‹è®¾ç½®
 
-由于 Pi 只是 Gateway 网关（模型在云端运行），使用基于 API 的模型：
+ç”±äºŽ Pi åªæ˜¯ Gateway ç½‘å…³ï¼ˆæ¨¡åž‹åœ¨äº‘ç«¯è¿è¡Œï¼‰ï¼Œä½¿ç”¨åŸºäºŽ API çš„æ¨¡åž‹ï¼š
 
 ```json
 {
@@ -268,98 +268,98 @@ uname -m
 }
 ```
 
-**不要尝试在 Pi 上运行本地 LLM** — 即使是小模型也太慢了。让 Claude/GPT 来做繁重的工作。
+**ä¸è¦å°è¯•åœ¨ Pi ä¸Šè¿è¡Œæœ¬åœ° LLM** â€” å³ä½¿æ˜¯å°æ¨¡åž‹ä¹Ÿå¤ªæ…¢äº†ã€‚è®© Claude/GPT æ¥åšç¹é‡çš„å·¥ä½œã€‚
 
 ---
 
-## 开机自启
+## å¼€æœºè‡ªå¯
 
-新手引导向导会设置这个，但要验证：
+æ–°æ‰‹å¼•å¯¼å‘å¯¼ä¼šè®¾ç½®è¿™ä¸ªï¼Œä½†è¦éªŒè¯ï¼š
 
 ```bash
-# 检查服务是否已启用
+# æ£€æŸ¥æœåŠ¡æ˜¯å¦å·²å¯ç”¨
 sudo systemctl is-enabled vikiclow
 
-# 如果没有则启用
+# å¦‚æžœæ²¡æœ‰åˆ™å¯ç”¨
 sudo systemctl enable vikiclow
 
-# 开机启动
+# å¼€æœºå¯åŠ¨
 sudo systemctl start vikiclow
 ```
 
 ---
 
-## 故障排除
+## æ•…éšœæŽ’é™¤
 
-### 内存不足（OOM）
+### å†…å­˜ä¸è¶³ï¼ˆOOMï¼‰
 
 ```bash
-# 检查内存
+# æ£€æŸ¥å†…å­˜
 free -h
 
-# 添加更多交换空间（见步骤 5）
-# 或减少 Pi 上运行的服务
+# æ·»åŠ æ›´å¤šäº¤æ¢ç©ºé—´ï¼ˆè§æ­¥éª¤ 5ï¼‰
+# æˆ–å‡å°‘ Pi ä¸Šè¿è¡Œçš„æœåŠ¡
 ```
 
-### 性能慢
+### æ€§èƒ½æ…¢
 
-- 使用 USB SSD 代替 SD 卡
-- 禁用未使用的服务：`sudo systemctl disable cups bluetooth avahi-daemon`
-- 检查 CPU 降频：`vcgencmd get_throttled`（应返回 `0x0`）
+- ä½¿ç”¨ USB SSD ä»£æ›¿ SD å¡
+- ç¦ç”¨æœªä½¿ç”¨çš„æœåŠ¡ï¼š`sudo systemctl disable cups bluetooth avahi-daemon`
+- æ£€æŸ¥ CPU é™é¢‘ï¼š`vcgencmd get_throttled`ï¼ˆåº”è¿”å›ž `0x0`ï¼‰
 
-### 服务无法启动
+### æœåŠ¡æ— æ³•å¯åŠ¨
 
 ```bash
-# 检查日志
+# æ£€æŸ¥æ—¥å¿—
 journalctl -u vikiclow --no-pager -n 100
 
-# 常见修复：重新构建
-cd ~/vikiclow  # 如果使用可修改安装
+# å¸¸è§ä¿®å¤ï¼šé‡æ–°æž„å»º
+cd ~/vikiclow  # å¦‚æžœä½¿ç”¨å¯ä¿®æ”¹å®‰è£…
 npm run build
 sudo systemctl restart vikiclow
 ```
 
-### ARM 二进制问题
+### ARM äºŒè¿›åˆ¶é—®é¢˜
 
-如果某个 skill 失败并显示"exec format error"：
+å¦‚æžœæŸä¸ª skill å¤±è´¥å¹¶æ˜¾ç¤º"exec format error"ï¼š
 
-1. 检查该二进制文件是否有 ARM64 构建
-2. 尝试从源代码构建
-3. 或使用支持 ARM 的 Docker 容器
+1. æ£€æŸ¥è¯¥äºŒè¿›åˆ¶æ–‡ä»¶æ˜¯å¦æœ‰ ARM64 æž„å»º
+2. å°è¯•ä»Žæºä»£ç æž„å»º
+3. æˆ–ä½¿ç”¨æ”¯æŒ ARM çš„ Docker å®¹å™¨
 
-### WiFi 断开
+### WiFi æ–­å¼€
 
-对于使用 WiFi 的无头 Pi：
+å¯¹äºŽä½¿ç”¨ WiFi çš„æ— å¤´ Piï¼š
 
 ```bash
-# 禁用 WiFi 电源管理
+# ç¦ç”¨ WiFi ç”µæºç®¡ç†
 sudo iwconfig wlan0 power off
 
-# 永久生效
+# æ°¸ä¹…ç”Ÿæ•ˆ
 echo 'wireless-power off' | sudo tee -a /etc/network/interfaces
 ```
 
 ---
 
-## 成本对比
+## æˆæœ¬å¯¹æ¯”
 
-| 设置           | 一次性成本 | 月费     | 说明               |
+| è®¾ç½®           | ä¸€æ¬¡æ€§æˆæœ¬ | æœˆè´¹     | è¯´æ˜Ž               |
 | -------------- | ---------- | -------- | ------------------ |
-| **Pi 4 (2GB)** | ~$45       | $0       | + 电费（约 $5/年） |
-| **Pi 4 (4GB)** | ~$55       | $0       | 推荐               |
-| **Pi 5 (4GB)** | ~$60       | $0       | 最佳性能           |
-| **Pi 5 (8GB)** | ~$80       | $0       | 过剩但面向未来     |
-| DigitalOcean   | $0         | $6/月    | $72/年             |
-| Hetzner        | $0         | €3.79/月 | 约 $50/年          |
+| **Pi 4 (2GB)** | ~$45       | $0       | + ç”µè´¹ï¼ˆçº¦ $5/å¹´ï¼‰ |
+| **Pi 4 (4GB)** | ~$55       | $0       | æŽ¨è               |
+| **Pi 5 (4GB)** | ~$60       | $0       | æœ€ä½³æ€§èƒ½           |
+| **Pi 5 (8GB)** | ~$80       | $0       | è¿‡å‰©ä½†é¢å‘æœªæ¥     |
+| DigitalOcean   | $0         | $6/æœˆ    | $72/å¹´             |
+| Hetzner        | $0         | â‚¬3.79/æœˆ | çº¦ $50/å¹´          |
 
-**回本期：** 与云 VPS 相比，Pi 约 6-12 个月内回本。
+**å›žæœ¬æœŸï¼š** ä¸Žäº‘ VPS ç›¸æ¯”ï¼ŒPi çº¦ 6-12 ä¸ªæœˆå†…å›žæœ¬ã€‚
 
 ---
 
-## 另请参阅
+## å¦è¯·å‚é˜…
 
-- [Linux 指南](/platforms/linux) — 通用 Linux 设置
-- [DigitalOcean 指南](/platforms/digitalocean) — 云替代方案
-- [Hetzner 指南](/install/hetzner) — Docker 设置
-- [Tailscale](/gateway/tailscale) — 远程访问
-- [节点](/nodes) — 将你的笔记本电脑/手机与 Pi Gateway 网关配对
+- [Linux æŒ‡å—](/platforms/linux) â€” é€šç”¨ Linux è®¾ç½®
+- [DigitalOcean æŒ‡å—](/platforms/digitalocean) â€” äº‘æ›¿ä»£æ–¹æ¡ˆ
+- [Hetzner æŒ‡å—](/install/hetzner) â€” Docker è®¾ç½®
+- [Tailscale](/gateway/tailscale) â€” è¿œç¨‹è®¿é—®
+- [èŠ‚ç‚¹](/nodes) â€” å°†ä½ çš„ç¬”è®°æœ¬ç”µè„‘/æ‰‹æœºä¸Ž Pi Gateway ç½‘å…³é…å¯¹

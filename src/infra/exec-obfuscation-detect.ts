@@ -2,7 +2,7 @@
  * Detects obfuscated or encoded commands that could bypass allowlist-based
  * security filters.
  *
- * Addresses: https://github.com/vikiclow/vikiclow/issues/8592
+ * Addresses: https://github.com/rebootix-research/viki-clow/issues/8592
  */
 
 export type ObfuscationDetection = {

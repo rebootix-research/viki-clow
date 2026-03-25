@@ -1,8 +1,8 @@
 ---
 read_when:
-  - 构建或签名 Mac 调试构建
-summary: 打包脚本生成的 macOS 调试构建的签名步骤
-title: macOS 签名
+  - æž„å»ºæˆ–ç­¾å Mac è°ƒè¯•æž„å»º
+summary: æ‰“åŒ…è„šæœ¬ç”Ÿæˆçš„ macOS è°ƒè¯•æž„å»ºçš„ç­¾åæ­¥éª¤
+title: macOS ç­¾å
 x-i18n:
   generated_at: "2026-02-01T21:33:15Z"
   model: claude-opus-4-5
@@ -12,43 +12,43 @@ x-i18n:
   workflow: 15
 ---
 
-# Mac 签名（调试构建）
+# Mac ç­¾åï¼ˆè°ƒè¯•æž„å»ºï¼‰
 
-此应用通常从 [`scripts/package-mac-app.sh`](https://github.com/vikiclow/vikiclow/blob/main/scripts/package-mac-app.sh) 构建，该脚本目前会：
+æ­¤åº”ç”¨é€šå¸¸ä»Ž [`scripts/package-mac-app.sh`](https://github.com/rebootix-research/viki-clow/blob/main/scripts/package-mac-app.sh) æž„å»ºï¼Œè¯¥è„šæœ¬ç›®å‰ä¼šï¼š
 
-- 设置稳定的调试 Bundle 标识符：`ai.vikiclow.mac.debug`
-- 使用该 Bundle ID 写入 Info.plist（可通过 `BUNDLE_ID=...` 覆盖）
-- 调用 [`scripts/codesign-mac-app.sh`](https://github.com/vikiclow/vikiclow/blob/main/scripts/codesign-mac-app.sh) 对主二进制文件和应用包进行签名，使 macOS 将每次重新构建视为相同的已签名包，并保留 TCC 权限（通知、辅助功能、屏幕录制、麦克风、语音）。要获得稳定的权限，请使用真实签名身份；临时签名是可选的且不稳定（参阅 [macOS 权限](/platforms/mac/permissions)）。
-- 默认使用 `CODESIGN_TIMESTAMP=auto`；为 Developer ID 签名启用受信任的时间戳。设置 `CODESIGN_TIMESTAMP=off` 可跳过时间戳（离线调试构建）。
-- 将构建元数据注入 Info.plist：`VikiClowBuildTimestamp`（UTC）和 `VikiClowGitCommit`（短哈希），以便"关于"面板可以显示构建信息、git 信息和调试/发布渠道。
-- **打包需要 Node 22+**：脚本会运行 TS 构建和 Control UI 构建。
-- 从环境变量中读取 `SIGN_IDENTITY`。将 `export SIGN_IDENTITY="Apple Development: Your Name (TEAMID)"`（或你的 Developer ID Application 证书）添加到 shell 配置文件中，以始终使用你的证书签名。临时签名需要通过 `ALLOW_ADHOC_SIGNING=1` 或 `SIGN_IDENTITY="-"` 显式启用（不建议用于权限测试）。
-- 签名后运行 Team ID 审计，如果应用包内的任何 Mach-O 文件由不同的 Team ID 签名则会失败。设置 `SKIP_TEAM_ID_CHECK=1` 可跳过此检查。
+- è®¾ç½®ç¨³å®šçš„è°ƒè¯• Bundle æ ‡è¯†ç¬¦ï¼š`ai.vikiclow.mac.debug`
+- ä½¿ç”¨è¯¥ Bundle ID å†™å…¥ Info.plistï¼ˆå¯é€šè¿‡ `BUNDLE_ID=...` è¦†ç›–ï¼‰
+- è°ƒç”¨ [`scripts/codesign-mac-app.sh`](https://github.com/rebootix-research/viki-clow/blob/main/scripts/codesign-mac-app.sh) å¯¹ä¸»äºŒè¿›åˆ¶æ–‡ä»¶å’Œåº”ç”¨åŒ…è¿›è¡Œç­¾åï¼Œä½¿ macOS å°†æ¯æ¬¡é‡æ–°æž„å»ºè§†ä¸ºç›¸åŒçš„å·²ç­¾ååŒ…ï¼Œå¹¶ä¿ç•™ TCC æƒé™ï¼ˆé€šçŸ¥ã€è¾…åŠ©åŠŸèƒ½ã€å±å¹•å½•åˆ¶ã€éº¦å…‹é£Žã€è¯­éŸ³ï¼‰ã€‚è¦èŽ·å¾—ç¨³å®šçš„æƒé™ï¼Œè¯·ä½¿ç”¨çœŸå®žç­¾åèº«ä»½ï¼›ä¸´æ—¶ç­¾åæ˜¯å¯é€‰çš„ä¸”ä¸ç¨³å®šï¼ˆå‚é˜… [macOS æƒé™](/platforms/mac/permissions)ï¼‰ã€‚
+- é»˜è®¤ä½¿ç”¨ `CODESIGN_TIMESTAMP=auto`ï¼›ä¸º Developer ID ç­¾åå¯ç”¨å—ä¿¡ä»»çš„æ—¶é—´æˆ³ã€‚è®¾ç½® `CODESIGN_TIMESTAMP=off` å¯è·³è¿‡æ—¶é—´æˆ³ï¼ˆç¦»çº¿è°ƒè¯•æž„å»ºï¼‰ã€‚
+- å°†æž„å»ºå…ƒæ•°æ®æ³¨å…¥ Info.plistï¼š`VikiClowBuildTimestamp`ï¼ˆUTCï¼‰å’Œ `VikiClowGitCommit`ï¼ˆçŸ­å“ˆå¸Œï¼‰ï¼Œä»¥ä¾¿"å…³äºŽ"é¢æ¿å¯ä»¥æ˜¾ç¤ºæž„å»ºä¿¡æ¯ã€git ä¿¡æ¯å’Œè°ƒè¯•/å‘å¸ƒæ¸ é“ã€‚
+- **æ‰“åŒ…éœ€è¦ Node 22+**ï¼šè„šæœ¬ä¼šè¿è¡Œ TS æž„å»ºå’Œ Control UI æž„å»ºã€‚
+- ä»ŽçŽ¯å¢ƒå˜é‡ä¸­è¯»å– `SIGN_IDENTITY`ã€‚å°† `export SIGN_IDENTITY="Apple Development: Your Name (TEAMID)"`ï¼ˆæˆ–ä½ çš„ Developer ID Application è¯ä¹¦ï¼‰æ·»åŠ åˆ° shell é…ç½®æ–‡ä»¶ä¸­ï¼Œä»¥å§‹ç»ˆä½¿ç”¨ä½ çš„è¯ä¹¦ç­¾åã€‚ä¸´æ—¶ç­¾åéœ€è¦é€šè¿‡ `ALLOW_ADHOC_SIGNING=1` æˆ– `SIGN_IDENTITY="-"` æ˜¾å¼å¯ç”¨ï¼ˆä¸å»ºè®®ç”¨äºŽæƒé™æµ‹è¯•ï¼‰ã€‚
+- ç­¾ååŽè¿è¡Œ Team ID å®¡è®¡ï¼Œå¦‚æžœåº”ç”¨åŒ…å†…çš„ä»»ä½• Mach-O æ–‡ä»¶ç”±ä¸åŒçš„ Team ID ç­¾ååˆ™ä¼šå¤±è´¥ã€‚è®¾ç½® `SKIP_TEAM_ID_CHECK=1` å¯è·³è¿‡æ­¤æ£€æŸ¥ã€‚
 
-## 用法
+## ç”¨æ³•
 
 ```bash
-# 从仓库根目录
-scripts/package-mac-app.sh               # 自动选择身份；未找到时报错
-SIGN_IDENTITY="Developer ID Application: Your Name" scripts/package-mac-app.sh   # 真实证书
-ALLOW_ADHOC_SIGNING=1 scripts/package-mac-app.sh    # 临时签名（权限不会持久化）
-SIGN_IDENTITY="-" scripts/package-mac-app.sh        # 显式临时签名（同样的限制）
-DISABLE_LIBRARY_VALIDATION=1 scripts/package-mac-app.sh   # 仅限开发的 Sparkle Team ID 不匹配解决方案
+# ä»Žä»“åº“æ ¹ç›®å½•
+scripts/package-mac-app.sh               # è‡ªåŠ¨é€‰æ‹©èº«ä»½ï¼›æœªæ‰¾åˆ°æ—¶æŠ¥é”™
+SIGN_IDENTITY="Developer ID Application: Your Name" scripts/package-mac-app.sh   # çœŸå®žè¯ä¹¦
+ALLOW_ADHOC_SIGNING=1 scripts/package-mac-app.sh    # ä¸´æ—¶ç­¾åï¼ˆæƒé™ä¸ä¼šæŒä¹…åŒ–ï¼‰
+SIGN_IDENTITY="-" scripts/package-mac-app.sh        # æ˜¾å¼ä¸´æ—¶ç­¾åï¼ˆåŒæ ·çš„é™åˆ¶ï¼‰
+DISABLE_LIBRARY_VALIDATION=1 scripts/package-mac-app.sh   # ä»…é™å¼€å‘çš„ Sparkle Team ID ä¸åŒ¹é…è§£å†³æ–¹æ¡ˆ
 ```
 
-### 临时签名注意事项
+### ä¸´æ—¶ç­¾åæ³¨æ„äº‹é¡¹
 
-使用 `SIGN_IDENTITY="-"`（临时签名）签名时，脚本会自动禁用**强化运行时**（`--options runtime`）。这是为了防止应用在尝试加载不共享相同 Team ID 的嵌入式框架（如 Sparkle）时崩溃。临时签名还会破坏 TCC 权限持久化；参阅 [macOS 权限](/platforms/mac/permissions) 了解恢复步骤。
+ä½¿ç”¨ `SIGN_IDENTITY="-"`ï¼ˆä¸´æ—¶ç­¾åï¼‰ç­¾åæ—¶ï¼Œè„šæœ¬ä¼šè‡ªåŠ¨ç¦ç”¨**å¼ºåŒ–è¿è¡Œæ—¶**ï¼ˆ`--options runtime`ï¼‰ã€‚è¿™æ˜¯ä¸ºäº†é˜²æ­¢åº”ç”¨åœ¨å°è¯•åŠ è½½ä¸å…±äº«ç›¸åŒ Team ID çš„åµŒå…¥å¼æ¡†æž¶ï¼ˆå¦‚ Sparkleï¼‰æ—¶å´©æºƒã€‚ä¸´æ—¶ç­¾åè¿˜ä¼šç ´å TCC æƒé™æŒä¹…åŒ–ï¼›å‚é˜… [macOS æƒé™](/platforms/mac/permissions) äº†è§£æ¢å¤æ­¥éª¤ã€‚
 
-## 关于面板的构建元数据
+## å…³äºŽé¢æ¿çš„æž„å»ºå…ƒæ•°æ®
 
-`package-mac-app.sh` 会在包中标记以下信息：
+`package-mac-app.sh` ä¼šåœ¨åŒ…ä¸­æ ‡è®°ä»¥ä¸‹ä¿¡æ¯ï¼š
 
-- `VikiClowBuildTimestamp`：打包时的 ISO8601 UTC 时间
-- `VikiClowGitCommit`：短 git 哈希（不可用时为 `unknown`）
+- `VikiClowBuildTimestamp`ï¼šæ‰“åŒ…æ—¶çš„ ISO8601 UTC æ—¶é—´
+- `VikiClowGitCommit`ï¼šçŸ­ git å“ˆå¸Œï¼ˆä¸å¯ç”¨æ—¶ä¸º `unknown`ï¼‰
 
-"关于"选项卡读取这些键以显示版本、构建日期、git 提交以及是否为调试构建（通过 `#if DEBUG`）。代码更改后运行打包程序以刷新这些值。
+"å…³äºŽ"é€‰é¡¹å¡è¯»å–è¿™äº›é”®ä»¥æ˜¾ç¤ºç‰ˆæœ¬ã€æž„å»ºæ—¥æœŸã€git æäº¤ä»¥åŠæ˜¯å¦ä¸ºè°ƒè¯•æž„å»ºï¼ˆé€šè¿‡ `#if DEBUG`ï¼‰ã€‚ä»£ç æ›´æ”¹åŽè¿è¡Œæ‰“åŒ…ç¨‹åºä»¥åˆ·æ–°è¿™äº›å€¼ã€‚
 
-## 原因
+## åŽŸå› 
 
-TCC 权限与 Bundle 标识符*和*代码签名绑定。使用不断变化的 UUID 的未签名调试构建会导致 macOS 在每次重新构建后忘记授权。对二进制文件进行签名（默认临时签名）并保持固定的 Bundle ID/路径（`dist/VikiClow.app`）可以在构建之间保留授权，与 VibeTunnel 的方案一致。
+TCC æƒé™ä¸Ž Bundle æ ‡è¯†ç¬¦*å’Œ*ä»£ç ç­¾åç»‘å®šã€‚ä½¿ç”¨ä¸æ–­å˜åŒ–çš„ UUID çš„æœªç­¾åè°ƒè¯•æž„å»ºä¼šå¯¼è‡´ macOS åœ¨æ¯æ¬¡é‡æ–°æž„å»ºåŽå¿˜è®°æŽˆæƒã€‚å¯¹äºŒè¿›åˆ¶æ–‡ä»¶è¿›è¡Œç­¾åï¼ˆé»˜è®¤ä¸´æ—¶ç­¾åï¼‰å¹¶ä¿æŒå›ºå®šçš„ Bundle ID/è·¯å¾„ï¼ˆ`dist/VikiClow.app`ï¼‰å¯ä»¥åœ¨æž„å»ºä¹‹é—´ä¿ç•™æŽˆæƒï¼Œä¸Ž VibeTunnel çš„æ–¹æ¡ˆä¸€è‡´ã€‚

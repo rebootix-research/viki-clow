@@ -22,3 +22,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 18
+
+  langgraph:
+    build:
+      context: .
+      dockerfile: docker/langgraph-probe/Dockerfile
+    ports:
+      - "12024:12024"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:12024/ok >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 18

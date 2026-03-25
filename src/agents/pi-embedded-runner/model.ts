@@ -284,12 +284,12 @@ export function resolveModel(
  * Build a more helpful error when the model is not found.
  *
  * Local providers (ollama, vllm) need a dummy API key to be registered.
- * Users often configure `agents.defaults.model.primary: "ollama/…"` but
+ * Users often configure `agents.defaults.model.primary: "ollama/â€¦"` but
  * forget to set `OLLAMA_API_KEY`, resulting in a confusing "Unknown model"
  * error.  This detects known providers that require opt-in auth and adds
  * a hint.
  *
- * See: https://github.com/vikiclow/vikiclow/issues/17328
+ * See: https://github.com/rebootix-research/viki-clow/issues/17328
  */
 const LOCAL_PROVIDER_HINTS: Record<string, string> = {
   ollama:

@@ -35,7 +35,6 @@
     "src/plugin-sdk/googlechat.ts",
     "src/plugin-sdk/irc.ts",
     "src/plugin-sdk/llm-task.ts",
-    "src/plugin-sdk/lobster.ts",
     "src/plugin-sdk/workflow-runtime.ts",
     "src/plugin-sdk/workflow.ts",
     "src/plugin-sdk/matrix.ts",

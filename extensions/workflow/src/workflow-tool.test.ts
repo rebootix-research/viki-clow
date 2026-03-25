@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { PassThrough } from "node:stream";
-import type { VikiClowPluginApi, VikiClowPluginToolContext } from "vikiclow/plugin-sdk/lobster";
+import type { VikiClowPluginApi, VikiClowPluginToolContext } from "vikiclow/plugin-sdk/workflow";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   createWindowsCmdShimFixture,
@@ -17,6 +17,8 @@ const spawnState = vi.hoisted(() => ({
   spawn: vi.fn(),
 }));
 
+vi.mock("vikiclow/plugin-sdk/workflow", async () => await import("../../../src/plugin-sdk/workflow.ts"));
+
 vi.mock("node:child_process", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:child_process")>();
   return {
@@ -25,13 +27,12 @@ vi.mock("node:child_process", async (importOriginal) => {
   };
 });
 
-let createLobsterTool: typeof import("./lobster-tool.js").createLobsterTool;
-let createWorkflowTool: typeof import("./lobster-tool.js").createWorkflowTool;
+let createWorkflowTool: typeof import("./workflow-tool.js").createWorkflowTool;
 
 function fakeApi(overrides: Partial<VikiClowPluginApi> = {}): VikiClowPluginApi {
   return {
-    id: "lobster",
-    name: "lobster",
+    id: "workflow",
+    name: "workflow",
     source: "test",
     config: {},
     pluginConfig: {},
@@ -68,18 +69,19 @@ function fakeCtx(overrides: Partial<VikiClowPluginToolContext> = {}): VikiClowPl
   };
 }
 
-describe("lobster plugin tool", () => {
+describe("workflow plugin tool", () => {
   let tempDir = "";
   const originalProcessState = snapshotPlatformPathEnv();
 
   beforeAll(async () => {
-    ({ createLobsterTool, createWorkflowTool } = await import("./lobster-tool.js"));
+    ({ createWorkflowTool } = await import("./workflow-tool.js"));
 
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "vikiclow-lobster-plugin-"));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "vikiclow-workflow-plugin-"));
   });
 
   afterEach(() => {
     restorePlatformPathEnv(originalProcessState);
+    delete process.env.VIKICLOW_WORKFLOW_BIN;
   });
 
   afterAll(async () => {
@@ -96,6 +98,7 @@ describe("lobster plugin tool", () => {
   beforeEach(() => {
     spawnState.queue.length = 0;
     spawnState.spawn.mockReset();
+    process.env.VIKICLOW_WORKFLOW_BIN = process.execPath;
     spawnState.spawn.mockImplementation(() => {
       const next = spawnState.queue.shift() ?? { stdout: "" };
       const stdout = new PassThrough();
@@ -134,7 +137,7 @@ describe("lobster plugin tool", () => {
     });
   };
 
-  it("runs lobster and returns parsed envelope in details", async () => {
+  it("runs workflow and returns parsed envelope in details", async () => {
     spawnState.queue.push({
       stdout: JSON.stringify({
         ok: true,
@@ -144,7 +147,7 @@ describe("lobster plugin tool", () => {
       }),
     });
 
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     const res = await tool.execute("call1", {
       action: "run",
       pipeline: "noop",
@@ -155,7 +158,7 @@ describe("lobster plugin tool", () => {
     expect(res.details).toMatchObject({ ok: true, status: "ok" });
   });
 
-  it("exposes the workflow tool name for new policies", async () => {
+  it("exposes the workflow tool name for policies", async () => {
     const tool = createWorkflowTool(fakeApi());
     expect(tool.name).toBe("workflow");
     expect(tool.label).toBe("Viki Workflow");
@@ -167,7 +170,7 @@ describe("lobster plugin tool", () => {
       stdout: `noise before json\n${JSON.stringify(payload)}`,
     });
 
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     const res = await tool.execute("call-noisy", {
       action: "run",
       pipeline: "noop",
@@ -178,12 +181,12 @@ describe("lobster plugin tool", () => {
   });
 
   it("requires action", async () => {
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     await expect(tool.execute("call-action-missing", {})).rejects.toThrow(/action required/);
   });
 
   it("requires pipeline for run action", async () => {
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     await expect(
       tool.execute("call-pipeline-missing", {
         action: "run",
@@ -192,7 +195,7 @@ describe("lobster plugin tool", () => {
   });
 
   it("requires token and approve for resume action", async () => {
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     await expect(
       tool.execute("call-resume-token-missing", {
         action: "resume",
@@ -208,7 +211,7 @@ describe("lobster plugin tool", () => {
   });
 
   it("rejects unknown action", async () => {
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     await expect(
       tool.execute("call-action-unknown", {
         action: "explode",
@@ -217,7 +220,7 @@ describe("lobster plugin tool", () => {
   });
 
   it("rejects absolute cwd", async () => {
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     await expect(
       tool.execute("call2c", {
         action: "run",
@@ -228,7 +231,7 @@ describe("lobster plugin tool", () => {
   });
 
   it("rejects cwd that escapes the gateway working directory", async () => {
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     await expect(
       tool.execute("call2d", {
         action: "run",
@@ -238,10 +241,10 @@ describe("lobster plugin tool", () => {
     ).rejects.toThrow(/must stay within/);
   });
 
-  it("rejects invalid JSON from lobster", async () => {
+  it("rejects invalid JSON from workflow", async () => {
     spawnState.queue.push({ stdout: "nope" });
 
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     await expect(
       tool.execute("call3", {
         action: "run",
@@ -252,18 +255,19 @@ describe("lobster plugin tool", () => {
 
   it("runs Windows cmd shims through Node without enabling shell", async () => {
     setProcessPlatform("win32");
-    const shimScriptPath = path.join(tempDir, "shim-dist", "lobster-cli.cjs");
-    const shimPath = path.join(tempDir, "shim-bin", "lobster.cmd");
+    delete process.env.VIKICLOW_WORKFLOW_BIN;
+    const shimScriptPath = path.join(tempDir, "shim-dist", "workflow-cli.cjs");
+    const shimPath = path.join(tempDir, "shim-bin", "viki-workflow.cmd");
     await createWindowsCmdShimFixture({
       shimPath,
       scriptPath: shimScriptPath,
-      shimLine: `"%dp0%\\..\\shim-dist\\lobster-cli.cjs" %*`,
+      shimLine: `"%dp0%\\..\\shim-dist\\workflow-cli.cjs" %*`,
     });
     process.env.PATHEXT = ".CMD;.EXE";
     process.env.PATH = `${path.dirname(shimPath)};${process.env.PATH ?? ""}`;
     queueSuccessfulEnvelope();
 
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     await tool.execute("call-win-shim", {
       action: "run",
       pipeline: "noop",
@@ -293,7 +297,7 @@ describe("lobster plugin tool", () => {
       return child;
     });
 
-    const tool = createLobsterTool(fakeApi());
+    const tool = createWorkflowTool(fakeApi());
     await expect(
       tool.execute("call-win-no-retry", {
         action: "run",
@@ -309,10 +313,10 @@ describe("lobster plugin tool", () => {
       if (ctx.sandboxed) {
         return null;
       }
-      return createLobsterTool(api);
+      return createWorkflowTool(api);
     };
 
     expect(factoryTool(fakeCtx({ sandboxed: true }))).toBeNull();
-    expect(factoryTool(fakeCtx({ sandboxed: false }))?.name).toBe("lobster");
+    expect(factoryTool(fakeCtx({ sandboxed: false }))?.name).toBe("workflow");
   });
 });

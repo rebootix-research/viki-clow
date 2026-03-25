@@ -1324,7 +1324,7 @@ export async function runEmbeddedAttempt(
 
       // Mistral (and other strict providers) reject tool call IDs that don't match their
       // format requirements (e.g. [a-zA-Z0-9]{9}). sanitizeSessionHistory only processes
-      // historical messages at attempt start, but the agent loop's internal tool call →
+      // historical messages at attempt start, but the agent loop's internal tool call â†’
       // tool result cycles bypass that path. Wrap streamFn so every outbound request
       // sees sanitized tool call IDs.
       if (transcriptPolicy.sanitizeToolCallIds && transcriptPolicy.toolCallIdMode) {
@@ -1812,7 +1812,7 @@ export async function runEmbeddedAttempt(
           // Flush buffered block replies before waiting for compaction so the
           // user receives the assistant response immediately.  Without this,
           // coalesced/buffered blocks stay in the pipeline until compaction
-          // finishes — which can take minutes on large contexts (#35074).
+          // finishes â€” which can take minutes on large contexts (#35074).
           if (params.onBlockReplyFlush) {
             await params.onBlockReplyFlush();
           }
@@ -1852,10 +1852,10 @@ export async function runEmbeddedAttempt(
 
         // Append cache-TTL timestamp AFTER prompt + compaction retry completes.
         // Previously this was before the prompt, which caused a custom entry to be
-        // inserted between compaction and the next prompt — breaking the
+        // inserted between compaction and the next prompt â€” breaking the
         // prepareCompaction() guard that checks the last entry type, leading to
-        // double-compaction. See: https://github.com/vikiclow/vikiclow/issues/9282
-        // Skip when timed out during compaction — session state may be inconsistent.
+        // double-compaction. See: https://github.com/rebootix-research/viki-clow/issues/9282
+        // Skip when timed out during compaction â€” session state may be inconsistent.
         if (!timedOutDuringCompaction && !compactionOccurredThisAttempt) {
           const shouldTrackCacheTtl =
             params.config?.agents?.defaults?.contextPruning?.mode === "cache-ttl" &&
@@ -2084,7 +2084,7 @@ export async function runEmbeddedAttempt(
       // *before* tool execution completes in the retried agent loop. Without this wait,
       // flushPendingToolResults() fires while tools are still executing, inserting
       // synthetic "missing tool result" errors and causing silent agent failures.
-      // See: https://github.com/vikiclow/vikiclow/issues/8643
+      // See: https://github.com/rebootix-research/viki-clow/issues/8643
       removeToolResultContextGuard?.();
       await flushPendingToolResultsAfterIdle({
         agent: session?.agent,

@@ -181,7 +181,7 @@ const OPENAI_RATE_LIMIT_MESSAGE =
 const ANTHROPIC_OVERLOADED_PAYLOAD =
   '{"type":"error","error":{"type":"overloaded_error","message":"Overloaded"},"request_id":"req_test"}';
 // Issue-backed Anthropic/OpenAI-compatible insufficient_quota payload under HTTP 400:
-// https://github.com/vikiclow/vikiclow/issues/23440
+// https://github.com/rebootix-research/viki-clow/issues/23440
 const INSUFFICIENT_QUOTA_PAYLOAD =
   '{"type":"error","error":{"type":"insufficient_quota","message":"Your account has insufficient quota balance to run this request."}}';
 // Internal VikiClow compatibility marker, not a provider API contract.
@@ -461,7 +461,7 @@ describe("runWithModelFallback", () => {
       run,
     });
 
-    // Override model failed with model_not_found → falls back to configured primary.
+    // Override model failed with model_not_found â†’ falls back to configured primary.
     // (Same candidate-resolution path as other override-model failures.)
     expect(result.result).toBe("ok");
     expect(run).toHaveBeenCalledTimes(2);
@@ -483,7 +483,7 @@ describe("runWithModelFallback", () => {
       run,
     });
 
-    // Override model failed with model_not_found → tries fallbacks first (same provider).
+    // Override model failed with model_not_found â†’ tries fallbacks first (same provider).
     expect(result.result).toBe("ok");
     expect(run).toHaveBeenCalledTimes(2);
     expect(run.mock.calls[1]?.[0]).toBe("anthropic");

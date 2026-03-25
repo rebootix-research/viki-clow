@@ -309,7 +309,7 @@ function normalizePayloadsForChannelDelivery(
     let sanitizedPayload = payload;
     // Strip HTML tags for plain-text surfaces (WhatsApp, Signal, etc.)
     // Models occasionally produce <br>, <b>, etc. that render as literal text.
-    // See https://github.com/vikiclow/vikiclow/issues/31884
+    // See https://github.com/rebootix-research/viki-clow/issues/31884
     if (isPlainTextSurface(channel) && sanitizedPayload.text) {
       // Telegram sendPayload uses textMode:"html". Preserve raw HTML in this path.
       if (!(channel === "telegram" && sanitizedPayload.channelData)) {
@@ -486,11 +486,11 @@ export async function deliverOutboundPayloads(
         gifPlayback: params.gifPlayback,
         silent: params.silent,
         mirror: params.mirror,
-      }).catch(() => null); // Best-effort — don't block delivery if queue write fails.
+      }).catch(() => null); // Best-effort â€” don't block delivery if queue write fails.
 
   // Wrap onError to detect partial failures under bestEffort mode.
   // When bestEffort is true, per-payload errors are caught and passed to onError
-  // without throwing — so the outer try/catch never fires. We track whether any
+  // without throwing â€” so the outer try/catch never fires. We track whether any
   // payload failed so we can call failDelivery instead of ackDelivery.
   let hadPartialFailure = false;
   const wrappedParams = params.onError

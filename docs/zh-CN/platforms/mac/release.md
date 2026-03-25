@@ -1,9 +1,9 @@
 ---
 read_when:
-  - 制作或验证 VikiClow macOS 发布版本
-  - 更新 Sparkle appcast 或订阅源资源
-summary: VikiClow macOS 发布清单（Sparkle 订阅源、打包、签名）
-title: macOS 发布
+  - åˆ¶ä½œæˆ–éªŒè¯ VikiClow macOS å‘å¸ƒç‰ˆæœ¬
+  - æ›´æ–° Sparkle appcast æˆ–è®¢é˜…æºèµ„æº
+summary: VikiClow macOS å‘å¸ƒæ¸…å•ï¼ˆSparkle è®¢é˜…æºã€æ‰“åŒ…ã€ç­¾åï¼‰
+title: macOS å‘å¸ƒ
 x-i18n:
   generated_at: "2026-02-01T21:33:17Z"
   model: claude-opus-4-5
@@ -13,33 +13,33 @@ x-i18n:
   workflow: 15
 ---
 
-# VikiClow macOS 发布（Sparkle）
+# VikiClow macOS å‘å¸ƒï¼ˆSparkleï¼‰
 
-本应用现已支持 Sparkle 自动更新。发布构建必须经过 Developer ID 签名、压缩，并发布包含签名的 appcast 条目。
+æœ¬åº”ç”¨çŽ°å·²æ”¯æŒ Sparkle è‡ªåŠ¨æ›´æ–°ã€‚å‘å¸ƒæž„å»ºå¿…é¡»ç»è¿‡ Developer ID ç­¾åã€åŽ‹ç¼©ï¼Œå¹¶å‘å¸ƒåŒ…å«ç­¾åçš„ appcast æ¡ç›®ã€‚
 
-## 前提条件
+## å‰ææ¡ä»¶
 
-- 已安装 Developer ID Application 证书（示例：`Developer ID Application: <Developer Name> (<TEAMID>)`）。
-- 环境变量 `SPARKLE_PRIVATE_KEY_FILE` 已设置为 Sparkle ed25519 私钥路径（公钥已嵌入 Info.plist）。如果缺失，请检查 `~/.profile`。
-- 用于 `xcrun notarytool` 的公证凭据（钥匙串配置文件或 API 密钥），以实现通过 Gatekeeper 安全分发的 DMG/zip。
-  - 我们使用名为 `vikiclow-notary` 的钥匙串配置文件，由 shell 配置文件中的 App Store Connect API 密钥环境变量创建：
-    - `APP_STORE_CONNECT_API_KEY_P8`、`APP_STORE_CONNECT_KEY_ID`、`APP_STORE_CONNECT_ISSUER_ID`
+- å·²å®‰è£… Developer ID Application è¯ä¹¦ï¼ˆç¤ºä¾‹ï¼š`Developer ID Application: <Developer Name> (<TEAMID>)`ï¼‰ã€‚
+- çŽ¯å¢ƒå˜é‡ `SPARKLE_PRIVATE_KEY_FILE` å·²è®¾ç½®ä¸º Sparkle ed25519 ç§é’¥è·¯å¾„ï¼ˆå…¬é’¥å·²åµŒå…¥ Info.plistï¼‰ã€‚å¦‚æžœç¼ºå¤±ï¼Œè¯·æ£€æŸ¥ `~/.profile`ã€‚
+- ç”¨äºŽ `xcrun notarytool` çš„å…¬è¯å‡­æ®ï¼ˆé’¥åŒ™ä¸²é…ç½®æ–‡ä»¶æˆ– API å¯†é’¥ï¼‰ï¼Œä»¥å®žçŽ°é€šè¿‡ Gatekeeper å®‰å…¨åˆ†å‘çš„ DMG/zipã€‚
+  - æˆ‘ä»¬ä½¿ç”¨åä¸º `vikiclow-notary` çš„é’¥åŒ™ä¸²é…ç½®æ–‡ä»¶ï¼Œç”± shell é…ç½®æ–‡ä»¶ä¸­çš„ App Store Connect API å¯†é’¥çŽ¯å¢ƒå˜é‡åˆ›å»ºï¼š
+    - `APP_STORE_CONNECT_API_KEY_P8`ã€`APP_STORE_CONNECT_KEY_ID`ã€`APP_STORE_CONNECT_ISSUER_ID`
     - `echo "$APP_STORE_CONNECT_API_KEY_P8" | sed 's/\\n/\n/g' > /tmp/vikiclow-notary.p8`
     - `xcrun notarytool store-credentials "vikiclow-notary" --key /tmp/vikiclow-notary.p8 --key-id "$APP_STORE_CONNECT_KEY_ID" --issuer "$APP_STORE_CONNECT_ISSUER_ID"`
-- 已安装 `pnpm` 依赖（`pnpm install --config.node-linker=hoisted`）。
-- Sparkle 工具通过 SwiftPM 自动获取，位于 `apps/macos/.build/artifacts/sparkle/Sparkle/bin/`（`sign_update`、`generate_appcast` 等）。
+- å·²å®‰è£… `pnpm` ä¾èµ–ï¼ˆ`pnpm install --config.node-linker=hoisted`ï¼‰ã€‚
+- Sparkle å·¥å…·é€šè¿‡ SwiftPM è‡ªåŠ¨èŽ·å–ï¼Œä½äºŽ `apps/macos/.build/artifacts/sparkle/Sparkle/bin/`ï¼ˆ`sign_update`ã€`generate_appcast` ç­‰ï¼‰ã€‚
 
-## 构建与打包
+## æž„å»ºä¸Žæ‰“åŒ…
 
-注意事项：
+æ³¨æ„äº‹é¡¹ï¼š
 
-- `APP_BUILD` 映射到 `CFBundleVersion`/`sparkle:version`；保持纯数字且单调递增（不含 `-beta`），否则 Sparkle 会将其视为相同版本。
-- 默认为当前架构（`$(uname -m)`）。对于发布/通用构建，设置 `BUILD_ARCHS="arm64 x86_64"`（或 `BUILD_ARCHS=all`）。
-- 使用 `scripts/package-mac-dist.sh` 生成发布产物（zip + DMG + 公证）。使用 `scripts/package-mac-app.sh` 进行本地/开发打包。
+- `APP_BUILD` æ˜ å°„åˆ° `CFBundleVersion`/`sparkle:version`ï¼›ä¿æŒçº¯æ•°å­—ä¸”å•è°ƒé€’å¢žï¼ˆä¸å« `-beta`ï¼‰ï¼Œå¦åˆ™ Sparkle ä¼šå°†å…¶è§†ä¸ºç›¸åŒç‰ˆæœ¬ã€‚
+- é»˜è®¤ä¸ºå½“å‰æž¶æž„ï¼ˆ`$(uname -m)`ï¼‰ã€‚å¯¹äºŽå‘å¸ƒ/é€šç”¨æž„å»ºï¼Œè®¾ç½® `BUILD_ARCHS="arm64 x86_64"`ï¼ˆæˆ– `BUILD_ARCHS=all`ï¼‰ã€‚
+- ä½¿ç”¨ `scripts/package-mac-dist.sh` ç”Ÿæˆå‘å¸ƒäº§ç‰©ï¼ˆzip + DMG + å…¬è¯ï¼‰ã€‚ä½¿ç”¨ `scripts/package-mac-app.sh` è¿›è¡Œæœ¬åœ°/å¼€å‘æ‰“åŒ…ã€‚
 
 ```bash
-# 从仓库根目录运行；设置发布 ID 以启用 Sparkle 订阅源。
-# APP_BUILD 必须为纯数字且单调递增，以便 Sparkle 正确比较。
+# ä»Žä»“åº“æ ¹ç›®å½•è¿è¡Œï¼›è®¾ç½®å‘å¸ƒ ID ä»¥å¯ç”¨ Sparkle è®¢é˜…æºã€‚
+# APP_BUILD å¿…é¡»ä¸ºçº¯æ•°å­—ä¸”å•è°ƒé€’å¢žï¼Œä»¥ä¾¿ Sparkle æ­£ç¡®æ¯”è¾ƒã€‚
 BUNDLE_ID=bot.molt.mac \
 APP_VERSION=2026.1.27-beta.1 \
 APP_BUILD="$(git rev-list --count HEAD)" \
@@ -47,14 +47,14 @@ BUILD_CONFIG=release \
 SIGN_IDENTITY="Developer ID Application: <Developer Name> (<TEAMID>)" \
 scripts/package-mac-app.sh
 
-# 打包用于分发的 zip（包含资源分支以支持 Sparkle 增量更新）
+# æ‰“åŒ…ç”¨äºŽåˆ†å‘çš„ zipï¼ˆåŒ…å«èµ„æºåˆ†æ”¯ä»¥æ”¯æŒ Sparkle å¢žé‡æ›´æ–°ï¼‰
 ditto -c -k --sequesterRsrc --keepParent dist/VikiClow.app dist/VikiClow-2026.1.27-beta.1.zip
 
-# 可选：同时构建适合用户使用的样式化 DMG（拖拽到 /Applications）
+# å¯é€‰ï¼šåŒæ—¶æž„å»ºé€‚åˆç”¨æˆ·ä½¿ç”¨çš„æ ·å¼åŒ– DMGï¼ˆæ‹–æ‹½åˆ° /Applicationsï¼‰
 scripts/create-dmg.sh dist/VikiClow.app dist/VikiClow-2026.1.27-beta.1.dmg
 
-# 推荐：构建 + 公证/装订 zip + DMG
-# 首先，创建一次钥匙串配置文件：
+# æŽ¨èï¼šæž„å»º + å…¬è¯/è£…è®¢ zip + DMG
+# é¦–å…ˆï¼Œåˆ›å»ºä¸€æ¬¡é’¥åŒ™ä¸²é…ç½®æ–‡ä»¶ï¼š
 #   xcrun notarytool store-credentials "vikiclow-notary" \
 #     --apple-id "<apple-id>" --team-id "<team-id>" --password "<app-specific-password>"
 NOTARIZE=1 NOTARYTOOL_PROFILE=vikiclow-notary \
@@ -65,28 +65,28 @@ BUILD_CONFIG=release \
 SIGN_IDENTITY="Developer ID Application: <Developer Name> (<TEAMID>)" \
 scripts/package-mac-dist.sh
 
-# 可选：随发布一起提供 dSYM
+# å¯é€‰ï¼šéšå‘å¸ƒä¸€èµ·æä¾› dSYM
 ditto -c -k --keepParent apps/macos/.build/release/VikiClow.app.dSYM dist/VikiClow-2026.1.27-beta.1.dSYM.zip
 ```
 
-## Appcast 条目
+## Appcast æ¡ç›®
 
-使用发布说明生成器，以便 Sparkle 渲染格式化的 HTML 说明：
+ä½¿ç”¨å‘å¸ƒè¯´æ˜Žç”Ÿæˆå™¨ï¼Œä»¥ä¾¿ Sparkle æ¸²æŸ“æ ¼å¼åŒ–çš„ HTML è¯´æ˜Žï¼š
 
 ```bash
-SPARKLE_PRIVATE_KEY_FILE=/path/to/ed25519-private-key scripts/make_appcast.sh dist/VikiClow-2026.1.27-beta.1.zip https://raw.githubusercontent.com/vikiclow/vikiclow/main/appcast.xml
+SPARKLE_PRIVATE_KEY_FILE=/path/to/ed25519-private-key scripts/make_appcast.sh dist/VikiClow-2026.1.27-beta.1.zip https://raw.githubusercontent.com/rebootix-research/viki-clow/main/appcast.xml
 ```
 
-从 `CHANGELOG.md`（通过 [`scripts/changelog-to-html.sh`](https://github.com/vikiclow/vikiclow/blob/main/scripts/changelog-to-html.sh)）生成 HTML 发布说明，并将其嵌入 appcast 条目。
-发布时，将更新后的 `appcast.xml` 与发布资源（zip + dSYM）一起提交。
+ä»Ž `CHANGELOG.md`ï¼ˆé€šè¿‡ [`scripts/changelog-to-html.sh`](https://github.com/rebootix-research/viki-clow/blob/main/scripts/changelog-to-html.sh)ï¼‰ç”Ÿæˆ HTML å‘å¸ƒè¯´æ˜Žï¼Œå¹¶å°†å…¶åµŒå…¥ appcast æ¡ç›®ã€‚
+å‘å¸ƒæ—¶ï¼Œå°†æ›´æ–°åŽçš„ `appcast.xml` ä¸Žå‘å¸ƒèµ„æºï¼ˆzip + dSYMï¼‰ä¸€èµ·æäº¤ã€‚
 
-## 发布与验证
+## å‘å¸ƒä¸ŽéªŒè¯
 
-- 将 `VikiClow-2026.1.27-beta.1.zip`（和 `VikiClow-2026.1.27-beta.1.dSYM.zip`）上传到标签 `v2026.1.27-beta.1` 对应的 GitHub 发布。
-- 确保原始 appcast URL 与内置的订阅源匹配：`https://raw.githubusercontent.com/vikiclow/vikiclow/main/appcast.xml`。
-- 完整性检查：
-  - `curl -I https://raw.githubusercontent.com/vikiclow/vikiclow/main/appcast.xml` 返回 200。
-  - `curl -I <enclosure url>` 在资源上传后返回 200。
-  - 在之前的公开构建版本上，从 About 选项卡运行"Check for Updates…"，验证 Sparkle 能正常安装新构建。
+- å°† `VikiClow-2026.1.27-beta.1.zip`ï¼ˆå’Œ `VikiClow-2026.1.27-beta.1.dSYM.zip`ï¼‰ä¸Šä¼ åˆ°æ ‡ç­¾ `v2026.1.27-beta.1` å¯¹åº”çš„ GitHub å‘å¸ƒã€‚
+- ç¡®ä¿åŽŸå§‹ appcast URL ä¸Žå†…ç½®çš„è®¢é˜…æºåŒ¹é…ï¼š`https://raw.githubusercontent.com/rebootix-research/viki-clow/main/appcast.xml`ã€‚
+- å®Œæ•´æ€§æ£€æŸ¥ï¼š
+  - `curl -I https://raw.githubusercontent.com/rebootix-research/viki-clow/main/appcast.xml` è¿”å›ž 200ã€‚
+  - `curl -I <enclosure url>` åœ¨èµ„æºä¸Šä¼ åŽè¿”å›ž 200ã€‚
+  - åœ¨ä¹‹å‰çš„å…¬å¼€æž„å»ºç‰ˆæœ¬ä¸Šï¼Œä»Ž About é€‰é¡¹å¡è¿è¡Œ"Check for Updatesâ€¦"ï¼ŒéªŒè¯ Sparkle èƒ½æ­£å¸¸å®‰è£…æ–°æž„å»ºã€‚
 
-完成定义：已签名的应用 + appcast 已发布，从旧版本的更新流程正常工作，且发布资源已附加到 GitHub 发布。
+å®Œæˆå®šä¹‰ï¼šå·²ç­¾åçš„åº”ç”¨ + appcast å·²å‘å¸ƒï¼Œä»Žæ—§ç‰ˆæœ¬çš„æ›´æ–°æµç¨‹æ­£å¸¸å·¥ä½œï¼Œä¸”å‘å¸ƒèµ„æºå·²é™„åŠ åˆ° GitHub å‘å¸ƒã€‚

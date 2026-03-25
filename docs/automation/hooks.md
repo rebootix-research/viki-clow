@@ -1044,6 +1044,6 @@ node -e "import('./path/to/handler.ts').then(console.log)"
 ## See Also
 
 - [CLI Reference: hooks](/cli/hooks)
-- [Bundled Hooks README](https://github.com/vikiclow/vikiclow/tree/main/src/hooks/bundled)
+- [Bundled Hooks README](https://github.com/rebootix-research/viki-clow/tree/main/src/hooks/bundled)
 - [Webhook Hooks](/automation/webhook)
 - [Configuration](/gateway/configuration#hooks)

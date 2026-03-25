@@ -79,6 +79,7 @@ const requiredFiles = [
   "dist/Viki Browser.cmd",
   "dist/Viki Browser.ps1",
   "dist/Viki Browser",
+  ...(process.platform === "win32" ? ["dist/Viki Browser.exe"] : []),
 ];
 
 const missingFiles = requiredFiles.filter((path) => !packFiles.includes(path));
@@ -98,6 +99,24 @@ const browserLauncherSmoke = (() => {
     };
   }
 })();
+const browserNativeExecutableSmoke =
+  process.platform !== "win32"
+    ? { passed: null, skipped: true }
+    : (() => {
+        try {
+          const stdout = sh(`"${resolve("dist/Viki Browser.exe")}" --probe --json`);
+          const parsed = JSON.parse(stdout) as { ok?: boolean; product?: string };
+          return {
+            passed: parsed.ok === true && parsed.product === "Viki Browser",
+            output: parsed,
+          };
+        } catch (error) {
+          return {
+            passed: false,
+            error: error instanceof Error ? error.message : String(error),
+          };
+        }
+      })();
 const gitAvailable = isGitRepo();
 const gitSha = gitAvailable ? shOrFallback("git rev-parse HEAD", "unknown") : "unknown";
 const gitBranch = gitAvailable ? shOrFallback("git rev-parse --abbrev-ref HEAD", "unknown") : "unknown";
@@ -131,8 +150,11 @@ const proof = {
     releasePackLooksHealthy: missingFiles.length === 0 && forbiddenFiles.length === 0,
     buildInfoPresent: buildInfo !== null,
     browserLauncherSmoke: browserLauncherSmoke.passed,
+    browserNativeExecutableSmoke:
+      browserNativeExecutableSmoke.passed === null ? true : browserNativeExecutableSmoke.passed,
   },
   browserLauncherSmoke,
+  browserNativeExecutableSmoke,
 };
 
 const jsonPath = resolve(outDir, "release-proof.json");
@@ -155,6 +177,7 @@ writeText(
     `- Required files missing: \`${proof.pack.missingFiles.length}\``,
     `- Forbidden files found: \`${proof.pack.forbiddenFiles.length}\``,
     `- Browser launcher smoke: \`${proof.checks.browserLauncherSmoke}\``,
+    `- Browser native executable smoke: \`${proof.checks.browserNativeExecutableSmoke}\``,
     "",
     "## Artifact Paths",
     "",
@@ -181,7 +204,8 @@ console.log(`release-proof: wrote ${mdPath}`);
 if (
   !proof.checks.releasePackLooksHealthy ||
   !proof.checks.buildInfoPresent ||
-  !proof.checks.browserLauncherSmoke
+  !proof.checks.browserLauncherSmoke ||
+  !proof.checks.browserNativeExecutableSmoke
 ) {
   console.error("release-proof: validation failed");
   process.exit(1);

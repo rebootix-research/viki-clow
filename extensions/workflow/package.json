@@ -4,7 +4,8 @@
   "description": "Viki Workflow runtime plugin (typed pipelines + resumable approvals)",
   "type": "module",
   "dependencies": {
-    "@sinclair/typebox": "0.34.48"
+    "@sinclair/typebox": "0.34.48",
+    "vikiclow": "workspace:*"
   },
   "vikiclow": {
     "extensions": [

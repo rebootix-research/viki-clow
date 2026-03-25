@@ -210,7 +210,7 @@ Offline-friendly alternatives (in increasing complexity):
 
 Open question:
 
-- what’s the **best** offline embedding model for “personal assistant memory” on your machines (laptop + desktop)?
+- what's the **best** offline embedding model for "execution-runtime memory" on your machines (laptop + desktop)?
   - if you already have Ollama: embed with a local model; otherwise ship a small embedding model in the toolchain.
 
 ## Smallest useful pilot

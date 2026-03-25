@@ -29,7 +29,7 @@ read_when:
 
 ```bash
 # Clone the repo
-git clone https://github.com/vikiclow/vikiclow.git
+git clone https://github.com/rebootix-research/viki-clow.git
 cd vikiclow
 
 # Create a new Fly app (pick your own name)

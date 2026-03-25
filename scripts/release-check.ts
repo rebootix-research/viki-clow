@@ -120,6 +120,7 @@ const requiredPathGroups = [
   "dist/Viki Browser.cmd",
   "dist/Viki Browser.ps1",
   "dist/Viki Browser",
+  ...(process.platform === "win32" ? ["dist/Viki Browser.exe"] : []),
 ];
 const forbiddenPrefixes = ["dist/VikiClow.app/"];
 const appcastPath = resolve("appcast.xml");

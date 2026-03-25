@@ -9,6 +9,7 @@ import type {
   ProfileStatus,
 } from "../browser/client.js";
 import { writeNativeVikiBrowserLaunchers } from "../browser/native-launcher.js";
+import { packageNativeVikiBrowserExecutable } from "../browser/native-packager.js";
 import { writeNativeVikiBrowserProof } from "../browser/native-proof.js";
 import { danger, info } from "../globals.js";
 import { defaultRuntime } from "../runtime.js";
@@ -108,10 +109,26 @@ export function registerBrowserManageCommands(
 ) {
   browser
     .command("package-native")
-    .description("Write packaged native Viki Browser launcher files into dist/")
+    .description("Write the packaged native Viki Browser launcher files, and a Windows executable when supported")
     .action(async (_opts, cmd) => {
       const parent = parentOpts(cmd);
       await runBrowserCommand(async () => {
+        if (process.platform === "win32") {
+          const packaged = await packageNativeVikiBrowserExecutable();
+          if (printJsonResult(parent, packaged)) {
+            return;
+          }
+          defaultRuntime.log(
+            [
+              `executable: ${packaged.executablePath}`,
+              `nodeLauncher: ${packaged.launcherPath}`,
+              `bootstrap: ${packaged.bootstrapPath}`,
+              `seaConfig: ${packaged.seaConfigPath}`,
+              `seaBlob: ${packaged.seaBlobPath}`,
+            ].join("\n"),
+          );
+          return;
+        }
         const paths = await writeNativeVikiBrowserLaunchers();
         if (printJsonResult(parent, paths)) {
           return;

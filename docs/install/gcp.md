@@ -191,7 +191,7 @@ docker compose version
 ## 6) Clone the VikiClow repository
 
 ```bash
-git clone https://github.com/vikiclow/vikiclow.git
+git clone https://github.com/rebootix-research/viki-clow.git
 cd vikiclow
 ```
 

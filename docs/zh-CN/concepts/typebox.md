@@ -1,7 +1,7 @@
 ---
 read_when:
-  - 更新协议模式或代码生成
-summary: TypeBox 模式作为 Gateway 网关协议的唯一事实来源
+  - æ›´æ–°åè®®æ¨¡å¼æˆ–ä»£ç ç”Ÿæˆ
+summary: TypeBox æ¨¡å¼ä½œä¸º Gateway ç½‘å…³åè®®çš„å”¯ä¸€äº‹å®žæ¥æº
 title: TypeBox
 x-i18n:
   generated_at: "2026-02-03T07:47:23Z"
@@ -12,25 +12,25 @@ x-i18n:
   workflow: 15
 ---
 
-# TypeBox 作为协议的事实来源
+# TypeBox ä½œä¸ºåè®®çš„äº‹å®žæ¥æº
 
-最后更新：2026-01-10
+æœ€åŽæ›´æ–°ï¼š2026-01-10
 
-TypeBox 是一个 TypeScript 优先的模式库。我们用它来定义 **Gateway 网关 WebSocket 协议**（握手、请求/响应、服务器事件）。这些模式驱动**运行时验证**、**JSON Schema 导出**和 macOS 应用的 **Swift 代码生成**。一个事实来源；其他一切都是生成的。
+TypeBox æ˜¯ä¸€ä¸ª TypeScript ä¼˜å…ˆçš„æ¨¡å¼åº“ã€‚æˆ‘ä»¬ç”¨å®ƒæ¥å®šä¹‰ **Gateway ç½‘å…³ WebSocket åè®®**ï¼ˆæ¡æ‰‹ã€è¯·æ±‚/å“åº”ã€æœåŠ¡å™¨äº‹ä»¶ï¼‰ã€‚è¿™äº›æ¨¡å¼é©±åŠ¨**è¿è¡Œæ—¶éªŒè¯**ã€**JSON Schema å¯¼å‡º**å’Œ macOS åº”ç”¨çš„ **Swift ä»£ç ç”Ÿæˆ**ã€‚ä¸€ä¸ªäº‹å®žæ¥æºï¼›å…¶ä»–ä¸€åˆ‡éƒ½æ˜¯ç”Ÿæˆçš„ã€‚
 
-如果你想了解更高层次的协议上下文，请从 [Gateway 网关架构](/concepts/architecture)开始。
+å¦‚æžœä½ æƒ³äº†è§£æ›´é«˜å±‚æ¬¡çš„åè®®ä¸Šä¸‹æ–‡ï¼Œè¯·ä»Ž [Gateway ç½‘å…³æž¶æž„](/concepts/architecture)å¼€å§‹ã€‚
 
-## 心智模型（30 秒）
+## å¿ƒæ™ºæ¨¡åž‹ï¼ˆ30 ç§’ï¼‰
 
-每个 Gateway 网关 WS 消息都是以下三种帧之一：
+æ¯ä¸ª Gateway ç½‘å…³ WS æ¶ˆæ¯éƒ½æ˜¯ä»¥ä¸‹ä¸‰ç§å¸§ä¹‹ä¸€ï¼š
 
-- **Request**：`{ type: "req", id, method, params }`
-- **Response**：`{ type: "res", id, ok, payload | error }`
-- **Event**：`{ type: "event", event, payload, seq?, stateVersion? }`
+- **Request**ï¼š`{ type: "req", id, method, params }`
+- **Response**ï¼š`{ type: "res", id, ok, payload | error }`
+- **Event**ï¼š`{ type: "event", event, payload, seq?, stateVersion? }`
 
-第一个帧**必须**是 `connect` 请求。之后，客户端可以调用方法（例如 `health`、`send`、`chat.send`）并订阅事件（例如 `presence`、`tick`、`agent`）。
+ç¬¬ä¸€ä¸ªå¸§**å¿…é¡»**æ˜¯ `connect` è¯·æ±‚ã€‚ä¹‹åŽï¼Œå®¢æˆ·ç«¯å¯ä»¥è°ƒç”¨æ–¹æ³•ï¼ˆä¾‹å¦‚ `health`ã€`send`ã€`chat.send`ï¼‰å¹¶è®¢é˜…äº‹ä»¶ï¼ˆä¾‹å¦‚ `presence`ã€`tick`ã€`agent`ï¼‰ã€‚
 
-连接流程（最小）：
+è¿žæŽ¥æµç¨‹ï¼ˆæœ€å°ï¼‰ï¼š
 
 ```
 Client                    Gateway
@@ -41,46 +41,46 @@ Client                    Gateway
   |<---- res:health ----------|
 ```
 
-常用方法 + 事件：
+å¸¸ç”¨æ–¹æ³• + äº‹ä»¶ï¼š
 
-| 类别 | 示例                                                      | 说明                            |
+| ç±»åˆ« | ç¤ºä¾‹                                                      | è¯´æ˜Ž                            |
 | ---- | --------------------------------------------------------- | ------------------------------- |
-| 核心 | `connect`、`health`、`status`                             | `connect` 必须是第一个          |
-| 消息 | `send`、`poll`、`agent`、`agent.wait`                     | 有副作用的需要 `idempotencyKey` |
-| 聊天 | `chat.history`、`chat.send`、`chat.abort`、`chat.inject`  | WebChat 使用这些                |
-| 会话 | `sessions.list`、`sessions.patch`、`sessions.delete`      | 会话管理                        |
-| 节点 | `node.list`、`node.invoke`、`node.pair.*`                 | Gateway 网关 WS + 节点操作      |
-| 事件 | `tick`、`presence`、`agent`、`chat`、`health`、`shutdown` | 服务器推送                      |
+| æ ¸å¿ƒ | `connect`ã€`health`ã€`status`                             | `connect` å¿…é¡»æ˜¯ç¬¬ä¸€ä¸ª          |
+| æ¶ˆæ¯ | `send`ã€`poll`ã€`agent`ã€`agent.wait`                     | æœ‰å‰¯ä½œç”¨çš„éœ€è¦ `idempotencyKey` |
+| èŠå¤© | `chat.history`ã€`chat.send`ã€`chat.abort`ã€`chat.inject`  | WebChat ä½¿ç”¨è¿™äº›                |
+| ä¼šè¯ | `sessions.list`ã€`sessions.patch`ã€`sessions.delete`      | ä¼šè¯ç®¡ç†                        |
+| èŠ‚ç‚¹ | `node.list`ã€`node.invoke`ã€`node.pair.*`                 | Gateway ç½‘å…³ WS + èŠ‚ç‚¹æ“ä½œ      |
+| äº‹ä»¶ | `tick`ã€`presence`ã€`agent`ã€`chat`ã€`health`ã€`shutdown` | æœåŠ¡å™¨æŽ¨é€                      |
 
-权威列表在 `src/gateway/server.ts`（`METHODS`、`EVENTS`）中。
+æƒå¨åˆ—è¡¨åœ¨ `src/gateway/server.ts`ï¼ˆ`METHODS`ã€`EVENTS`ï¼‰ä¸­ã€‚
 
-## 模式所在位置
+## æ¨¡å¼æ‰€åœ¨ä½ç½®
 
-- 源码：`src/gateway/protocol/schema.ts`
-- 运行时验证器（AJV）：`src/gateway/protocol/index.ts`
-- 服务器握手 + 方法分发：`src/gateway/server.ts`
-- 节点客户端：`src/gateway/client.ts`
-- 生成的 JSON Schema：`dist/protocol.schema.json`
-- 生成的 Swift 模型：`apps/macos/Sources/VikiClowProtocol/GatewayModels.swift`
+- æºç ï¼š`src/gateway/protocol/schema.ts`
+- è¿è¡Œæ—¶éªŒè¯å™¨ï¼ˆAJVï¼‰ï¼š`src/gateway/protocol/index.ts`
+- æœåŠ¡å™¨æ¡æ‰‹ + æ–¹æ³•åˆ†å‘ï¼š`src/gateway/server.ts`
+- èŠ‚ç‚¹å®¢æˆ·ç«¯ï¼š`src/gateway/client.ts`
+- ç”Ÿæˆçš„ JSON Schemaï¼š`dist/protocol.schema.json`
+- ç”Ÿæˆçš„ Swift æ¨¡åž‹ï¼š`apps/macos/Sources/VikiClowProtocol/GatewayModels.swift`
 
-## 当前流程
+## å½“å‰æµç¨‹
 
 - `pnpm protocol:gen`
-  - 将 JSON Schema（draft‑07）写入 `dist/protocol.schema.json`
+  - å°† JSON Schemaï¼ˆdraftâ€‘07ï¼‰å†™å…¥ `dist/protocol.schema.json`
 - `pnpm protocol:gen:swift`
-  - 生成 Swift Gateway 网关模型
+  - ç”Ÿæˆ Swift Gateway ç½‘å…³æ¨¡åž‹
 - `pnpm protocol:check`
-  - 运行两个生成器并验证输出已提交
+  - è¿è¡Œä¸¤ä¸ªç”Ÿæˆå™¨å¹¶éªŒè¯è¾“å‡ºå·²æäº¤
 
-## 模式在运行时的使用方式
+## æ¨¡å¼åœ¨è¿è¡Œæ—¶çš„ä½¿ç”¨æ–¹å¼
 
-- **服务器端**：每个入站帧都用 AJV 验证。握手仅接受参数匹配 `ConnectParams` 的 `connect` 请求。
-- **客户端**：JS 客户端在使用之前验证事件和响应帧。
-- **方法表面**：Gateway 网关在 `hello-ok` 中公布支持的 `methods` 和 `events`。
+- **æœåŠ¡å™¨ç«¯**ï¼šæ¯ä¸ªå…¥ç«™å¸§éƒ½ç”¨ AJV éªŒè¯ã€‚æ¡æ‰‹ä»…æŽ¥å—å‚æ•°åŒ¹é… `ConnectParams` çš„ `connect` è¯·æ±‚ã€‚
+- **å®¢æˆ·ç«¯**ï¼šJS å®¢æˆ·ç«¯åœ¨ä½¿ç”¨ä¹‹å‰éªŒè¯äº‹ä»¶å’Œå“åº”å¸§ã€‚
+- **æ–¹æ³•è¡¨é¢**ï¼šGateway ç½‘å…³åœ¨ `hello-ok` ä¸­å…¬å¸ƒæ”¯æŒçš„ `methods` å’Œ `events`ã€‚
 
-## 示例帧
+## ç¤ºä¾‹å¸§
 
-Connect（第一条消息）：
+Connectï¼ˆç¬¬ä¸€æ¡æ¶ˆæ¯ï¼‰ï¼š
 
 ```json
 {
@@ -102,7 +102,7 @@ Connect（第一条消息）：
 }
 ```
 
-Hello-ok 响应：
+Hello-ok å“åº”ï¼š
 
 ```json
 {
@@ -125,7 +125,7 @@ Hello-ok 响应：
 }
 ```
 
-请求 + 响应：
+è¯·æ±‚ + å“åº”ï¼š
 
 ```json
 { "type": "req", "id": "r1", "method": "health" }
@@ -135,15 +135,15 @@ Hello-ok 响应：
 { "type": "res", "id": "r1", "ok": true, "payload": { "ok": true } }
 ```
 
-事件：
+äº‹ä»¶ï¼š
 
 ```json
 { "type": "event", "event": "tick", "payload": { "ts": 1730000000 }, "seq": 12 }
 ```
 
-## 最小客户端（Node.js）
+## æœ€å°å®¢æˆ·ç«¯ï¼ˆNode.jsï¼‰
 
-最小可用流程：connect + health。
+æœ€å°å¯ç”¨æµç¨‹ï¼šconnect + healthã€‚
 
 ```ts
 import { WebSocket } from "ws";
@@ -183,13 +183,13 @@ ws.on("message", (data) => {
 });
 ```
 
-## 实践示例：端到端添加方法
+## å®žè·µç¤ºä¾‹ï¼šç«¯åˆ°ç«¯æ·»åŠ æ–¹æ³•
 
-示例：添加一个新的 `system.echo` 请求，返回 `{ ok: true, text }`。
+ç¤ºä¾‹ï¼šæ·»åŠ ä¸€ä¸ªæ–°çš„ `system.echo` è¯·æ±‚ï¼Œè¿”å›ž `{ ok: true, text }`ã€‚
 
-1. **模式（事实来源）**
+1. **æ¨¡å¼ï¼ˆäº‹å®žæ¥æºï¼‰**
 
-添加到 `src/gateway/protocol/schema.ts`：
+æ·»åŠ åˆ° `src/gateway/protocol/schema.ts`ï¼š
 
 ```ts
 export const SystemEchoParamsSchema = Type.Object(
@@ -203,7 +203,7 @@ export const SystemEchoResultSchema = Type.Object(
 );
 ```
 
-将两者添加到 `ProtocolSchemas` 并导出类型：
+å°†ä¸¤è€…æ·»åŠ åˆ° `ProtocolSchemas` å¹¶å¯¼å‡ºç±»åž‹ï¼š
 
 ```ts
   SystemEchoParams: SystemEchoParamsSchema,
@@ -215,17 +215,17 @@ export type SystemEchoParams = Static<typeof SystemEchoParamsSchema>;
 export type SystemEchoResult = Static<typeof SystemEchoResultSchema>;
 ```
 
-2. **验证**
+2. **éªŒè¯**
 
-在 `src/gateway/protocol/index.ts` 中，导出一个 AJV 验证器：
+åœ¨ `src/gateway/protocol/index.ts` ä¸­ï¼Œå¯¼å‡ºä¸€ä¸ª AJV éªŒè¯å™¨ï¼š
 
 ```ts
 export const validateSystemEchoParams = ajv.compile<SystemEchoParams>(SystemEchoParamsSchema);
 ```
 
-3. **服务器行为**
+3. **æœåŠ¡å™¨è¡Œä¸º**
 
-在 `src/gateway/server-methods/system.ts` 中添加处理程序：
+åœ¨ `src/gateway/server-methods/system.ts` ä¸­æ·»åŠ å¤„ç†ç¨‹åºï¼š
 
 ```ts
 export const systemHandlers: GatewayRequestHandlers = {
@@ -236,49 +236,49 @@ export const systemHandlers: GatewayRequestHandlers = {
 };
 ```
 
-在 `src/gateway/server-methods.ts` 中注册（已合并 `systemHandlers`），然后将 `"system.echo"` 添加到 `src/gateway/server.ts` 中的 `METHODS`。
+åœ¨ `src/gateway/server-methods.ts` ä¸­æ³¨å†Œï¼ˆå·²åˆå¹¶ `systemHandlers`ï¼‰ï¼Œç„¶åŽå°† `"system.echo"` æ·»åŠ åˆ° `src/gateway/server.ts` ä¸­çš„ `METHODS`ã€‚
 
-4. **重新生成**
+4. **é‡æ–°ç”Ÿæˆ**
 
 ```bash
 pnpm protocol:check
 ```
 
-5. **测试 + 文档**
+5. **æµ‹è¯• + æ–‡æ¡£**
 
-在 `src/gateway/server.*.test.ts` 中添加服务器测试，并在文档中记录该方法。
+åœ¨ `src/gateway/server.*.test.ts` ä¸­æ·»åŠ æœåŠ¡å™¨æµ‹è¯•ï¼Œå¹¶åœ¨æ–‡æ¡£ä¸­è®°å½•è¯¥æ–¹æ³•ã€‚
 
-## Swift 代码生成行为
+## Swift ä»£ç ç”Ÿæˆè¡Œä¸º
 
-Swift 生成器输出：
+Swift ç”Ÿæˆå™¨è¾“å‡ºï¼š
 
-- 带有 `req`、`res`、`event` 和 `unknown` 情况的 `GatewayFrame` 枚举
-- 强类型的 payload 结构体/枚举
-- `ErrorCode` 值和 `GATEWAY_PROTOCOL_VERSION`
+- å¸¦æœ‰ `req`ã€`res`ã€`event` å’Œ `unknown` æƒ…å†µçš„ `GatewayFrame` æžšä¸¾
+- å¼ºç±»åž‹çš„ payload ç»“æž„ä½“/æžšä¸¾
+- `ErrorCode` å€¼å’Œ `GATEWAY_PROTOCOL_VERSION`
 
-未知的帧类型保留为原始 payload 以实现向前兼容。
+æœªçŸ¥çš„å¸§ç±»åž‹ä¿ç•™ä¸ºåŽŸå§‹ payload ä»¥å®žçŽ°å‘å‰å…¼å®¹ã€‚
 
-## 版本控制 + 兼容性
+## ç‰ˆæœ¬æŽ§åˆ¶ + å…¼å®¹æ€§
 
-- `PROTOCOL_VERSION` 在 `src/gateway/protocol/schema.ts` 中。
-- 客户端发送 `minProtocol` + `maxProtocol`；服务器拒绝不匹配的。
-- Swift 模型保留未知帧类型以避免破坏旧客户端。
+- `PROTOCOL_VERSION` åœ¨ `src/gateway/protocol/schema.ts` ä¸­ã€‚
+- å®¢æˆ·ç«¯å‘é€ `minProtocol` + `maxProtocol`ï¼›æœåŠ¡å™¨æ‹’ç»ä¸åŒ¹é…çš„ã€‚
+- Swift æ¨¡åž‹ä¿ç•™æœªçŸ¥å¸§ç±»åž‹ä»¥é¿å…ç ´åæ—§å®¢æˆ·ç«¯ã€‚
 
-## 模式模式和约定
+## æ¨¡å¼æ¨¡å¼å’Œçº¦å®š
 
-- 大多数对象使用 `additionalProperties: false` 以实现严格的 payload。
-- `NonEmptyString` 是 ID 和方法/事件名称的默认值。
-- 顶层 `GatewayFrame` 在 `type` 上使用**鉴别器**。
-- 有副作用的方法通常需要在 params 中包含 `idempotencyKey`（示例：`send`、`poll`、`agent`、`chat.send`）。
+- å¤§å¤šæ•°å¯¹è±¡ä½¿ç”¨ `additionalProperties: false` ä»¥å®žçŽ°ä¸¥æ ¼çš„ payloadã€‚
+- `NonEmptyString` æ˜¯ ID å’Œæ–¹æ³•/äº‹ä»¶åç§°çš„é»˜è®¤å€¼ã€‚
+- é¡¶å±‚ `GatewayFrame` åœ¨ `type` ä¸Šä½¿ç”¨**é‰´åˆ«å™¨**ã€‚
+- æœ‰å‰¯ä½œç”¨çš„æ–¹æ³•é€šå¸¸éœ€è¦åœ¨ params ä¸­åŒ…å« `idempotencyKey`ï¼ˆç¤ºä¾‹ï¼š`send`ã€`poll`ã€`agent`ã€`chat.send`ï¼‰ã€‚
 
-## 实时 schema JSON
+## å®žæ—¶ schema JSON
 
-生成的 JSON Schema 在仓库的 `dist/protocol.schema.json` 中。发布的原始文件通常可在以下位置获取：
+ç”Ÿæˆçš„ JSON Schema åœ¨ä»“åº“çš„ `dist/protocol.schema.json` ä¸­ã€‚å‘å¸ƒçš„åŽŸå§‹æ–‡ä»¶é€šå¸¸å¯åœ¨ä»¥ä¸‹ä½ç½®èŽ·å–ï¼š
 
-- https://raw.githubusercontent.com/vikiclow/vikiclow/main/dist/protocol.schema.json
+- https://raw.githubusercontent.com/rebootix-research/viki-clow/main/dist/protocol.schema.json
 
-## 当你更改模式时
+## å½“ä½ æ›´æ”¹æ¨¡å¼æ—¶
 
-1. 更新 TypeBox 模式。
-2. 运行 `pnpm protocol:check`。
-3. 提交重新生成的 schema + Swift 模型。
+1. æ›´æ–° TypeBox æ¨¡å¼ã€‚
+2. è¿è¡Œ `pnpm protocol:check`ã€‚
+3. æäº¤é‡æ–°ç”Ÿæˆçš„ schema + Swift æ¨¡åž‹ã€‚

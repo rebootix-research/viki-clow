@@ -1,4 +1,4 @@
-﻿---
+---
 read_when:
   - å‘å¸ƒæ–°çš„ npm ç‰ˆæœ¬
   - å‘å¸ƒæ–°çš„ macOS åº”ç”¨ç‰ˆæœ¬
@@ -29,13 +29,13 @@ x-i18n:
 
 - [ ] æ›´æ–° `package.json` ç‰ˆæœ¬ï¼ˆä¾‹å¦‚ `2026.1.29`ï¼‰ã€‚
 - [ ] è¿è¡Œ `pnpm plugins:sync` ä»¥å¯¹é½æ‰©å±•åŒ…ç‰ˆæœ¬å’Œå˜æ›´æ—¥å¿—ã€‚
-- [ ] æ›´æ–° CLI/ç‰ˆæœ¬å­—ç¬¦ä¸²ï¼š[`src/cli/program.ts`](https://github.com/vikiclow/vikiclow/blob/main/src/cli/program.ts) å’Œ [`src/provider-web.ts`](https://github.com/vikiclow/vikiclow/blob/main/src/provider-web.ts) ä¸­çš„ Baileys user agentã€‚
-- [ ] ç¡®è®¤åŒ…å…ƒæ•°æ®ï¼ˆnameã€descriptionã€repositoryã€keywordsã€licenseï¼‰ä»¥åŠ `bin` æ˜ å°„æŒ‡å‘ [`vikiclow.mjs`](https://github.com/vikiclow/vikiclow/blob/main/vikiclow.mjs) ä½œä¸º `vikiclow`ã€‚
+- [ ] æ›´æ–° CLI/ç‰ˆæœ¬å­—ç¬¦ä¸²ï¼š[`src/cli/program.ts`](https://github.com/rebootix-research/viki-clow/blob/main/src/cli/program.ts) å’Œ [`src/provider-web.ts`](https://github.com/rebootix-research/viki-clow/blob/main/src/provider-web.ts) ä¸­çš„ Baileys user agentã€‚
+- [ ] ç¡®è®¤åŒ…å…ƒæ•°æ®ï¼ˆnameã€descriptionã€repositoryã€keywordsã€licenseï¼‰ä»¥åŠ `bin` æ˜ å°„æŒ‡å‘ [`vikiclow.mjs`](https://github.com/rebootix-research/viki-clow/blob/main/vikiclow.mjs) ä½œä¸º `vikiclow`ã€‚
 - [ ] å¦‚æžœä¾èµ–é¡¹æœ‰å˜åŒ–ï¼Œè¿è¡Œ `pnpm install` ç¡®ä¿ `pnpm-lock.yaml` æ˜¯æœ€æ–°çš„ã€‚
 
 2. **æž„å»ºå’Œäº§ç‰©**
 
-- [ ] å¦‚æžœ A2UI è¾“å…¥æœ‰å˜åŒ–ï¼Œè¿è¡Œ `pnpm canvas:a2ui:bundle` å¹¶æäº¤æ›´æ–°åŽçš„ [`src/canvas-host/a2ui/a2ui.bundle.js`](https://github.com/vikiclow/vikiclow/blob/main/src/canvas-host/a2ui/a2ui.bundle.js)ã€‚
+- [ ] å¦‚æžœ A2UI è¾“å…¥æœ‰å˜åŒ–ï¼Œè¿è¡Œ `pnpm canvas:a2ui:bundle` å¹¶æäº¤æ›´æ–°åŽçš„ [`src/canvas-host/a2ui/a2ui.bundle.js`](https://github.com/rebootix-research/viki-clow/blob/main/src/canvas-host/a2ui/a2ui.bundle.js)ã€‚
 - [ ] `pnpm run build`ï¼ˆé‡æ–°ç”Ÿæˆ `dist/`ï¼‰ã€‚
 - [ ] éªŒè¯ npm åŒ…çš„ `files` åŒ…å«æ‰€æœ‰å¿…éœ€çš„ `dist/*` æ–‡ä»¶å¤¹ï¼ˆç‰¹åˆ«æ˜¯ç”¨äºŽ headless node + ACP CLI çš„ `dist/node-host/**` å’Œ `dist/acp/**`ï¼‰ã€‚
 - [ ] ç¡®è®¤ `dist/build-info.json` å­˜åœ¨å¹¶åŒ…å«é¢„æœŸçš„ `commit` å“ˆå¸Œï¼ˆCLI æ¨ªå¹…åœ¨ npm å®‰è£…æ—¶ä½¿ç”¨æ­¤ä¿¡æ¯ï¼‰ã€‚
@@ -64,7 +64,7 @@ x-i18n:
 5. **macOS åº”ç”¨ï¼ˆSparkleï¼‰**
 
 - [ ] æž„å»ºå¹¶ç­¾å macOS åº”ç”¨ï¼Œç„¶åŽåŽ‹ç¼©ä»¥ä¾›åˆ†å‘ã€‚
-- [ ] ç”Ÿæˆ Sparkle appcastï¼ˆé€šè¿‡ [`scripts/make_appcast.sh`](https://github.com/vikiclow/vikiclow/blob/main/scripts/make_appcast.sh) ç”Ÿæˆ HTML æ³¨é‡Šï¼‰å¹¶æ›´æ–° `appcast.xml`ã€‚
+- [ ] ç”Ÿæˆ Sparkle appcastï¼ˆé€šè¿‡ [`scripts/make_appcast.sh`](https://github.com/rebootix-research/viki-clow/blob/main/scripts/make_appcast.sh) ç”Ÿæˆ HTML æ³¨é‡Šï¼‰å¹¶æ›´æ–° `appcast.xml`ã€‚
 - [ ] ä¿ç•™åº”ç”¨ zipï¼ˆå’Œå¯é€‰çš„ dSYM zipï¼‰ä»¥ä¾¿é™„åŠ åˆ° GitHub å‘å¸ƒã€‚
 - [ ] æŒ‰ç…§ [macOS å‘å¸ƒ](/platforms/mac/release) èŽ·å–ç¡®åˆ‡å‘½ä»¤å’Œæ‰€éœ€çŽ¯å¢ƒå˜é‡ã€‚
   - `APP_BUILD` å¿…é¡»æ˜¯æ•°å­—ä¸”å•è°ƒé€’å¢žï¼ˆä¸å¸¦ `-beta`ï¼‰ï¼Œä»¥ä¾¿ Sparkle æ­£ç¡®æ¯”è¾ƒç‰ˆæœ¬ã€‚

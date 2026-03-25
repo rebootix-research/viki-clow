@@ -5,7 +5,7 @@
         <item>
             <title>2026.3.8-beta.1</title>
             <pubDate>Mon, 09 Mar 2026 07:19:57 +0000</pubDate>
-            <link>https://raw.githubusercontent.com/vikiclow/vikiclow/main/appcast.xml</link>
+            <link>https://raw.githubusercontent.com/rebootix-research/viki-clow/main/appcast.xml</link>
             <sparkle:version>2026030801</sparkle:version>
             <sparkle:shortVersionString>2026.3.8-beta.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
@@ -72,14 +72,14 @@
 <li>Security/system.run: bind approved <code>bun</code> and <code>deno run</code> script operands to on-disk file snapshots so post-approval script rewrites are denied before execution.</li>
 <li>Skills/download installs: pin the validated per-skill tools root before writing downloaded archives, so rebinding the lexical tools path cannot redirect download writes outside the intended tools directory. Thanks @tdjackey.</li>
 </ul>
-<p><a href="https://github.com/vikiclow/vikiclow/blob/main/CHANGELOG.md">View full changelog</a></p>
+<p><a href="https://github.com/rebootix-research/viki-clow/blob/main/CHANGELOG.md">View full changelog</a></p>
 ]]></description>
-            <enclosure url="https://github.com/vikiclow/vikiclow/releases/download/v2026.3.8-beta.1/VikiClow-2026.3.8-beta.1.zip" length="23407015" type="application/octet-stream" sparkle:edSignature="KCqhSmu4b0tHf55RqcQOHorsc55CgBI5BUmK/NTizxNq04INn/7QvsamHYQou9DbB2IW6B2nawBC4nn4au5yDA=="/>
+            <enclosure url="https://github.com/rebootix-research/viki-clow/releases/download/v2026.3.8-beta.1/VikiClow-2026.3.8-beta.1.zip" length="23407015" type="application/octet-stream" sparkle:edSignature="KCqhSmu4b0tHf55RqcQOHorsc55CgBI5BUmK/NTizxNq04INn/7QvsamHYQou9DbB2IW6B2nawBC4nn4au5yDA=="/>
         </item>
         <item>
             <title>2026.3.7</title>
             <pubDate>Sun, 08 Mar 2026 04:42:35 +0000</pubDate>
-            <link>https://raw.githubusercontent.com/vikiclow/vikiclow/main/appcast.xml</link>
+            <link>https://raw.githubusercontent.com/rebootix-research/viki-clow/main/appcast.xml</link>
             <sparkle:version>2026030790</sparkle:version>
             <sparkle:shortVersionString>2026.3.7</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
@@ -150,7 +150,7 @@
 <li>Agents/openai-completions stream timeout hardening: ensure runtime undici global dispatchers use extended streaming body/header timeouts (including env-proxy dispatcher mode) before embedded runs, reducing forced mid-stream <code>terminated</code> failures on long generations; adds regression coverage for dispatcher selection and idempotent reconfiguration. (#9708) Thanks @scottchguard.</li>
 <li>Agents/fallback cooldown probe execution: thread explicit rate-limit cooldown probe intent from model fallback into embedded runner auth-profile selection so same-provider fallback attempts can actually run when all profiles are cooldowned for <code>rate_limit</code> (instead of failing pre-run as <code>No available auth profile</code>), while preserving default cooldown skip behavior and adding regression tests at both fallback and runner layers. (#13623) Thanks @asfura.</li>
 <li>Cron/OpenAI Codex OAuth refresh hardening: when <code>openai-codex</code> token refresh fails specifically on account-id extraction, reuse the cached access token instead of failing the run immediately, with regression coverage to keep non-Codex and unrelated refresh failures unchanged. (#36604) Thanks @laulopezreal.</li>
-<li>TUI/session isolation for <code>/new</code>: make <code>/new</code> allocate a unique <code>tui-<uuid></code> session key instead of resetting the shared agent session, so multiple TUI clients on the same agent stop receiving each other’s replies; also sanitize <code>/new</code> and <code>/reset</code> failure text before rendering in-terminal. Landed from contributor PR #39238 by @widingmarcus-cyber. Thanks @widingmarcus-cyber.</li>
+<li>TUI/session isolation for <code>/new</code>: make <code>/new</code> allocate a unique <code>tui-<uuid></code> session key instead of resetting the shared agent session, so multiple TUI clients on the same agent stop receiving each otherâ€™s replies; also sanitize <code>/new</code> and <code>/reset</code> failure text before rendering in-terminal. Landed from contributor PR #39238 by @widingmarcus-cyber. Thanks @widingmarcus-cyber.</li>
 <li>Synology Chat/rate-limit env parsing: honor <code>SYNOLOGY_RATE_LIMIT=0</code> as an explicit value while still falling back to the default limit for malformed env values instead of partially parsing them. Landed from contributor PR #39197 by @scoootscooob. Thanks @scoootscooob.</li>
 <li>Voice-call/OpenAI Realtime STT config defaults: honor explicit <code>vadThreshold: 0</code> and <code>silenceDurationMs: 0</code> instead of silently replacing them with defaults. Landed from contributor PR #39196 by @scoootscooob. Thanks @scoootscooob.</li>
 <li>Voice-call/OpenAI TTS speed config: honor explicit <code>speed: 0</code> instead of silently replacing it with the default speed. Landed from contributor PR #39318 by @ql-wade. Thanks @ql-wade.</li>
@@ -434,14 +434,14 @@
 <li>ACPX/MCP session bootstrap: inject configured MCP servers into ACP <code>session/new</code> and <code>session/load</code> for acpx-backed sessions, restoring Canva and other external MCP tools. Landed from contributor PR #39337. Thanks @goodspeed-apps.</li>
 <li>Control UI/Telegram sender labels: preserve inbound sender labels in sanitized chat history so dashboard user-message groups split correctly and show real group-member names instead of <code>You</code>. (#39414) Thanks @obviyus.</li>
 </ul>
-<p><a href="https://github.com/vikiclow/vikiclow/blob/main/CHANGELOG.md">View full changelog</a></p>
+<p><a href="https://github.com/rebootix-research/viki-clow/blob/main/CHANGELOG.md">View full changelog</a></p>
 ]]></description>
-            <enclosure url="https://github.com/vikiclow/vikiclow/releases/download/v2026.3.7/VikiClow-2026.3.7.zip" length="23263833" type="application/octet-stream" sparkle:edSignature="SO0zedZMzrvSDltLkuaSVQTWFPPPe1iu/enS4TGGb5EGckhqRCmNJWMKNID5lKwFC8vefTbfG9JTlSrZedP4Bg=="/>
+            <enclosure url="https://github.com/rebootix-research/viki-clow/releases/download/v2026.3.7/VikiClow-2026.3.7.zip" length="23263833" type="application/octet-stream" sparkle:edSignature="SO0zedZMzrvSDltLkuaSVQTWFPPPe1iu/enS4TGGb5EGckhqRCmNJWMKNID5lKwFC8vefTbfG9JTlSrZedP4Bg=="/>
         </item>
         <item>
             <title>2026.3.2</title>
             <pubDate>Tue, 03 Mar 2026 04:30:29 +0000</pubDate>
-            <link>https://raw.githubusercontent.com/vikiclow/vikiclow/main/appcast.xml</link>
+            <link>https://raw.githubusercontent.com/rebootix-research/viki-clow/main/appcast.xml</link>
             <sparkle:version>2026030290</sparkle:version>
             <sparkle:shortVersionString>2026.3.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
@@ -653,9 +653,9 @@
 <li>Tests/Windows backup rotation: skip chmod-only backup permission assertions on Windows while retaining compose/rotation/prune coverage across platforms to avoid false CI failures from Windows non-POSIX mode semantics. (#32286) Thanks @jalehman.</li>
 <li>Tests/Subagent announce: set <code>VIKICLOW_TEST_FAST=1</code> before importing <code>subagent-announce</code> format suites so module-level fast-mode constants are captured deterministically on Windows CI, preventing timeout flakes in nested completion announce coverage. (#31370) Thanks @zwffff.</li>
 </ul>
-<p><a href="https://github.com/vikiclow/vikiclow/blob/main/CHANGELOG.md">View full changelog</a></p>
+<p><a href="https://github.com/rebootix-research/viki-clow/blob/main/CHANGELOG.md">View full changelog</a></p>
 ]]></description>
-            <enclosure url="https://github.com/vikiclow/vikiclow/releases/download/v2026.3.2/VikiClow-2026.3.2.zip" length="23181513" type="application/octet-stream" sparkle:edSignature="THMgkcoMgz2vv5zse3Po3K7l3Or2RhBKurXZIi8iYVXN76yJy1YXAY6kXi6ovD+dbYn68JKYDIKA1Ya78bO7BQ=="/>
+            <enclosure url="https://github.com/rebootix-research/viki-clow/releases/download/v2026.3.2/VikiClow-2026.3.2.zip" length="23181513" type="application/octet-stream" sparkle:edSignature="THMgkcoMgz2vv5zse3Po3K7l3Or2RhBKurXZIi8iYVXN76yJy1YXAY6kXi6ovD+dbYn68JKYDIKA1Ya78bO7BQ=="/>
             <!-- pragma: allowlist secret -->
         </item>
     </channel>

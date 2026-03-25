@@ -3,7 +3,7 @@ summary: "VikiClow on Raspberry Pi (budget self-hosted setup)"
 read_when:
   - Setting up VikiClow on a Raspberry Pi
   - Running VikiClow on ARM devices
-  - Building a cheap always-on personal AI
+  - Building a cheap always-on execution node
 title: "Raspberry Pi"
 ---
 
@@ -15,9 +15,9 @@ Run a persistent, always-on VikiClow Gateway on a Raspberry Pi for **~$35-80** o
 
 Perfect for:
 
-- 24/7 personal AI assistant
+- 24/7 operator runtime
 - Home automation hub
-- Low-power, always-available Telegram/WhatsApp bot
+- Low-power, always-available Telegram/WhatsApp execution endpoint
 
 ## Hardware Requirements
 
@@ -118,7 +118,7 @@ curl -fsSL https://vikiclow.ai/install.sh | bash
 ### Option B: Hackable Install (For tinkering)
 
 ```bash
-git clone https://github.com/vikiclow/vikiclow.git
+git clone https://github.com/rebootix-research/viki-clow.git
 cd vikiclow
 npm install
 npm run build

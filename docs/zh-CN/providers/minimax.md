@@ -1,8 +1,8 @@
 ---
 read_when:
-  - 你想在 VikiClow 中使用 MiniMax 模型
-  - 你需要 MiniMax 设置指南
-summary: 在 VikiClow 中使用 MiniMax M2.1
+  - ä½ æƒ³åœ¨ VikiClow ä¸­ä½¿ç”¨ MiniMax æ¨¡åž‹
+  - ä½ éœ€è¦ MiniMax è®¾ç½®æŒ‡å—
+summary: åœ¨ VikiClow ä¸­ä½¿ç”¨ MiniMax M2.1
 title: MiniMax
 x-i18n:
   generated_at: "2026-02-03T10:08:52Z"
@@ -15,57 +15,57 @@ x-i18n:
 
 # MiniMax
 
-MiniMax 是一家构建 **M2/M2.1** 模型系列的 AI 公司。当前面向编程的版本是 **MiniMax M2.1**（2025 年 12 月 23 日），专为现实世界的复杂任务而构建。
+MiniMax æ˜¯ä¸€å®¶æž„å»º **M2/M2.1** æ¨¡åž‹ç³»åˆ—çš„ AI å…¬å¸ã€‚å½“å‰é¢å‘ç¼–ç¨‹çš„ç‰ˆæœ¬æ˜¯ **MiniMax M2.1**ï¼ˆ2025 å¹´ 12 æœˆ 23 æ—¥ï¼‰ï¼Œä¸“ä¸ºçŽ°å®žä¸–ç•Œçš„å¤æ‚ä»»åŠ¡è€Œæž„å»ºã€‚
 
-来源：[MiniMax M2.1 发布说明](https://www.minimax.io/news/minimax-m21)
+æ¥æºï¼š[MiniMax M2.1 å‘å¸ƒè¯´æ˜Ž](https://www.minimax.io/news/minimax-m21)
 
-## 模型概述（M2.1）
+## æ¨¡åž‹æ¦‚è¿°ï¼ˆM2.1ï¼‰
 
-MiniMax 强调 M2.1 的以下改进：
+MiniMax å¼ºè°ƒ M2.1 çš„ä»¥ä¸‹æ”¹è¿›ï¼š
 
-- 更强的**多语言编程**能力（Rust、Java、Go、C++、Kotlin、Objective-C、TS/JS）。
-- 更好的 **Web/应用开发**和美观输出质量（包括原生移动端）。
-- 改进的**复合指令**处理，适用于办公风格的工作流程，基于交错思考和集成约束执行。
-- **更简洁的响应**，更低的 token 使用量和更快的迭代循环。
-- 更强的**工具/智能体框架**兼容性和上下文管理（Claude Code、Droid/Factory AI、Cline、Kilo Code、Roo Code、BlackBox）。
-- 更高质量的**对话和技术写作**输出。
+- æ›´å¼ºçš„**å¤šè¯­è¨€ç¼–ç¨‹**èƒ½åŠ›ï¼ˆRustã€Javaã€Goã€C++ã€Kotlinã€Objective-Cã€TS/JSï¼‰ã€‚
+- æ›´å¥½çš„ **Web/åº”ç”¨å¼€å‘**å’Œç¾Žè§‚è¾“å‡ºè´¨é‡ï¼ˆåŒ…æ‹¬åŽŸç”Ÿç§»åŠ¨ç«¯ï¼‰ã€‚
+- æ”¹è¿›çš„**å¤åˆæŒ‡ä»¤**å¤„ç†ï¼Œé€‚ç”¨äºŽåŠžå…¬é£Žæ ¼çš„å·¥ä½œæµç¨‹ï¼ŒåŸºäºŽäº¤é”™æ€è€ƒå’Œé›†æˆçº¦æŸæ‰§è¡Œã€‚
+- **æ›´ç®€æ´çš„å“åº”**ï¼Œæ›´ä½Žçš„ token ä½¿ç”¨é‡å’Œæ›´å¿«çš„è¿­ä»£å¾ªçŽ¯ã€‚
+- æ›´å¼ºçš„**å·¥å…·/æ™ºèƒ½ä½“æ¡†æž¶**å…¼å®¹æ€§å’Œä¸Šä¸‹æ–‡ç®¡ç†ï¼ˆClaude Codeã€Droid/Factory AIã€Clineã€Kilo Codeã€Roo Codeã€BlackBoxï¼‰ã€‚
+- æ›´é«˜è´¨é‡çš„**å¯¹è¯å’ŒæŠ€æœ¯å†™ä½œ**è¾“å‡ºã€‚
 
 ## MiniMax M2.1 vs MiniMax M2.1 Lightning
 
-- **速度：** Lightning 是 MiniMax 定价文档中的"快速"变体。
-- **成本：** 定价显示相同的输入成本，但 Lightning 的输出成本更高。
-- **编程计划路由：** Lightning 后端在 MiniMax 编程计划中不能直接使用。MiniMax 自动将大多数请求路由到 Lightning，但在流量高峰期会回退到常规 M2.1 后端。
+- **é€Ÿåº¦ï¼š** Lightning æ˜¯ MiniMax å®šä»·æ–‡æ¡£ä¸­çš„"å¿«é€Ÿ"å˜ä½“ã€‚
+- **æˆæœ¬ï¼š** å®šä»·æ˜¾ç¤ºç›¸åŒçš„è¾“å…¥æˆæœ¬ï¼Œä½† Lightning çš„è¾“å‡ºæˆæœ¬æ›´é«˜ã€‚
+- **ç¼–ç¨‹è®¡åˆ’è·¯ç”±ï¼š** Lightning åŽç«¯åœ¨ MiniMax ç¼–ç¨‹è®¡åˆ’ä¸­ä¸èƒ½ç›´æŽ¥ä½¿ç”¨ã€‚MiniMax è‡ªåŠ¨å°†å¤§å¤šæ•°è¯·æ±‚è·¯ç”±åˆ° Lightningï¼Œä½†åœ¨æµé‡é«˜å³°æœŸä¼šå›žé€€åˆ°å¸¸è§„ M2.1 åŽç«¯ã€‚
 
-## 选择设置方式
+## é€‰æ‹©è®¾ç½®æ–¹å¼
 
-### MiniMax OAuth（编程计划）— 推荐
+### MiniMax OAuthï¼ˆç¼–ç¨‹è®¡åˆ’ï¼‰â€” æŽ¨è
 
-**适用于：** 通过 OAuth 快速设置 MiniMax 编程计划，无需 API 密钥。
+**é€‚ç”¨äºŽï¼š** é€šè¿‡ OAuth å¿«é€Ÿè®¾ç½® MiniMax ç¼–ç¨‹è®¡åˆ’ï¼Œæ— éœ€ API å¯†é’¥ã€‚
 
-启用内置 OAuth 插件并进行认证：
+å¯ç”¨å†…ç½® OAuth æ’ä»¶å¹¶è¿›è¡Œè®¤è¯ï¼š
 
 ```bash
-vikiclow plugins enable minimax-portal-auth  # 如果已加载则跳过
-vikiclow gateway restart  # 如果 Gateway 网关已在运行则重启
+vikiclow plugins enable minimax-portal-auth  # å¦‚æžœå·²åŠ è½½åˆ™è·³è¿‡
+vikiclow gateway restart  # å¦‚æžœ Gateway ç½‘å…³å·²åœ¨è¿è¡Œåˆ™é‡å¯
 vikiclow onboard --auth-choice minimax-portal
 ```
 
-系统会提示你选择端点：
+ç³»ç»Ÿä¼šæç¤ºä½ é€‰æ‹©ç«¯ç‚¹ï¼š
 
-- **Global** - 国际用户（`api.minimax.io`）
-- **CN** - 中国用户（`api.minimaxi.com`）
+- **Global** - å›½é™…ç”¨æˆ·ï¼ˆ`api.minimax.io`ï¼‰
+- **CN** - ä¸­å›½ç”¨æˆ·ï¼ˆ`api.minimaxi.com`ï¼‰
 
-详情参见 [MiniMax OAuth 插件 README](https://github.com/vikiclow/vikiclow/tree/main/extensions/minimax-portal-auth)。
+è¯¦æƒ…å‚è§ [MiniMax OAuth æ’ä»¶ README](https://github.com/rebootix-research/viki-clow/tree/main/extensions/minimax-portal-auth)ã€‚
 
-### MiniMax M2.1（API 密钥）
+### MiniMax M2.1ï¼ˆAPI å¯†é’¥ï¼‰
 
-**适用于：** 使用 Anthropic 兼容 API 的托管 MiniMax。
+**é€‚ç”¨äºŽï¼š** ä½¿ç”¨ Anthropic å…¼å®¹ API çš„æ‰˜ç®¡ MiniMaxã€‚
 
-通过 CLI 配置：
+é€šè¿‡ CLI é…ç½®ï¼š
 
-- 运行 `vikiclow configure`
-- 选择 **Model/auth**
-- 选择 **MiniMax M2.1**
+- è¿è¡Œ `vikiclow configure`
+- é€‰æ‹© **Model/auth**
+- é€‰æ‹© **MiniMax M2.1**
 
 ```json5
 {
@@ -95,9 +95,9 @@ vikiclow onboard --auth-choice minimax-portal
 }
 ```
 
-### MiniMax M2.1 作为备用（Opus 为主）
+### MiniMax M2.1 ä½œä¸ºå¤‡ç”¨ï¼ˆOpus ä¸ºä¸»ï¼‰
 
-**适用于：** 保持 Opus 4.5 为主模型，故障时切换到 MiniMax M2.1。
+**é€‚ç”¨äºŽï¼š** ä¿æŒ Opus 4.5 ä¸ºä¸»æ¨¡åž‹ï¼Œæ•…éšœæ—¶åˆ‡æ¢åˆ° MiniMax M2.1ã€‚
 
 ```json5
 {
@@ -117,12 +117,12 @@ vikiclow onboard --auth-choice minimax-portal
 }
 ```
 
-### 可选：通过 LM Studio 本地运行（手动）
+### å¯é€‰ï¼šé€šè¿‡ LM Studio æœ¬åœ°è¿è¡Œï¼ˆæ‰‹åŠ¨ï¼‰
 
-**适用于：** 使用 LM Studio 进行本地推理。
-我们在强大硬件（例如台式机/服务器）上使用 LM Studio 的本地服务器运行 MiniMax M2.1 时看到了出色的效果。
+**é€‚ç”¨äºŽï¼š** ä½¿ç”¨ LM Studio è¿›è¡Œæœ¬åœ°æŽ¨ç†ã€‚
+æˆ‘ä»¬åœ¨å¼ºå¤§ç¡¬ä»¶ï¼ˆä¾‹å¦‚å°å¼æœº/æœåŠ¡å™¨ï¼‰ä¸Šä½¿ç”¨ LM Studio çš„æœ¬åœ°æœåŠ¡å™¨è¿è¡Œ MiniMax M2.1 æ—¶çœ‹åˆ°äº†å‡ºè‰²çš„æ•ˆæžœã€‚
 
-通过 `vikiclow.json` 手动配置：
+é€šè¿‡ `vikiclow.json` æ‰‹åŠ¨é…ç½®ï¼š
 
 ```json5
 {
@@ -156,50 +156,50 @@ vikiclow onboard --auth-choice minimax-portal
 }
 ```
 
-## 通过 `vikiclow configure` 配置
+## é€šè¿‡ `vikiclow configure` é…ç½®
 
-使用交互式配置向导设置 MiniMax，无需编辑 JSON：
+ä½¿ç”¨äº¤äº’å¼é…ç½®å‘å¯¼è®¾ç½® MiniMaxï¼Œæ— éœ€ç¼–è¾‘ JSONï¼š
 
-1. 运行 `vikiclow configure`。
-2. 选择 **Model/auth**。
-3. 选择 **MiniMax M2.1**。
-4. 在提示时选择你的默认模型。
+1. è¿è¡Œ `vikiclow configure`ã€‚
+2. é€‰æ‹© **Model/auth**ã€‚
+3. é€‰æ‹© **MiniMax M2.1**ã€‚
+4. åœ¨æç¤ºæ—¶é€‰æ‹©ä½ çš„é»˜è®¤æ¨¡åž‹ã€‚
 
-## 配置选项
+## é…ç½®é€‰é¡¹
 
-- `models.providers.minimax.baseUrl`：推荐使用 `https://api.minimax.io/anthropic`（Anthropic 兼容）；`https://api.minimax.io/v1` 可选用于 OpenAI 兼容的负载。
-- `models.providers.minimax.api`：推荐使用 `anthropic-messages`；`openai-completions` 可选用于 OpenAI 兼容的负载。
-- `models.providers.minimax.apiKey`：MiniMax API 密钥（`MINIMAX_API_KEY`）。
-- `models.providers.minimax.models`：定义 `id`、`name`、`reasoning`、`contextWindow`、`maxTokens`、`cost`。
-- `agents.defaults.models`：为你想要在允许列表中的模型设置别名。
-- `models.mode`：如果你想将 MiniMax 与内置模型一起添加，保持 `merge`。
+- `models.providers.minimax.baseUrl`ï¼šæŽ¨èä½¿ç”¨ `https://api.minimax.io/anthropic`ï¼ˆAnthropic å…¼å®¹ï¼‰ï¼›`https://api.minimax.io/v1` å¯é€‰ç”¨äºŽ OpenAI å…¼å®¹çš„è´Ÿè½½ã€‚
+- `models.providers.minimax.api`ï¼šæŽ¨èä½¿ç”¨ `anthropic-messages`ï¼›`openai-completions` å¯é€‰ç”¨äºŽ OpenAI å…¼å®¹çš„è´Ÿè½½ã€‚
+- `models.providers.minimax.apiKey`ï¼šMiniMax API å¯†é’¥ï¼ˆ`MINIMAX_API_KEY`ï¼‰ã€‚
+- `models.providers.minimax.models`ï¼šå®šä¹‰ `id`ã€`name`ã€`reasoning`ã€`contextWindow`ã€`maxTokens`ã€`cost`ã€‚
+- `agents.defaults.models`ï¼šä¸ºä½ æƒ³è¦åœ¨å…è®¸åˆ—è¡¨ä¸­çš„æ¨¡åž‹è®¾ç½®åˆ«åã€‚
+- `models.mode`ï¼šå¦‚æžœä½ æƒ³å°† MiniMax ä¸Žå†…ç½®æ¨¡åž‹ä¸€èµ·æ·»åŠ ï¼Œä¿æŒ `merge`ã€‚
 
-## 注意事项
+## æ³¨æ„äº‹é¡¹
 
-- 模型引用格式为 `minimax/<model>`。
-- 编程计划使用量 API：`https://api.minimaxi.com/v1/api/openplatform/coding_plan/remains`（需要编程计划密钥）。
-- 如果需要精确的成本跟踪，请更新 `models.json` 中的定价值。
-- MiniMax 编程计划推荐链接（9 折优惠）：https://platform.minimax.io/subscribe/coding-plan?code=DbXJTRClnb&source=link
-- 参见 [/concepts/model-providers](/concepts/model-providers) 了解提供商规则。
-- 使用 `vikiclow models list` 和 `vikiclow models set minimax/MiniMax-M2.1` 切换模型。
+- æ¨¡åž‹å¼•ç”¨æ ¼å¼ä¸º `minimax/<model>`ã€‚
+- ç¼–ç¨‹è®¡åˆ’ä½¿ç”¨é‡ APIï¼š`https://api.minimaxi.com/v1/api/openplatform/coding_plan/remains`ï¼ˆéœ€è¦ç¼–ç¨‹è®¡åˆ’å¯†é’¥ï¼‰ã€‚
+- å¦‚æžœéœ€è¦ç²¾ç¡®çš„æˆæœ¬è·Ÿè¸ªï¼Œè¯·æ›´æ–° `models.json` ä¸­çš„å®šä»·å€¼ã€‚
+- MiniMax ç¼–ç¨‹è®¡åˆ’æŽ¨èé“¾æŽ¥ï¼ˆ9 æŠ˜ä¼˜æƒ ï¼‰ï¼šhttps://platform.minimax.io/subscribe/coding-plan?code=DbXJTRClnb&source=link
+- å‚è§ [/concepts/model-providers](/concepts/model-providers) äº†è§£æä¾›å•†è§„åˆ™ã€‚
+- ä½¿ç”¨ `vikiclow models list` å’Œ `vikiclow models set minimax/MiniMax-M2.1` åˆ‡æ¢æ¨¡åž‹ã€‚
 
-## 故障排除
+## æ•…éšœæŽ’é™¤
 
 ### "Unknown model: minimax/MiniMax-M2.1"
 
-这通常意味着 **MiniMax 提供商未配置**（没有提供商条目，也没有找到 MiniMax 认证配置文件/环境变量密钥）。此检测的修复在 **2026.1.12** 中（撰写本文时尚未发布）。修复方法：
+è¿™é€šå¸¸æ„å‘³ç€ **MiniMax æä¾›å•†æœªé…ç½®**ï¼ˆæ²¡æœ‰æä¾›å•†æ¡ç›®ï¼Œä¹Ÿæ²¡æœ‰æ‰¾åˆ° MiniMax è®¤è¯é…ç½®æ–‡ä»¶/çŽ¯å¢ƒå˜é‡å¯†é’¥ï¼‰ã€‚æ­¤æ£€æµ‹çš„ä¿®å¤åœ¨ **2026.1.12** ä¸­ï¼ˆæ’°å†™æœ¬æ–‡æ—¶å°šæœªå‘å¸ƒï¼‰ã€‚ä¿®å¤æ–¹æ³•ï¼š
 
-- 升级到 **2026.1.12**（或从源码 `main` 分支运行），然后重启 Gateway 网关。
-- 运行 `vikiclow configure` 并选择 **MiniMax M2.1**，或
-- 手动添加 `models.providers.minimax` 块，或
-- 设置 `MINIMAX_API_KEY`（或 MiniMax 认证配置文件）以便注入提供商。
+- å‡çº§åˆ° **2026.1.12**ï¼ˆæˆ–ä»Žæºç  `main` åˆ†æ”¯è¿è¡Œï¼‰ï¼Œç„¶åŽé‡å¯ Gateway ç½‘å…³ã€‚
+- è¿è¡Œ `vikiclow configure` å¹¶é€‰æ‹© **MiniMax M2.1**ï¼Œæˆ–
+- æ‰‹åŠ¨æ·»åŠ  `models.providers.minimax` å—ï¼Œæˆ–
+- è®¾ç½® `MINIMAX_API_KEY`ï¼ˆæˆ– MiniMax è®¤è¯é…ç½®æ–‡ä»¶ï¼‰ä»¥ä¾¿æ³¨å…¥æä¾›å•†ã€‚
 
-确保模型 id **区分大小写**：
+ç¡®ä¿æ¨¡åž‹ id **åŒºåˆ†å¤§å°å†™**ï¼š
 
 - `minimax/MiniMax-M2.1`
 - `minimax/MiniMax-M2.1-lightning`
 
-然后重新检查：
+ç„¶åŽé‡æ–°æ£€æŸ¥ï¼š
 
 ```bash
 vikiclow models list

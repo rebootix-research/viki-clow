@@ -270,7 +270,7 @@ export async function runCronIsolatedAgentTurn(params: {
     }
     return catalog;
   };
-  // Isolated cron sessions are subagents — prefer subagents.model when set,
+  // Isolated cron sessions are subagents â€” prefer subagents.model when set,
   // but only if it passes the model allowlist.  #11461
   const subagentModelRaw =
     normalizeModelSelection(agentConfigOverride?.subagents?.model) ??
@@ -378,7 +378,7 @@ export async function runCronIsolatedAgentTurn(params: {
     cronSession.sessionEntry.label = `Cron: ${labelSuffix}`;
   }
 
-  // Respect session model override — check session.modelOverride before falling
+  // Respect session model override â€” check session.modelOverride before falling
   // back to the default config model. This ensures /model changes are honoured
   // by cron and isolated agent runs.
   if (!modelOverride && !hooksGmailModelApplied) {
@@ -569,7 +569,7 @@ export async function runCronIsolatedAgentTurn(params: {
             // Passing an existing ID activates the resume watchdog profile
             // (noOutputTimeoutRatio 0.3, maxMs 180 s) instead of the fresh profile
             // (ratio 0.8, maxMs 600 s), causing jobs to time out at roughly 1/3 of
-            // the configured timeoutSeconds. See: https://github.com/vikiclow/vikiclow/issues/29774
+            // the configured timeoutSeconds. See: https://github.com/rebootix-research/viki-clow/issues/29774
             const cliSessionId = cronSession.isNewSession
               ? undefined
               : getCliSessionId(cronSession.sessionEntry, providerOverride);

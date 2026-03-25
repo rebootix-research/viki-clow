@@ -1,12 +1,12 @@
 ---
 title: "Default AGENTS.md"
-summary: "Default VikiClow agent instructions and skills roster for the personal assistant setup"
+summary: "Default VikiClow agent instructions and skills roster for the default operator setup"
 read_when:
   - Starting a new VikiClow agent session
   - Enabling or auditing default skills
 ---
 
-# AGENTS.md — VikiClow Personal Assistant (default)
+# AGENTS.md - VikiClow Operator Runtime (default)
 
 ## First run (recommended)
 
@@ -26,7 +26,7 @@ cp docs/reference/templates/SOUL.md ~/.vikiclow/workspace/SOUL.md
 cp docs/reference/templates/TOOLS.md ~/.vikiclow/workspace/TOOLS.md
 ```
 
-3. Optional: if you want the personal assistant skill roster, replace AGENTS.md with this file:
+3. Optional: if you want the default operator skill roster, replace AGENTS.md with this file:
 
 ```bash
 cp docs/reference/AGENTS.default.md ~/.vikiclow/workspace/AGENTS.md

@@ -31,7 +31,7 @@ const pluginSdkSubpaths = [
   "googlechat",
   "irc",
   "llm-task",
-  "lobster",
+  "workflow",
   "matrix",
   "mattermost",
   "memory-core",

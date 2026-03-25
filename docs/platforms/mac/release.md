@@ -72,18 +72,18 @@ ditto -c -k --keepParent apps/macos/.build/release/VikiClow.app.dSYM dist/VikiCl
 Use the release note generator so Sparkle renders formatted HTML notes:
 
 ```bash
-SPARKLE_PRIVATE_KEY_FILE=/path/to/ed25519-private-key scripts/make_appcast.sh dist/VikiClow-2026.3.9.zip https://raw.githubusercontent.com/vikiclow/vikiclow/main/appcast.xml
+SPARKLE_PRIVATE_KEY_FILE=/path/to/ed25519-private-key scripts/make_appcast.sh dist/VikiClow-2026.3.9.zip https://raw.githubusercontent.com/rebootix-research/viki-clow/main/appcast.xml
 ```
 
-Generates HTML release notes from `CHANGELOG.md` (via [`scripts/changelog-to-html.sh`](https://github.com/vikiclow/vikiclow/blob/main/scripts/changelog-to-html.sh)) and embeds them in the appcast entry.
+Generates HTML release notes from `CHANGELOG.md` (via [`scripts/changelog-to-html.sh`](https://github.com/rebootix-research/viki-clow/blob/main/scripts/changelog-to-html.sh)) and embeds them in the appcast entry.
 Commit the updated `appcast.xml` alongside the release assets (zip + dSYM) when publishing.
 
 ## Publish & verify
 
 - Upload `VikiClow-2026.3.9.zip` (and `VikiClow-2026.3.9.dSYM.zip`) to the GitHub release for tag `v2026.3.9`.
-- Ensure the raw appcast URL matches the baked feed: `https://raw.githubusercontent.com/vikiclow/vikiclow/main/appcast.xml`.
+- Ensure the raw appcast URL matches the baked feed: `https://raw.githubusercontent.com/rebootix-research/viki-clow/main/appcast.xml`.
 - Sanity checks:
-  - `curl -I https://raw.githubusercontent.com/vikiclow/vikiclow/main/appcast.xml` returns 200.
+  - `curl -I https://raw.githubusercontent.com/rebootix-research/viki-clow/main/appcast.xml` returns 200.
   - `curl -I <enclosure url>` returns 200 after assets upload.
   - On a previous public build, run “Check for Updates…” from the About tab and verify Sparkle installs the new build cleanly.
 

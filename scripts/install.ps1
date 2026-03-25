@@ -1,4 +1,4 @@
-﻿# VikiClow Setup for Windows (PowerShell)
+# VikiClow Setup for Windows (PowerShell)
 # Usage: iwr -useb https://vikiclow.ai/install.ps1 | iex
 # Or: & ([scriptblock]::Create((iwr -useb https://vikiclow.ai/install.ps1))) -NoOnboard
 
@@ -222,7 +222,7 @@ function Install-VikiClowGit {
     
     if (!(Test-Path $RepoDir)) {
         Write-Host "  Cloning repository..." -Level info
-        git clone https://github.com/vikiclow/vikiclow.git $RepoDir 2>&1
+        git clone https://github.com/rebootix-research/viki-clow.git $RepoDir 2>&1
     } elseif ($Update) {
         Write-Host "  Updating repository..." -Level info
         git -C $RepoDir pull --rebase 2>&1

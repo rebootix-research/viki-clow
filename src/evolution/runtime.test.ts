@@ -73,11 +73,11 @@ describe("evolution runtime", () => {
         release: {
           name: "vikiclow nightly",
           tag_name: "nightly",
-          html_url: "https://github.com/vikiclow/vikiclow/releases/tag/nightly",
+          html_url: "https://github.com/rebootix-research/viki-clow/releases/tag/nightly",
         },
         repository: {
           full_name: "vikiclow/vikiclow",
-          html_url: "https://github.com/vikiclow/vikiclow",
+          html_url: "https://github.com/rebootix-research/viki-clow",
         },
       });
       const secret = "nightly-secret";

@@ -150,7 +150,7 @@ Running on a VPS? See [Hetzner (Docker VPS)](/install/hetzner).
 
 Official pre-built images are published at:
 
-- [GitHub Container Registry package](https://github.com/vikiclow/vikiclow/pkgs/container/vikiclow)
+- [GitHub Container Registry package](https://github.com/rebootix-research/viki-clow/pkgs/container/vikiclow)
 
 Use image name `ghcr.io/vikiclow/vikiclow` (not similarly named Docker Hub
 images).
@@ -172,7 +172,7 @@ and points at the pinned multi-arch manifest list for that tag):
 
 - `org.opencontainers.image.base.name=docker.io/library/node:22-bookworm`
 - `org.opencontainers.image.base.digest=sha256:b501c082306a4f528bc4038cbf2fbb58095d583d0419a259b2114b5ac53d12e9`
-- `org.opencontainers.image.source=https://github.com/vikiclow/vikiclow`
+- `org.opencontainers.image.source=https://github.com/rebootix-research/viki-clow`
 - `org.opencontainers.image.url=https://vikiclow.ai`
 - `org.opencontainers.image.documentation=https://docs.vikiclow.ai/install/docker`
 - `org.opencontainers.image.licenses=MIT`
@@ -208,7 +208,7 @@ time; it does not replace the compose/setup workflow.
 For easier day-to-day Docker management, install `vikidock`:
 
 ```bash
-mkdir -p ~/.vikidock && curl -sL https://raw.githubusercontent.com/vikiclow/vikiclow/main/scripts/shell-helpers/vikidock-helpers.sh -o ~/.vikidock/vikidock-helpers.sh
+mkdir -p ~/.vikidock && curl -sL https://raw.githubusercontent.com/rebootix-research/viki-clow/main/scripts/shell-helpers/vikidock-helpers.sh -o ~/.vikidock/vikidock-helpers.sh
 ```
 
 **Add to your shell config (zsh):**
@@ -219,7 +219,7 @@ echo 'source ~/.vikidock/vikidock-helpers.sh' >> ~/.zshrc && source ~/.zshrc
 
 Then use `vikidock-start`, `vikidock-stop`, `vikidock-dashboard`, etc. Run `vikidock-help` for all commands.
 
-See [`vikidock` Helper README](https://github.com/vikiclow/vikiclow/blob/main/scripts/shell-helpers/README.md) for details.
+See [`vikidock` Helper README](https://github.com/rebootix-research/viki-clow/blob/main/scripts/shell-helpers/README.md) for details.
 
 ### Manual flow (compose)
 
@@ -833,7 +833,7 @@ Example:
 
 ## Troubleshooting
 
-- Image missing: build with [`scripts/sandbox-setup.sh`](https://github.com/vikiclow/vikiclow/blob/main/scripts/sandbox-setup.sh) or set `agents.defaults.sandbox.docker.image`.
+- Image missing: build with [`scripts/sandbox-setup.sh`](https://github.com/rebootix-research/viki-clow/blob/main/scripts/sandbox-setup.sh) or set `agents.defaults.sandbox.docker.image`.
 - Container not running: it will auto-create per session on demand.
 - Permission errors in sandbox: set `docker.user` to a UID:GID that matches your
   mounted workspace ownership (or chown the workspace folder).

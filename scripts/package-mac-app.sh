@@ -30,7 +30,7 @@ fi
 IFS=' ' read -r -a BUILD_ARCHS <<< "$BUILD_ARCHS_VALUE"
 PRIMARY_ARCH="${BUILD_ARCHS[0]}"
 SPARKLE_PUBLIC_ED_KEY="${SPARKLE_PUBLIC_ED_KEY:-AGCY8w5vHirVfGGDGc8Szc5iuOqupZSh9pMj/Qs67XI=}"
-SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-https://raw.githubusercontent.com/vikiclow/vikiclow/main/appcast.xml}"
+SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-https://raw.githubusercontent.com/rebootix-research/viki-clow/main/appcast.xml}"
 AUTO_CHECKS=true
 if [[ "$BUNDLE_ID" == *.debug ]]; then
   SPARKLE_FEED_URL=""
@@ -114,7 +114,7 @@ merge_framework_machos() {
   done < <(find "$primary" -type f -print0)
 }
 
-echo "📦 Ensuring deps (pnpm install)"
+echo "ðŸ“¦ Ensuring deps (pnpm install)"
 (cd "$ROOT_DIR" && pnpm install --no-frozen-lockfile --config.node-linker=hoisted)
 
 if [[ -z "${APP_BUILD:-}" ]]; then
@@ -136,22 +136,22 @@ if [[ "$AUTO_CHECKS" == "true" && ! "$APP_BUILD" =~ ^[0-9]+$ ]]; then
 fi
 
 if [[ "${SKIP_TSC:-0}" != "1" ]]; then
-  echo "📦 Building JS (pnpm build)"
+  echo "ðŸ“¦ Building JS (pnpm build)"
   (cd "$ROOT_DIR" && pnpm build)
 else
-  echo "📦 Skipping JS build (SKIP_TSC=1)"
+  echo "ðŸ“¦ Skipping JS build (SKIP_TSC=1)"
 fi
 
 if [[ "${SKIP_UI_BUILD:-0}" != "1" ]]; then
-  echo "🖥  Building Control UI (ui:build)"
+  echo "ðŸ–¥  Building Control UI (ui:build)"
   (cd "$ROOT_DIR" && node scripts/ui.js build)
 else
-  echo "🖥  Skipping Control UI build (SKIP_UI_BUILD=1)"
+  echo "ðŸ–¥  Skipping Control UI build (SKIP_UI_BUILD=1)"
 fi
 
 cd "$ROOT_DIR/apps/macos"
 
-echo "🔨 Building $PRODUCT ($BUILD_CONFIG) [${BUILD_ARCHS[*]}]"
+echo "ðŸ”¨ Building $PRODUCT ($BUILD_CONFIG) [${BUILD_ARCHS[*]}]"
 for arch in "${BUILD_ARCHS[@]}"; do
   BUILD_PATH="$(build_path_for_arch "$arch")"
   swift build -c "$BUILD_CONFIG" --product "$PRODUCT" --build-path "$BUILD_PATH" --arch "$arch" -Xlinker -rpath -Xlinker @executable_path/../Frameworks
@@ -159,13 +159,13 @@ done
 
 BIN_PRIMARY="$(bin_for_arch "$PRIMARY_ARCH")"
 echo "pkg: binary $BIN_PRIMARY" >&2
-echo "🧹 Cleaning old app bundle"
+echo "ðŸ§¹ Cleaning old app bundle"
 rm -rf "$APP_ROOT"
 mkdir -p "$APP_ROOT/Contents/MacOS"
 mkdir -p "$APP_ROOT/Contents/Resources"
 mkdir -p "$APP_ROOT/Contents/Frameworks"
 
-echo "📄 Copying Info.plist template"
+echo "ðŸ“„ Copying Info.plist template"
 INFO_PLIST_SRC="$ROOT_DIR/apps/macos/Sources/VikiClow/Resources/Info.plist"
 if [ ! -f "$INFO_PLIST_SRC" ]; then
   echo "ERROR: Info.plist template missing at $INFO_PLIST_SRC" >&2
@@ -187,7 +187,7 @@ else
   /usr/libexec/PlistBuddy -c "Add :SUEnableAutomaticChecks bool ${AUTO_CHECKS}" "$APP_ROOT/Contents/Info.plist" || true
 fi
 
-echo "🚚 Copying binary"
+echo "ðŸšš Copying binary"
 cp "$BIN_PRIMARY" "$APP_ROOT/Contents/MacOS/VikiClow"
 if [[ "${#BUILD_ARCHS[@]}" -gt 1 ]]; then
   BIN_INPUTS=()
@@ -202,7 +202,7 @@ chmod +x "$APP_ROOT/Contents/MacOS/VikiClow"
 
 SPARKLE_FRAMEWORK_PRIMARY="$(sparkle_framework_for_arch "$PRIMARY_ARCH")"
 if [ -d "$SPARKLE_FRAMEWORK_PRIMARY" ]; then
-  echo "✨ Embedding Sparkle.framework"
+  echo "âœ¨ Embedding Sparkle.framework"
   cp -R "$SPARKLE_FRAMEWORK_PRIMARY" "$APP_ROOT/Contents/Frameworks/"
   if [[ "${#BUILD_ARCHS[@]}" -gt 1 ]]; then
     OTHER_FRAMEWORKS=()
@@ -217,7 +217,7 @@ if [ -d "$SPARKLE_FRAMEWORK_PRIMARY" ]; then
   chmod -R a+rX "$APP_ROOT/Contents/Frameworks/Sparkle.framework"
 fi
 
-echo "📦 Copying Swift 6.2 compatibility libraries"
+echo "ðŸ“¦ Copying Swift 6.2 compatibility libraries"
 SWIFT_COMPAT_LIB="$(xcode-select -p)/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-6.2/macosx/libswiftCompatibilitySpan.dylib"
 if [ -f "$SWIFT_COMPAT_LIB" ]; then
   cp "$SWIFT_COMPAT_LIB" "$APP_ROOT/Contents/Frameworks/"
@@ -226,14 +226,14 @@ else
   echo "WARN: Swift compatibility library not found at $SWIFT_COMPAT_LIB (continuing)" >&2
 fi
 
-echo "🖼  Copying app icon"
+echo "ðŸ–¼  Copying app icon"
 cp "$ROOT_DIR/apps/macos/Sources/VikiClow/Resources/VikiClow.icns" "$APP_ROOT/Contents/Resources/VikiClow.icns"
 
-echo "📦 Copying device model resources"
+echo "ðŸ“¦ Copying device model resources"
 rm -rf "$APP_ROOT/Contents/Resources/DeviceModels"
 cp -R "$ROOT_DIR/apps/macos/Sources/VikiClow/Resources/DeviceModels" "$APP_ROOT/Contents/Resources/DeviceModels"
 
-echo "📦 Copying model catalog"
+echo "ðŸ“¦ Copying model catalog"
 MODEL_CATALOG_SRC="$ROOT_DIR/node_modules/@mariozechner/pi-ai/dist/models.generated.js"
 MODEL_CATALOG_DEST="$APP_ROOT/Contents/Resources/models.generated.js"
 if [ -f "$MODEL_CATALOG_SRC" ]; then
@@ -242,7 +242,7 @@ else
   echo "WARN: model catalog missing at $MODEL_CATALOG_SRC (continuing)" >&2
 fi
 
-echo "📦 Copying VikiClowKit resources"
+echo "ðŸ“¦ Copying VikiClowKit resources"
 VIKICLOWKIT_BUNDLE="$(build_path_for_arch "$PRIMARY_ARCH")/$BUILD_CONFIG/VikiClowKit_VikiClowKit.bundle"
 if [ -d "$VIKICLOWKIT_BUNDLE" ]; then
   rm -rf "$APP_ROOT/Contents/Resources/VikiClowKit_VikiClowKit.bundle"
@@ -251,7 +251,7 @@ else
   echo "WARN: VikiClowKit resource bundle not found at $VIKICLOWKIT_BUNDLE (continuing)" >&2
 fi
 
-echo "📦 Copying Textual resources"
+echo "ðŸ“¦ Copying Textual resources"
 TEXTUAL_BUNDLE_DIR="$(build_path_for_arch "$PRIMARY_ARCH")/$BUILD_CONFIG"
 TEXTUAL_BUNDLE=""
 for candidate in \
@@ -278,10 +278,10 @@ else
   fi
 fi
 
-echo "⏹  Stopping any running VikiClow"
+echo "â¹  Stopping any running VikiClow"
 killall -q VikiClow 2>/dev/null || true
 
-echo "🔏 Signing bundle (auto-selects signing identity if SIGN_IDENTITY is unset)"
+echo "ðŸ” Signing bundle (auto-selects signing identity if SIGN_IDENTITY is unset)"
 "$ROOT_DIR/scripts/codesign-mac-app.sh" "$APP_ROOT"
 
-echo "✅ Bundle ready at $APP_ROOT"
+echo "âœ… Bundle ready at $APP_ROOT"

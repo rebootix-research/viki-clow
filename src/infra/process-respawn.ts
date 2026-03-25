@@ -30,10 +30,10 @@ export function restartGatewayProcessWithFreshPid(): GatewayRespawnResult {
   }
   const supervisor = detectRespawnSupervisor(process.env);
   if (supervisor) {
-    // launchd: exit(0) is sufficient — KeepAlive=true restarts the service.
+    // launchd: exit(0) is sufficient â€” KeepAlive=true restarts the service.
     // Self-issued `kickstart -k` races with launchd's bootout state machine
     // and can leave the LaunchAgent permanently unloaded.
-    // See: https://github.com/vikiclow/vikiclow/issues/39760
+    // See: https://github.com/rebootix-research/viki-clow/issues/39760
     if (supervisor === "schtasks") {
       const restart = triggerVikiClowRestart();
       if (!restart.ok) {

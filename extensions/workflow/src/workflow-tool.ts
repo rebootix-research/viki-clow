@@ -1,10 +1,10 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { Type } from "@sinclair/typebox";
-import type { VikiClowPluginApi } from "vikiclow/plugin-sdk/lobster";
-import { resolveWindowsLobsterSpawn } from "./windows-spawn.js";
+import type { VikiClowPluginApi } from "vikiclow/plugin-sdk/workflow";
+import { resolveWindowsWorkflowSpawn } from "./workflow-spawn.js";
 
-type LobsterEnvelope =
+type WorkflowEnvelope =
   | {
       ok: true;
       status: "ok" | "needs_approval" | "cancelled";
@@ -55,7 +55,7 @@ function resolveCwd(cwdRaw: unknown): string {
   return resolved;
 }
 
-async function runLobsterSubprocessOnce(params: {
+async function runWorkflowSubprocessOnce(params: {
   execPath: string;
   argv: string[];
   cwd: string;
@@ -66,14 +66,14 @@ async function runLobsterSubprocessOnce(params: {
   const timeoutMs = Math.max(200, params.timeoutMs);
   const maxStdoutBytes = Math.max(1024, params.maxStdoutBytes);
 
-  const env = { ...process.env, LOBSTER_MODE: "tool" } as Record<string, string | undefined>;
+  const env = { ...process.env, VIKI_WORKFLOW_MODE: "tool" } as Record<string, string | undefined>;
   const nodeOptions = env.NODE_OPTIONS ?? "";
   if (nodeOptions.includes("--inspect")) {
     delete env.NODE_OPTIONS;
   }
   const spawnTarget =
     process.platform === "win32"
-      ? resolveWindowsLobsterSpawn(execPath, argv, env)
+      ? resolveWindowsWorkflowSpawn(execPath, argv, env)
       : { command: execPath, argv };
 
   return await new Promise<{ stdout: string }>((resolve, reject) => {
@@ -152,7 +152,7 @@ async function runLobsterSubprocessOnce(params: {
   });
 }
 
-function parseEnvelope(stdout: string): LobsterEnvelope {
+function parseEnvelope(stdout: string): WorkflowEnvelope {
   const trimmed = stdout.trim();
 
   const tryParse = (input: string) => {
@@ -184,7 +184,7 @@ function parseEnvelope(stdout: string): LobsterEnvelope {
 
   const ok = (parsed as { ok?: unknown }).ok;
   if (ok === true || ok === false) {
-    return parsed as LobsterEnvelope;
+    return parsed as WorkflowEnvelope;
   }
 
   throw new Error("workflow runtime returned invalid JSON envelope");
@@ -219,21 +219,12 @@ function buildWorkflowArgv(action: string, params: Record<string, unknown>): str
 
 export function createWorkflowTool(
   api: VikiClowPluginApi,
-  options: {
-    name?: "workflow" | "lobster";
-    label?: string;
-    description?: string;
-  } = {},
 ) {
-  const toolName = options.name ?? "workflow";
-  const label = options.label ?? "Viki Workflow";
-  const description =
-    options.description ??
-    "Run Viki Workflow pipelines as a local-first runtime with typed envelopes and resumable approvals.";
   return {
-    name: toolName,
-    label,
-    description,
+    name: "workflow",
+    label: "Viki Workflow",
+    description:
+      "Run Viki Workflow pipelines as a local-first runtime with typed envelopes and resumable approvals.",
     parameters: Type.Object({
       // NOTE: Prefer string enums in tool schemas; some providers reject unions/anyOf.
       action: Type.Unsafe<"run" | "resume">({ type: "string", enum: ["run", "resume"] }),
@@ -269,26 +260,13 @@ export function createWorkflowTool(
       }
 
       let stdout: string;
-      try {
-        ({ stdout } = await runLobsterSubprocessOnce({
-          execPath: preferredExecPath,
-          argv,
-          cwd,
-          timeoutMs,
-          maxStdoutBytes,
-        }));
-      } catch (error) {
-        if (preferredExecPath === "lobster" || preferredExecPath === "lobster.cmd") {
-          throw error;
-        }
-        ({ stdout } = await runLobsterSubprocessOnce({
-          execPath: "lobster",
-          argv,
-          cwd,
-          timeoutMs,
-          maxStdoutBytes,
-        }));
-      }
+      ({ stdout } = await runWorkflowSubprocessOnce({
+        execPath: preferredExecPath,
+        argv,
+        cwd,
+        timeoutMs,
+        maxStdoutBytes,
+      }));
 
       const envelope = parseEnvelope(stdout);
 
@@ -298,13 +276,4 @@ export function createWorkflowTool(
       };
     },
   };
-}
-
-export function createLobsterTool(api: VikiClowPluginApi) {
-  return createWorkflowTool(api, {
-    name: "lobster",
-    label: "Viki Workflow (Legacy Alias)",
-    description:
-      "Compatibility alias for older Viki Workflow tool calls. Prefer the workflow tool name for new policies and prompts.",
-  });
 }

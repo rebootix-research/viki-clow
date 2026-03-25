@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { stripModelSpecialTokens } from "./pi-embedded-utils.js";
 
 /**
- * @see https://github.com/vikiclow/vikiclow/issues/40020
+ * @see https://github.com/rebootix-research/viki-clow/issues/40020
  */
 describe("stripModelSpecialTokens", () => {
   it("strips tokens and inserts space between adjacent words", () => {
@@ -10,7 +10,7 @@ describe("stripModelSpecialTokens", () => {
   });
 
   it("strips full-width pipe variants (DeepSeek U+FF5C)", () => {
-    expect(stripModelSpecialTokens("<｜begin▁of▁sentence｜>Hello there")).toBe("Hello there");
+    expect(stripModelSpecialTokens("<ï½œbeginâ–ofâ–sentenceï½œ>Hello there")).toBe("Hello there");
   });
 
   it("does not strip normal angle brackets or HTML", () => {

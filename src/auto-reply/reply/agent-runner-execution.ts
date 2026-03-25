@@ -436,7 +436,7 @@ export async function runAgentTurnWithFallback(params: {
                     // Serialize tool result delivery to preserve message ordering.
                     // Without this, concurrent tool callbacks race through typing signals
                     // and message sends, causing out-of-order delivery to the user.
-                    // See: https://github.com/vikiclow/vikiclow/issues/11044
+                    // See: https://github.com/rebootix-research/viki-clow/issues/11044
                     let toolResultChain: Promise<void> = Promise.resolve();
                     return (payload: ReplyPayload) => {
                       toolResultChain = toolResultChain
@@ -497,7 +497,7 @@ export async function runAgentTurnWithFallback(params: {
         return {
           kind: "final",
           payload: {
-            text: "⚠️ Context limit exceeded. I've reset our conversation to start fresh - please try again.\n\nTo prevent this, increase your compaction buffer by setting `agents.defaults.compaction.reserveTokensFloor` to 20000 or higher in your config.",
+            text: "âš ï¸ Context limit exceeded. I've reset our conversation to start fresh - please try again.\n\nTo prevent this, increase your compaction buffer by setting `agents.defaults.compaction.reserveTokensFloor` to 20000 or higher in your config.",
           },
         };
       }
@@ -507,7 +507,7 @@ export async function runAgentTurnWithFallback(params: {
           return {
             kind: "final",
             payload: {
-              text: "⚠️ Message ordering conflict. I've reset the conversation - please try again.",
+              text: "âš ï¸ Message ordering conflict. I've reset the conversation - please try again.",
             },
           };
         }
@@ -532,7 +532,7 @@ export async function runAgentTurnWithFallback(params: {
         return {
           kind: "final",
           payload: {
-            text: "⚠️ Context limit exceeded during compaction. I've reset our conversation to start fresh - please try again.\n\nTo prevent this, increase your compaction buffer by setting `agents.defaults.compaction.reserveTokensFloor` to 20000 or higher in your config.",
+            text: "âš ï¸ Context limit exceeded during compaction. I've reset our conversation to start fresh - please try again.\n\nTo prevent this, increase your compaction buffer by setting `agents.defaults.compaction.reserveTokensFloor` to 20000 or higher in your config.",
           },
         };
       }
@@ -542,7 +542,7 @@ export async function runAgentTurnWithFallback(params: {
           return {
             kind: "final",
             payload: {
-              text: "⚠️ Message ordering conflict. I've reset the conversation - please try again.",
+              text: "âš ï¸ Message ordering conflict. I've reset the conversation - please try again.",
             },
           };
         }
@@ -588,17 +588,17 @@ export async function runAgentTurnWithFallback(params: {
         return {
           kind: "final",
           payload: {
-            text: "⚠️ Session history was corrupted. I've reset the conversation - please try again!",
+            text: "âš ï¸ Session history was corrupted. I've reset the conversation - please try again!",
           },
         };
       }
 
       if (isTransientHttp && !didRetryTransientHttpError) {
         didRetryTransientHttpError = true;
-        // Retry the full runWithModelFallback() cycle — transient errors
+        // Retry the full runWithModelFallback() cycle â€” transient errors
         // (502/521/etc.) typically affect the whole provider, so falling
         // back to an alternate model first would not help. Instead we wait
-        // and retry the complete primary→fallback chain.
+        // and retry the complete primaryâ†’fallback chain.
         defaultRuntime.error(
           `Transient HTTP provider error before reply (${message}). Retrying once in ${TRANSIENT_HTTP_RETRY_DELAY_MS}ms.`,
         );
@@ -616,10 +616,10 @@ export async function runAgentTurnWithFallback(params: {
       const fallbackText = isBilling
         ? BILLING_ERROR_USER_MESSAGE
         : isContextOverflow
-          ? "⚠️ Context overflow — prompt too large for this model. Try a shorter message or a larger-context model."
+          ? "âš ï¸ Context overflow â€” prompt too large for this model. Try a shorter message or a larger-context model."
           : isRoleOrderingError
-            ? "⚠️ Message ordering conflict - please try again. If this persists, use /new to start a fresh session."
-            : `⚠️ Agent failed before reply: ${trimmedMessage}.\nLogs: vikiclow logs --follow`;
+            ? "âš ï¸ Message ordering conflict - please try again. If this persists, use /new to start a fresh session."
+            : `âš ï¸ Agent failed before reply: ${trimmedMessage}.\nLogs: vikiclow logs --follow`;
 
       return {
         kind: "final",
@@ -641,7 +641,7 @@ export async function runAgentTurnWithFallback(params: {
     return {
       kind: "final",
       payload: {
-        text: "⚠️ Context overflow — this conversation is too large for the model. Use /new to start a fresh session.",
+        text: "âš ï¸ Context overflow â€” this conversation is too large for the model. Use /new to start a fresh session.",
       },
     };
   }

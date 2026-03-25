@@ -36,7 +36,7 @@ RUN mkdir -p /out && \
       fi; \
     done
 
-# ── Stage 2: Build ──────────────────────────────────────────────
+# â”€â”€ Stage 2: Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 FROM ${VIKICLOW_NODE_BOOKWORM_IMAGE} AS build
 
 # Install Bun (required for build scripts)
@@ -89,7 +89,7 @@ FROM build AS runtime-assets
 RUN CI=true pnpm prune --prod && \
     find dist -type f \( -name '*.d.ts' -o -name '*.d.mts' -o -name '*.d.cts' -o -name '*.map' \) -delete
 
-# ── Runtime base images ─────────────────────────────────────────
+# â”€â”€ Runtime base images â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 FROM ${VIKICLOW_NODE_BOOKWORM_IMAGE} AS base-default
 ARG VIKICLOW_NODE_BOOKWORM_DIGEST
 LABEL org.opencontainers.image.base.name="docker.io/library/node:22-bookworm" \
@@ -100,7 +100,7 @@ ARG VIKICLOW_NODE_BOOKWORM_SLIM_DIGEST
 LABEL org.opencontainers.image.base.name="docker.io/library/node:22-bookworm-slim" \
   org.opencontainers.image.base.digest="${VIKICLOW_NODE_BOOKWORM_SLIM_DIGEST}"
 
-# ── Stage 3: Runtime ────────────────────────────────────────────
+# â”€â”€ Stage 3: Runtime â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 FROM base-${VIKICLOW_VARIANT}
 ARG VIKICLOW_VARIANT
 
@@ -108,7 +108,7 @@ ARG VIKICLOW_VARIANT
 # If you change these annotations, also update:
 # - docs/install/docker.md ("Base image metadata" section)
 # - https://docs.vikiclow.ai/install/docker
-LABEL org.opencontainers.image.source="https://github.com/vikiclow/vikiclow" \
+LABEL org.opencontainers.image.source="https://github.com/rebootix-research/viki-clow" \
   org.opencontainers.image.url="https://vikiclow.ai" \
   org.opencontainers.image.documentation="https://docs.vikiclow.ai/install/docker" \
   org.opencontainers.image.licenses="MIT" \
@@ -172,7 +172,7 @@ RUN --mount=type=cache,id=vikiclow-bookworm-apt-cache,target=/var/cache/apt,shar
 
 # Optionally install Docker CLI for sandbox container management.
 # Build with: docker build --build-arg VIKICLOW_INSTALL_DOCKER_CLI=1 ...
-# Adds ~50MB. Only the CLI is installed — no Docker daemon.
+# Adds ~50MB. Only the CLI is installed â€” no Docker daemon.
 # Required for agents.defaults.sandbox to function in Docker deployments.
 ARG VIKICLOW_INSTALL_DOCKER_CLI=""
 ARG VIKICLOW_DOCKER_GPG_FINGERPRINT="9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
