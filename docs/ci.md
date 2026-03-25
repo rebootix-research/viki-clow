@@ -26,8 +26,10 @@ The CI runs on every push to `main` and every pull request. It uses smart scopin
 | `release-proof`   | Emit a release proof report artifact                    | After release-check                               |
 | `checks`          | Node/Bun tests + protocol check                         | Non-docs, node changes                            |
 | `checks-windows`  | Windows-specific tests                                  | Non-docs, windows-relevant changes                |
-| `macos`           | Swift lint/build/test + TS tests                        | PRs with macos changes                            |
-| `android`         | Gradle build + tests                                    | Non-docs, android changes                         |
+| `macos`           | Swift lint/build/test + TS tests                        | Push to `main`, or PRs with macOS changes         |
+| `android`         | Gradle build + tests                                    | Push to `main`, or PRs with Android changes       |
+| `browser-native-windows` | Native Viki Browser packaging and proof          | Push to `main`, or PRs with Windows changes       |
+| `Native Verification` | Hosted-runner runtime, browser, voice, macOS, and Android closure lanes | Every push to `main`, every pull request |
 
 ## Fail-Fast Order
 
@@ -43,9 +45,9 @@ Scope logic lives in `scripts/ci-changed-scope.mjs` and is covered by unit tests
 
 | Runner                           | Jobs                                       |
 | -------------------------------- | ------------------------------------------ |
-| `blacksmith-16vcpu-ubuntu-2404`  | Most Linux jobs, including scope detection |
-| `blacksmith-32vcpu-windows-2025` | `checks-windows`                           |
-| `macos-latest`                   | `macos`, `ios`                             |
+| `ubuntu-24.04`   | Most Linux jobs, release proof, runtime proof, Android  |
+| `windows-latest` | `checks-windows`, `browser-native-windows`              |
+| `macos-latest`   | `macos`, `ios`, `macos-swift`                           |
 
 ## Local Equivalents
 

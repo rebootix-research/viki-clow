@@ -17,7 +17,7 @@
 - Why: keeps wording consistent, preserves automation behavior (`state_reason`, locking), and keeps triage/reporting searchable by label.
 - `r:*` labels can be used on both issues and PRs.
 
-- `r: skill`: close with guidance to publish skills on Clawhub.
+- `r: skill`: close with guidance to publish skills on the VikiClow Skills Registry.
 - `r: support`: close with redirect to Discord support + stuck FAQ.
 - `r: no-ci-pr`: close test-fix-only PRs for failing `main` CI and post the standard explanation.
 - `r: too-many-prs`: close when author exceeds active PR limit.
@@ -164,11 +164,11 @@
 ## GitHub Search (`gh`)
 
 - Prefer targeted keyword search before proposing new work or duplicating fixes.
-- Use `--repo vikiclow/vikiclow` + `--match title,body` first; add `--match comments` when triaging follow-up threads.
-- PRs: `gh search prs --repo vikiclow/vikiclow --match title,body --limit 50 -- "auto-update"`
-- Issues: `gh search issues --repo vikiclow/vikiclow --match title,body --limit 50 -- "auto-update"`
+- Use `--repo rebootix-research/viki-clow` + `--match title,body` first; add `--match comments` when triaging follow-up threads.
+- PRs: `gh search prs --repo rebootix-research/viki-clow --match title,body --limit 50 -- "auto-update"`
+- Issues: `gh search issues --repo rebootix-research/viki-clow --match title,body --limit 50 -- "auto-update"`
 - Structured output example:
-  `gh search issues --repo vikiclow/vikiclow --match title,body --limit 50 --json number,title,state,url,updatedAt -- "auto update" --jq '.[] | "\(.number) | \(.state) | \(.title) | \(.url)"'`
+  `gh search issues --repo rebootix-research/viki-clow --match title,body --limit 50 --json number,title,state,url,updatedAt -- "auto update" --jq '.[] | "\(.number) | \(.state) | \(.title) | \(.url)"'`
 
 ## Security & Configuration Tips
 
@@ -181,15 +181,15 @@
 ## GHSA (Repo Advisory) Patch/Publish
 
 - Before reviewing security advisories, read `SECURITY.md`.
-- Fetch: `gh api /repos/vikiclow/vikiclow/security-advisories/<GHSA>`
+- Fetch: `gh api /repos/rebootix-research/viki-clow/security-advisories/<GHSA>`
 - Latest npm: `npm view vikiclow version --userconfig "$(mktemp)"`
 - Private fork PRs must be closed:
-  `fork=$(gh api /repos/vikiclow/vikiclow/security-advisories/<GHSA> | jq -r .private_fork.full_name)`
+  `fork=$(gh api /repos/rebootix-research/viki-clow/security-advisories/<GHSA> | jq -r .private_fork.full_name)`
   `gh pr list -R "$fork" --state open` (must be empty)
 - Description newline footgun: write Markdown via heredoc to `/tmp/ghsa.desc.md` (no `"\\n"` strings)
 - Build patch JSON via jq: `jq -n --rawfile desc /tmp/ghsa.desc.md '{summary,severity,description:$desc,vulnerabilities:[...]}' > /tmp/ghsa.patch.json`
 - GHSA API footgun: cannot set `severity` and `cvss_vector_string` in the same PATCH; do separate calls.
-- Patch + publish: `gh api -X PATCH /repos/vikiclow/vikiclow/security-advisories/<GHSA> --input /tmp/ghsa.patch.json` (publish = include `"state":"published"`; no `/publish` endpoint)
+- Patch + publish: `gh api -X PATCH /repos/rebootix-research/viki-clow/security-advisories/<GHSA> --input /tmp/ghsa.patch.json` (publish = include `"state":"published"`; no `/publish` endpoint)
 - If publish fails (HTTP 422): missing `severity`/`description`/`vulnerabilities[]`, or private fork has open PRs
 - Verify: re-fetch; ensure `state=published`, `published_at` set; `jq -r .description | rg '\\\\n'` returns nothing
 
@@ -294,4 +294,3 @@
   - `node --import tsx scripts/release-check.ts`
   - `pnpm release:check`
   - `pnpm test:install:smoke` or `VIKICLOW_INSTALL_SMOKE_SKIP_NONROOT=1 pnpm test:install:smoke` for non-root smoke path.
-

@@ -1,0 +1,241 @@
+name: Native Verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: native-verification-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  runtime-stack:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node environment
+        uses: ./.github/actions/setup-node-env
+        with:
+          install-bun: "false"
+          use-sticky-disk: "false"
+
+      - name: Verify Docker Compose availability
+        run: docker compose version
+
+      - name: Run live runtime stack proof
+        run: pnpm runtime:stack:proof
+
+      - name: Upload runtime stack proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-stack-proof
+          path: .artifacts/runtime-stack-proof/
+          retention-days: 7
+
+  execution-surface:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node environment
+        uses: ./.github/actions/setup-node-env
+        with:
+          install-bun: "false"
+          use-sticky-disk: "false"
+
+      - name: Run execution surface proof
+        run: pnpm execution:proof
+
+      - name: Upload execution surface proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: execution-surface-proof
+          path: .artifacts/execution-surface/
+          retention-days: 7
+
+  voice-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node environment
+        uses: ./.github/actions/setup-node-env
+        with:
+          install-bun: "false"
+          use-sticky-disk: "false"
+
+      - name: Run voice bootstrap proof
+        run: pnpm voice:proof
+
+      - name: Upload voice proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: voice-proof
+          path: .artifacts/voice-proof/
+          retention-days: 7
+
+  browser-native-windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+    env:
+      NODE_OPTIONS: --max-old-space-size=6144
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.x
+          check-latest: false
+
+      - name: Setup pnpm + cache store
+        uses: ./.github/actions/setup-pnpm-store-cache
+        with:
+          pnpm-version: "10.23.0"
+          cache-key-suffix: "node22-native"
+          use-sticky-disk: "false"
+          use-restore-keys: "false"
+          use-actions-cache: "true"
+
+      - name: Capture node path
+        run: echo "NODE_BIN=$(dirname \"$(node -p \"process.execPath\")\")" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        env:
+          CI: true
+        run: |
+          export PATH="$NODE_BIN:$PATH"
+          pnpm install --frozen-lockfile --prefer-offline --ignore-scripts=false --config.engine-strict=false --config.enable-pre-post-scripts=true --config.side-effects-cache=true || pnpm install --frozen-lockfile --prefer-offline --ignore-scripts=false --config.engine-strict=false --config.enable-pre-post-scripts=true --config.side-effects-cache=true
+
+      - name: Build native browser artifacts
+        run: pnpm build
+
+      - name: Package native Viki Browser
+        run: pnpm browser:package:native
+
+      - name: Probe packaged Viki Browser executable directly
+        run: |
+          mkdir -p .artifacts/browser-native-ci
+          node ./vikiclow.mjs browser verify-native --json > .artifacts/browser-native-ci/browser-native-proof.json
+          "./dist/Viki Browser.exe" --probe --json > .artifacts/browser-native-ci/browser-native-exe-probe.json
+
+      - name: Upload native browser artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-native-windows
+          path: |
+            .artifacts/browser-native-ci/
+            dist/Viki Browser.exe
+            dist/Viki Browser.cmd
+            dist/Viki Browser.ps1
+            dist/Viki Browser
+            dist/viki-browser-launch.mjs
+          retention-days: 7
+
+  macos-swift:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node environment
+        uses: ./.github/actions/setup-node-env
+        with:
+          install-bun: "false"
+          use-sticky-disk: "false"
+
+      - name: Show Apple toolchain
+        run: |
+          sw_vers
+          xcodebuild -version
+          swift --version
+
+      - name: Install XcodeGen / SwiftLint / SwiftFormat
+        run: brew install xcodegen swiftlint swiftformat
+
+      - name: Swift lint
+        run: |
+          swiftlint --config .swiftlint.yml
+          swiftformat --lint apps/macos/Sources --config .swiftformat
+
+      - name: Swift build
+        run: swift build --package-path apps/macos --configuration release
+
+      - name: Swift test
+        run: swift test --package-path apps/macos --parallel
+
+  android-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: false
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.11.1
+
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.0.0"
+
+      - name: Run Android verification
+        working-directory: apps/android
+        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleDebug
+
+      - name: Upload Android artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-native
+          path: |
+            apps/android/app/build/reports/tests/
+            apps/android/app/build/test-results/
+            apps/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 7

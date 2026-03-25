@@ -1,7 +1,7 @@
 # VikiClow Execution State
 
 ## Current Objective
-Ship the final public-ready Vikiclow closure pass to `rebootix-research/viki-clow`, with only concrete environment or compatibility blockers left open.
+Strengthen GitHub Actions coverage for native/browser/runtime verification so post-push CI exposes the remaining environment-backed gaps directly and keeps the native lanes zero-red.
 
 ## Remaining Blockers Before This Pass
 - Native browser packaging was launcher-backed but not yet producing a shipped Windows executable.
@@ -11,6 +11,15 @@ Ship the final public-ready Vikiclow closure pass to `rebootix-research/viki-clo
 - Native macOS and Android verification were still blocked by missing host toolchains (`swift`, `java` / `JAVA_HOME`).
 
 ## Completed Workstreams
+- Added a dedicated `Native Verification` GitHub Actions workflow:
+  - Windows native-browser packaging + verification
+  - Ubuntu runtime-stack proof
+  - Ubuntu voice bootstrap proof
+  - macOS Swift/native push coverage
+- Strengthened the main `CI` workflow:
+  - macOS now runs on pushes to `main`, not only PRs
+  - Android now uploads unit-test reports and the debug APK as artifacts
+- Validated the edited workflow files locally with YAML parsing and `actionlint`.
 - Closed the shipped native Windows browser path:
   - `dist/Viki Browser.exe`
   - `dist/viki-browser-launch.mjs`
@@ -42,8 +51,12 @@ Ship the final public-ready Vikiclow closure pass to `rebootix-research/viki-clo
 
 ## In-Progress Workstreams
 - Final commit, push, and GitHub release update.
+- Final identity cleanup on GitHub-facing docs/scripts/product text.
 
 ## Exact Next Actions
+- Push the workflow changes.
+- Inspect the first `CI` and `Native Verification` runs on GitHub.
+- Download `runtime-stack-proof`, `voice-proof`, `native-browser-windows`, `native-browser-proof`, `android-test-report`, and `android-debug-apk` from the first successful run.
 - Commit the closure-pass repo state.
 - Rebuild once on the final commit SHA so `dist/build-info.json` matches the final head.
 - Rerun `release:proof` on the final commit.
@@ -62,8 +75,15 @@ Ship the final public-ready Vikiclow closure pass to `rebootix-research/viki-clo
   - migration/compatibility tests referencing legacy state dirs or service names
   - `apps/macos/Sources/VikiClow/PeekabooBridgeHostCoordinator.swift`
   - `scripts/install.sh` legacy state detection
+  - unresolved external repo references that were not changed because the replacement target could not be verified from this environment:
+    - `CONTRIBUTING.md` (`vikiclow/trust`)
+    - `docs/install/nix.md`
+    - `docs/security/CONTRIBUTING-THREAT-MODEL.md`
 
 ## Exact Files Changed In This Pass
+- `.github/workflows/ci.yml`
+- `.github/workflows/native-verification.yml`
+- `VIKICLOW_EXECUTION_STATE.md`
 - `vitest.config.ts`
 - `CHANGELOG.md`
 - `apps/macos/Tests/VikiClowIPCTests/ChannelsSettingsSmokeTests.swift`
@@ -72,8 +92,20 @@ Ship the final public-ready Vikiclow closure pass to `rebootix-research/viki-clo
 - `scripts/runtime-stack-proof.ts`
 - bulk repo URL normalization across product/docs/scripts surfaces from `vikiclow/vikiclow` to `rebootix-research/viki-clow`
 - plus the already-active closure-pass files still pending commit in this repo state
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `docs/install/ansible.md`
+- `docs/security/CONTRIBUTING-THREAT-MODEL.md`
+- `scripts/update-clawtributors.ts`
 
 ## Tests / Proofs Run In This Pass
+- local workflow YAML parse for:
+  - `.github/workflows/ci.yml`
+  - `.github/workflows/native-verification.yml`
+- `git diff --check`
+- local `actionlint` for:
+  - `.github/workflows/ci.yml`
+  - `.github/workflows/native-verification.yml`
 - `corepack pnpm exec vitest run --config vitest.config.ts extensions/workflow/src/workflow-spawn.test.ts extensions/workflow/src/workflow-tool.test.ts`
 - `corepack pnpm exec vitest run --config vitest.config.ts src/browser/native-launcher.test.ts src/browser/native-proof.test.ts src/browser/native-packager.test.ts src/browser/browserd.test.ts extensions/workflow/src/workflow-spawn.test.ts extensions/workflow/src/workflow-tool.test.ts src/memory/backend-config.test.ts src/memory/graphiti-backbone.test.ts src/missions/runtime.test.ts src/commands/agent.mission-runtime.test.ts src/capabilities/bundle.test.ts src/commands/onboard-non-interactive.gateway.test.ts`
 - `corepack pnpm exec tsc -p tsconfig.json --noEmit --pretty false`
@@ -88,8 +120,11 @@ Ship the final public-ready Vikiclow closure pass to `rebootix-research/viki-clo
 - `Get-Command swift`
 - `Get-Command java`
 - residue sweeps with `rg` over product/runtime/doc surfaces
+- `corepack pnpm exec tsc -p tsconfig.json --noEmit --pretty false`
+- targeted residue sweeps over `AGENTS.md`, `CONTRIBUTING.md`, `docs/install/ansible.md`, and `scripts/update-clawtributors.ts`
 
 ## Artifacts Produced In This Pass
+- No new local product artifacts were generated for the workflow-only CI closure edit.
 - `C:\\Users\\Nabeel Saleem\\Desktop\\viki clow\\dist\\Viki Browser.exe`
 - `C:\\Users\\Nabeel Saleem\\Desktop\\viki clow\\dist\\viki-browser-launch.mjs`
 - `C:\\Users\\Nabeel Saleem\\Desktop\\viki clow\\.artifacts\\execution-surface\\execution-surface-proof.json`

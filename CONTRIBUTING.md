@@ -12,69 +12,69 @@ Welcome to the VikiClow contributor hub.
 ## Maintainers
 
 - **VikiClow maintainers** - project lead
-  - GitHub: [@steipete](https://github.com/steipete) · X: [@steipete](https://x.com/steipete)
+  - GitHub: [@steipete](https://github.com/steipete) Â· X: [@steipete](https://x.com/steipete)
 
-- **Shadow** - Discord subsystem, Discord admin, Clawhub, all community moderation
-  - GitHub: [@thewilloftheshadow](https://github.com/thewilloftheshadow) · X: [@4shadowed](https://x.com/4shadowed)
+- **Shadow** - Discord subsystem, Discord admin, skills ecosystem, all community moderation
+  - GitHub: [@thewilloftheshadow](https://github.com/thewilloftheshadow) Â· X: [@4shadowed](https://x.com/4shadowed)
 
 - **Vignesh** - Memory (QMD), formal modeling, TUI, IRC, and Viki Workflow
-  - GitHub: [@vignesh07](https://github.com/vignesh07) · X: [@\_vgnsh](https://x.com/_vgnsh)
+  - GitHub: [@vignesh07](https://github.com/vignesh07) Â· X: [@\_vgnsh](https://x.com/_vgnsh)
 
 - **Jos** - Telegram, API, Nix mode
-  - GitHub: [@joshp123](https://github.com/joshp123) · X: [@jjpcodes](https://x.com/jjpcodes)
+  - GitHub: [@joshp123](https://github.com/joshp123) Â· X: [@jjpcodes](https://x.com/jjpcodes)
 
 - **Ayaan Zaidi** - Telegram subsystem, iOS app
-  - GitHub: [@obviyus](https://github.com/obviyus) · X: [@0bviyus](https://x.com/0bviyus)
+  - GitHub: [@obviyus](https://github.com/obviyus) Â· X: [@0bviyus](https://x.com/0bviyus)
 
 - **Tyler Yust** - Agents/subagents, cron, BlueBubbles, macOS app
-  - GitHub: [@tyler6204](https://github.com/tyler6204) · X: [@tyleryust](https://x.com/tyleryust)
+  - GitHub: [@tyler6204](https://github.com/tyler6204) Â· X: [@tyleryust](https://x.com/tyleryust)
 
 - **Mariano Belinky** - iOS app, Security
-  - GitHub: [@mbelinky](https://github.com/mbelinky) · X: [@belimad](https://x.com/belimad)
+  - GitHub: [@mbelinky](https://github.com/mbelinky) Â· X: [@belimad](https://x.com/belimad)
 
-- **Nimrod Gutman** - iOS app, macOS app and crustacean features
-  - GitHub: [@ngutman](https://github.com/ngutman) · X: [@theguti](https://x.com/theguti)
+- **Nimrod Gutman** - iOS app, macOS app, and platform integrations
+  - GitHub: [@ngutman](https://github.com/ngutman) Â· X: [@theguti](https://x.com/theguti)
 
 - **Vincent Koc** - Agents, Telemetry, Hooks, Security
-  - GitHub: [@vincentkoc](https://github.com/vincentkoc) · X: [@vincent_koc](https://x.com/vincent_koc)
+  - GitHub: [@vincentkoc](https://github.com/vincentkoc) Â· X: [@vincent_koc](https://x.com/vincent_koc)
 
 - **Val Alexander** - UI/UX, Docs, and Agent DevX
-  - GitHub: [@BunsDev](https://github.com/BunsDev) · X: [@BunsDev](https://x.com/BunsDev)
+  - GitHub: [@BunsDev](https://github.com/BunsDev) Â· X: [@BunsDev](https://x.com/BunsDev)
 
 - **Seb Slight** - Docs, Agent Reliability, Runtime Hardening
-  - GitHub: [@sebslight](https://github.com/sebslight) · X: [@sebslig](https://x.com/sebslig)
+  - GitHub: [@sebslight](https://github.com/sebslight) Â· X: [@sebslig](https://x.com/sebslig)
 
 - **Christoph Nakazawa** - JS Infra
-  - GitHub: [@cpojer](https://github.com/cpojer) · X: [@cnakazawa](https://x.com/cnakazawa)
+  - GitHub: [@cpojer](https://github.com/cpojer) Â· X: [@cnakazawa](https://x.com/cnakazawa)
 
 - **Gustavo Madeira Santana** - Multi-agents, CLI, web UI
-  - GitHub: [@gumadeiras](https://github.com/gumadeiras) · X: [@gumadeiras](https://x.com/gumadeiras)
+  - GitHub: [@gumadeiras](https://github.com/gumadeiras) Â· X: [@gumadeiras](https://x.com/gumadeiras)
 
 - **Onur Solmaz** - Agents, dev workflows, ACP integrations, MS Teams
-  - GitHub: [@onutc](https://github.com/onutc), [@osolmaz](https://github.com/osolmaz) · X: [@onusoz](https://x.com/onusoz)
+  - GitHub: [@onutc](https://github.com/onutc), [@osolmaz](https://github.com/osolmaz) Â· X: [@onusoz](https://x.com/onusoz)
 
 - **Josh Avant** - Core, CLI, Gateway, Security, Agents
-  - GitHub: [@joshavant](https://github.com/joshavant) · X: [@joshavant](https://x.com/joshavant)
+  - GitHub: [@joshavant](https://github.com/joshavant) Â· X: [@joshavant](https://x.com/joshavant)
 
 - **Jonathan Taylor** - ACP subsystem, Gateway features/bugs, Gog/Mog/Sog CLI's, SEDMAT
-  - GitHub [@visionik](https://github.com/visionik) · X: [@visionik](https://x.com/visionik)
+  - GitHub [@visionik](https://github.com/visionik) Â· X: [@visionik](https://x.com/visionik)
 - **Josh Lehman** - Compaction, Tlon/Urbit subsystem
-  - GitHub [@jalehman](https://github.com/jalehman) · X: [@jlehman\_](https://x.com/jlehman_)
+  - GitHub [@jalehman](https://github.com/jalehman) Â· X: [@jlehman\_](https://x.com/jlehman_)
 
 - **Radek Sienkiewicz** - Control UI + WebChat correctness
-  - GitHub [@velvet-shark](https://github.com/velvet-shark) · X: [@velvet_shark](https://twitter.com/velvet_shark)
+  - GitHub [@velvet-shark](https://github.com/velvet-shark) Â· X: [@velvet_shark](https://twitter.com/velvet_shark)
 
 - **Muhammed Mukhthar** - Mattermost, CLI
-  - GitHub [@mukhtharcm](https://github.com/mukhtharcm) · X: [@mukhtharcm](https://x.com/mukhtharcm)
+  - GitHub [@mukhtharcm](https://github.com/mukhtharcm) Â· X: [@mukhtharcm](https://x.com/mukhtharcm)
 
 - **Altay** - Agents, CLI, error handling
-  - GitHub [@altaywtf](https://github.com/altaywtf) · X: [@altaywtf](https://x.com/altaywtf)
+  - GitHub [@altaywtf](https://github.com/altaywtf) Â· X: [@altaywtf](https://x.com/altaywtf)
 
 - **Robin Waslander** - Security, PR triage, bug fixes
-  - GitHub: [@hydro13](https://github.com/hydro13) · X: [@Robin_waslander](https://x.com/Robin_waslander)
+  - GitHub: [@hydro13](https://github.com/hydro13) Â· X: [@Robin_waslander](https://x.com/Robin_waslander)
 
 - **Tengji (George) Zhang** - Chinese model APIs, cloud, pi
-  - GitHub: [@odysseus0](https://github.com/odysseus0) · X: [@odysseus0z](https://x.com/odysseus0z)
+  - GitHub: [@odysseus0](https://github.com/odysseus0) Â· X: [@odysseus0z](https://x.com/odysseus0z)
 
 ## How to Contribute
 
@@ -172,10 +172,10 @@ We take security reports seriously. Report vulnerabilities directly to the repos
 
 - **Core CLI and gateway** - [rebootix-research/viki-clow](https://github.com/rebootix-research/viki-clow)
 - **macOS desktop app** - [rebootix-research/viki-clow](https://github.com/rebootix-research/viki-clow) (`apps/macos`)
-- **Nimrod Gutman** - iOS app, macOS app and crustacean features
+- **Nimrod Gutman** - iOS app, macOS app, and platform integrations
 - **Android app** - [rebootix-research/viki-clow](https://github.com/rebootix-research/viki-clow) (`apps/android`)
 - **VikiClow Skills Registry** - [vikiclow-skills.ai](https://vikiclow-skills.ai/)
-- **Trust and threat model** - [vikiclow/trust](https://github.com/vikiclow/trust)
+- **Trust and threat model** - [rebootix-research/viki-clow issues](https://github.com/rebootix-research/viki-clow/issues)
 
 For issues that don't fit a specific repo, or if you're unsure, email **security@vikiclow.ai** and we'll route it.
 
@@ -191,5 +191,4 @@ For issues that don't fit a specific repo, or if you're unsure, email **security
 8. **Remediation Advice**
 
 Reports without reproduction steps, demonstrated impact, and remediation advice will be deprioritized. Given the volume of AI-generated scanner findings, we must ensure we're receiving vetted reports from researchers who understand the issues.
-
 

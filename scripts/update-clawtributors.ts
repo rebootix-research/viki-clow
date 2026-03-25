@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { ApiContributor, Entry, MapConfig, User } from "./update-clawtributors.types.js";
 
-const REPO = "vikiclow/vikiclow";
+const REPO = "rebootix-research/viki-clow";
 const PER_LINE = 10;
 
 const mapPath = resolve("scripts/clawtributors-map.json");
@@ -295,13 +295,13 @@ const start = readme.indexOf('<p align="left">');
 const end = readme.indexOf("</p>", start);
 
 if (start === -1 || end === -1) {
-  throw new Error("README.md missing clawtributors block");
+  throw new Error("README.md missing contributors block");
 }
 
 const next = `${readme.slice(0, start)}<p align="left">\n${block}${readme.slice(end)}`;
 writeFileSync(readmePath, next);
 
-console.log(`Updated README clawtributors: ${entries.length} entries`);
+console.log(`Updated README contributors: ${entries.length} entries`);
 console.log(`\nTop 25 by composite score: (commits*2 + PRs*10 + sqrt(LOC)) * tenure`);
 console.log(`  tenure = 1.0 + (days_since_first_commit / repo_age)^2 * 0.5`);
 console.log(

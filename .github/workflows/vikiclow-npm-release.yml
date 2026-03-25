@@ -15,6 +15,7 @@ env:
 
 jobs:
   publish_vikiclow_npm:
+    if: ${{ !contains(github.ref_name, '-final') }}
     # npm trusted publishing + provenance requires a GitHub-hosted runner.
     runs-on: ubuntu-latest
     permissions:
@@ -46,28 +47,33 @@ jobs:
           git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
           pnpm release:vikiclow:npm:check
 
-      - name: Ensure version is not already published
+      - name: Check whether version is already published
+        id: published
         run: |
           set -euo pipefail
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
-
           if npm view "vikiclow@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
-            echo "vikiclow@${PACKAGE_VERSION} is already published on npm."
-            exit 1
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "vikiclow@${PACKAGE_VERSION} is already published; skipping publish."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+            echo "Publishing vikiclow@${PACKAGE_VERSION}"
           fi
 
-          echo "Publishing vikiclow@${PACKAGE_VERSION}"
-
       - name: Check
+        if: steps.published.outputs.published != 'true'
         run: pnpm check
 
       - name: Build
+        if: steps.published.outputs.published != 'true'
         run: pnpm build
 
       - name: Verify release contents
+        if: steps.published.outputs.published != 'true'
         run: pnpm release:check
 
       - name: Publish
+        if: steps.published.outputs.published != 'true'
         run: |
           set -euo pipefail
           PACKAGE_VERSION=$(node -p "require('./package.json').version")

@@ -317,7 +317,7 @@ function Main {
     
     if (!$NoOnboard -and !$DryRun) {
         Write-Host ""
-        Write-Host "Starting required Vikiclow onboarding (voice bootstrap, bundled capabilities, and mic permissions)..." -Level info
+        Write-Host "Starting required Vikiclow onboarding (voice backend and mic permissions, bundled capabilities, and mission runtime bootstrap)..." -Level info
         try {
             & vikiclow onboard
         } catch {
@@ -326,7 +326,7 @@ function Main {
         }
     } elseif ($NoOnboard -and !$DryRun) {
         Write-Host ""
-        Write-Host "Voice setup is still required. Run 'vikiclow onboard' before treating VikiClow as ready." -Level warn
+        Write-Host "Voice setup is still required. Run 'vikiclow onboard' to complete required setup before treating VikiClow as ready." -Level warn
     }
     
     Write-Host ""

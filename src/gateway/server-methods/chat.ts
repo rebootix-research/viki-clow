@@ -1049,7 +1049,7 @@ export const chatHandlers: GatewayRequestHandlers = {
       });
       // Inject timestamp so agents know the current date/time.
       // Only BodyForAgent gets the timestamp — Body stays raw for UI display.
-      // See: https://github.com/moltbot/moltbot/issues/3658
+      // Legacy upstream issue 3658 documents the timestamp ordering edge case.
       const stampedMessage = injectTimestamp(messageForAgent, timestampOptsFromConfig(cfg));
 
       const ctx: MsgContext = {
