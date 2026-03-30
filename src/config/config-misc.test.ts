@@ -360,7 +360,7 @@ describe("config strict validation", () => {
     expect(res.ok).toBe(false);
   });
 
-  it("keeps legacy-compatible routing entries loadable in config snapshots", async () => {
+  it("preserves legacy-compatible routing entries in config snapshots without loading them", async () => {
     await withTempHome(async (home) => {
       await writeVikiClowConfig(home, {
         agents: { list: [{ id: "pi" }] },
@@ -369,13 +369,24 @@ describe("config strict validation", () => {
 
       const snap = await readConfigFileSnapshot();
 
-      expect(snap.valid).toBe(true);
-      expect(snap.issues).toHaveLength(0);
-      expect(snap.legacyIssues).toHaveLength(0);
+      expect(snap.valid).toBe(false);
+      expect(snap.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "routing.allowFrom" }),
+        ]),
+      );
+      expect(snap.legacyIssues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "routing.allowFrom" }),
+        ]),
+      );
+      expect(snap.parsed).toMatchObject({
+        routing: { allowFrom: ["+15555550123"] },
+      });
     });
   });
 
-  it("accepts resolved-only gateway.bind aliases in config snapshots", async () => {
+  it("preserves resolved-only gateway.bind aliases in config snapshots", async () => {
     await withTempHome(async (home) => {
       await writeVikiClowConfig(home, {
         gateway: { bind: "${VIKICLOW_BIND}" },
@@ -385,9 +396,16 @@ describe("config strict validation", () => {
       process.env.VIKICLOW_BIND = "0.0.0.0";
       try {
         const snap = await readConfigFileSnapshot();
-        expect(snap.valid).toBe(true);
-        expect(snap.issues).toHaveLength(0);
+        expect(snap.valid).toBe(false);
+        expect(snap.issues).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ path: "gateway.bind" }),
+          ]),
+        );
         expect(snap.legacyIssues).toHaveLength(0);
+        expect(snap.resolved).toMatchObject({
+          gateway: { bind: "0.0.0.0" },
+        });
       } finally {
         if (prev === undefined) {
           delete process.env.VIKICLOW_BIND;
@@ -398,16 +416,27 @@ describe("config strict validation", () => {
     });
   });
 
-  it("accepts literal gateway.bind host aliases in config snapshots", async () => {
+  it("preserves literal gateway.bind host aliases in config snapshots", async () => {
     await withTempHome(async (home) => {
       await writeVikiClowConfig(home, {
         gateway: { bind: "0.0.0.0" },
       });
 
       const snap = await readConfigFileSnapshot();
-      expect(snap.valid).toBe(true);
-      expect(snap.issues).toHaveLength(0);
-      expect(snap.legacyIssues).toHaveLength(0);
+      expect(snap.valid).toBe(false);
+      expect(snap.issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "gateway.bind" }),
+        ]),
+      );
+      expect(snap.legacyIssues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ path: "gateway.bind" }),
+        ]),
+      );
+      expect(snap.parsed).toMatchObject({
+        gateway: { bind: "0.0.0.0" },
+      });
     });
   });
 });

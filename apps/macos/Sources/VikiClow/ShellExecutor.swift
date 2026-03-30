@@ -2,24 +2,6 @@ import Foundation
 import VikiClowIPC
 
 enum ShellExecutor {
-    actor TimeoutState {
-        private var waitFinished = false
-        private var timedOut = false
-
-        func markTimeoutIfNeeded() -> Bool {
-            guard !self.waitFinished else {
-                return false
-            }
-            self.timedOut = true
-            return true
-        }
-
-        func markWaitFinished() -> Bool {
-            self.waitFinished = true
-            return self.timedOut
-        }
-    }
-
     struct ShellResult {
         var stdout: String
         var stderr: String
@@ -87,35 +69,28 @@ enum ShellExecutor {
 
         if let timeout, timeout > 0 {
             let nanos = UInt64(timeout * 1_000_000_000)
-            let timeoutState = TimeoutState()
             let timeoutTask = Task { () -> Bool in
-                try? await Task.sleep(nanoseconds: nanos)
-                guard await timeoutState.markTimeoutIfNeeded() else {
+                do {
+                    try await Task.sleep(nanoseconds: nanos)
+                } catch {
                     return false
                 }
-                if process.isRunning {
-                    process.terminate()
+                guard process.isRunning else {
+                    return false
                 }
+                process.terminate()
                 return true
             }
 
-            let resultTask = Task { () -> ShellResult in
-                process.waitUntilExit()
-                let out = await outTask.value
-                let err = await errTask.value
-                let status = Int(process.terminationStatus)
-                let timedOut = await timeoutState.markWaitFinished()
-                return ShellResult(
-                    stdout: String(bytes: out, encoding: .utf8) ?? "",
-                    stderr: String(bytes: err, encoding: .utf8) ?? "",
-                    exitCode: timedOut ? nil : status,
-                    timedOut: timedOut,
-                    success: !timedOut && status == 0,
-                    errorMessage: timedOut ? "timeout" : (status == 0 ? nil : "exit \(status)"))
+            var result = await waitTask.value
+            timeoutTask.cancel()
+            let timedOut = await timeoutTask.value
+            if timedOut {
+                result.timedOut = true
+                result.success = false
+                result.exitCode = nil
+                result.errorMessage = "timeout"
             }
-
-            let result = await resultTask.value
-            _ = await timeoutTask.value
             return result
         }
 

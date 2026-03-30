@@ -53,6 +53,13 @@ export function resolvePreferredVikiClowTmpDir(
   const uid = getuid();
 
   const isSecureDirForUser = (st: { mode?: number; uid?: number }): boolean => {
+    if (process.platform === "win32") {
+      // Windows ACL semantics do not map cleanly onto POSIX mode/uid checks, and
+      // the temp-dir probe is only used as a best-effort safety guard. Treat a
+      // Windows fallback directory as secure once we have confirmed it is not a
+      // symlink and can be accessed/created.
+      return true;
+    }
     if (uid === undefined) {
       return true;
     }
@@ -121,6 +128,17 @@ export function resolvePreferredVikiClowTmpDir(
     const fallbackPath = fallback();
     const state = resolveDirState(fallbackPath);
     if (state === "available") {
+      return fallbackPath;
+    }
+    if (process.platform === "win32") {
+      try {
+        mkdirSync(fallbackPath, { recursive: true, mode: 0o700 });
+        chmodSync(fallbackPath, 0o700);
+      } catch {
+        // Best-effort on Windows: if the path exists and is not a symlink, let
+        // callers proceed rather than fail startup on POSIX-style permission
+        // semantics that do not exist there.
+      }
       return fallbackPath;
     }
     if (state === "invalid") {

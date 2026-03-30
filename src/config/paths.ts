@@ -1,4 +1,4 @@
-import fs from "node:fs";
+import * as fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { expandHomePrefix, resolveRequiredHomeDir } from "../infra/home-dir.js";
@@ -117,7 +117,10 @@ function resolveUserPath(
   return path.resolve(trimmed);
 }
 
-export const STATE_DIR = resolveStateDir();
+// Keep module-scope defaults side-effect free so test mocks and early imports
+// do not need a fully populated `node:fs` shape. Callers that need legacy
+// path probing should use `resolveStateDir()` directly.
+export const STATE_DIR = resolveNewStateDir();
 
 /**
  * Config file path (JSON5).
@@ -206,7 +209,9 @@ export function resolveConfigPath(
   return path.join(stateDir, CONFIG_FILENAME);
 }
 
-export const CONFIG_PATH = resolveConfigPathCandidate();
+// Use the canonical default config path at import time. Legacy probing is still
+// available through `resolveConfigPathCandidate()` for callers that opt in.
+export const CONFIG_PATH = resolveCanonicalConfigPath(process.env, STATE_DIR);
 
 /**
  * Resolve default config path candidates across default locations.
