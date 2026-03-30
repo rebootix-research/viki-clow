@@ -12,6 +12,8 @@ import type {
 
 const log = createSubsystemLogger("memory");
 const QMD_MANAGER_CACHE = new Map<string, MemorySearchManager>();
+const PRIMARY_MANAGER_CACHE = new Map<string, MemorySearchManager>();
+const PRIMARY_MANAGER_PENDING = new Map<string, Promise<MemorySearchManagerResult>>();
 let managerRuntimePromise: Promise<typeof import("./manager-runtime.js")> | null = null;
 
 function loadManagerRuntime() {
@@ -30,7 +32,47 @@ export async function getMemorySearchManager(params: {
   purpose?: "default" | "status";
 }): Promise<MemorySearchManagerResult> {
   const resolved = resolveMemoryBackendConfig(params);
+  const statusOnly = params.purpose === "status";
   if (resolved.backend === "graphiti" && resolved.graphiti) {
+    const cacheKey = statusOnly ? undefined : buildPrimaryCacheKey(params, resolved);
+    if (cacheKey) {
+      const cached = PRIMARY_MANAGER_CACHE.get(cacheKey);
+      if (cached) {
+        return { manager: cached };
+      }
+      const pending = PRIMARY_MANAGER_PENDING.get(cacheKey);
+      if (pending) {
+        return await pending;
+      }
+      const createPromise = createPrimaryManager(async () => {
+        const { MemoryIndexManager } = await loadManagerRuntime();
+        const delegate = await MemoryIndexManager.get(params);
+        const manager = new GraphitiBackboneManager({
+          agentId: params.agentId,
+          config: resolved.graphiti!,
+          env: process.env,
+          delegate,
+        });
+        const proofWrapper = new PersistenceProofMemoryManager(
+          manager,
+          { agentId: params.agentId },
+          () => {
+            PRIMARY_MANAGER_CACHE.delete(cacheKey);
+          },
+        );
+        await proofWrapper.bootstrap();
+        PRIMARY_MANAGER_CACHE.set(cacheKey, proofWrapper);
+        return { manager: proofWrapper };
+      });
+      PRIMARY_MANAGER_PENDING.set(cacheKey, createPromise);
+      try {
+        return await createPromise;
+      } finally {
+        if (PRIMARY_MANAGER_PENDING.get(cacheKey) === createPromise) {
+          PRIMARY_MANAGER_PENDING.delete(cacheKey);
+        }
+      }
+    }
     try {
       const { MemoryIndexManager } = await loadManagerRuntime();
       const delegate = await MemoryIndexManager.get(params);
@@ -40,9 +82,7 @@ export async function getMemorySearchManager(params: {
         env: process.env,
         delegate,
       });
-      const proofWrapper = new PersistenceProofMemoryManager(manager, {
-        agentId: params.agentId,
-      });
+      const proofWrapper = new PersistenceProofMemoryManager(manager, { agentId: params.agentId });
       await proofWrapper.bootstrap();
       return { manager: proofWrapper };
     } catch (err) {
@@ -51,7 +91,6 @@ export async function getMemorySearchManager(params: {
     }
   }
   if (resolved.backend === "qmd" && resolved.qmd) {
-    const statusOnly = params.purpose === "status";
     let cacheKey: string | undefined;
     if (!statusOnly) {
       cacheKey = buildQmdCacheKey(params.agentId, resolved.qmd);
@@ -105,6 +144,43 @@ export async function getMemorySearchManager(params: {
     }
   }
 
+  const cacheKey = statusOnly ? undefined : buildPrimaryCacheKey(params, resolved);
+  if (cacheKey) {
+    const cached = PRIMARY_MANAGER_CACHE.get(cacheKey);
+    if (cached) {
+      return { manager: cached };
+    }
+    const pending = PRIMARY_MANAGER_PENDING.get(cacheKey);
+    if (pending) {
+      return await pending;
+    }
+    const createPromise = createPrimaryManager(async () => {
+      const { MemoryIndexManager } = await loadManagerRuntime();
+      const manager = await MemoryIndexManager.get(params);
+      if (!manager) {
+        return { manager };
+      }
+      const proofWrapper = new PersistenceProofMemoryManager(
+        manager,
+        { agentId: params.agentId },
+        () => {
+          PRIMARY_MANAGER_CACHE.delete(cacheKey);
+        },
+      );
+      await proofWrapper.bootstrap();
+      PRIMARY_MANAGER_CACHE.set(cacheKey, proofWrapper);
+      return { manager: proofWrapper };
+    });
+    PRIMARY_MANAGER_PENDING.set(cacheKey, createPromise);
+    try {
+      return await createPromise;
+    } finally {
+      if (PRIMARY_MANAGER_PENDING.get(cacheKey) === createPromise) {
+        PRIMARY_MANAGER_PENDING.delete(cacheKey);
+      }
+    }
+  }
+
   try {
     const { MemoryIndexManager } = await loadManagerRuntime();
     const manager = await MemoryIndexManager.get(params);
@@ -123,8 +199,14 @@ export async function getMemorySearchManager(params: {
 }
 
 export async function closeAllMemorySearchManagers(): Promise<void> {
-  const managers = Array.from(QMD_MANAGER_CACHE.values());
+  const pendingPrimary = Array.from(PRIMARY_MANAGER_PENDING.values());
+  PRIMARY_MANAGER_PENDING.clear();
+  if (pendingPrimary.length > 0) {
+    await Promise.allSettled(pendingPrimary);
+  }
+  const managers = [...QMD_MANAGER_CACHE.values(), ...PRIMARY_MANAGER_CACHE.values()];
   QMD_MANAGER_CACHE.clear();
+  PRIMARY_MANAGER_CACHE.clear();
   for (const manager of managers) {
     try {
       await manager.close?.();
@@ -284,10 +366,12 @@ class FallbackMemoryManager implements MemorySearchManager {
 
 class PersistenceProofMemoryManager implements MemorySearchManager {
   private bootstrapPromise: Promise<void> | null = null;
+  private cacheEvicted = false;
 
   constructor(
     private readonly delegate: MemorySearchManager,
     private readonly params: { agentId: string },
+    private readonly onClose?: () => void,
   ) {}
 
   get openAi() {
@@ -396,7 +480,33 @@ class PersistenceProofMemoryManager implements MemorySearchManager {
 
   async close() {
     await this.delegate.close?.();
+    if (!this.cacheEvicted) {
+      this.cacheEvicted = true;
+      this.onClose?.();
+    }
   }
+}
+
+function buildPrimaryCacheKey(
+  params: { cfg: VikiClowConfig; agentId: string; purpose?: "default" | "status" },
+  resolved: ReturnType<typeof resolveMemoryBackendConfig>,
+): string {
+  return JSON.stringify({
+    agentId: params.agentId,
+    purpose: params.purpose ?? "default",
+    memory: params.cfg.memory ?? null,
+    agents: params.cfg.agents ?? null,
+    backend: resolved.backend,
+    citations: resolved.citations,
+    qmd: resolved.qmd ?? null,
+    graphiti: resolved.graphiti ?? null,
+  });
+}
+
+async function createPrimaryManager(
+  factory: () => Promise<MemorySearchManagerResult>,
+): Promise<MemorySearchManagerResult> {
+  return await factory();
 }
 
 function buildQmdCacheKey(agentId: string, config: ResolvedQmdConfig): string {

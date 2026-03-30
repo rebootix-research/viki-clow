@@ -123,15 +123,15 @@ describe("plugin-sdk subpath exports", () => {
       const result = spawnSync(
         process.execPath,
         [
-        "-e",
-        "import('vikiclow/plugin-sdk/workflow').then(()=>process.exit(0)).catch((err)=>{console.error(err);process.exit(1);})",
-      ],
-      {
-        cwd: process.cwd(),
-        encoding: "utf8",
-      },
-    );
-    expect(result.status, result.stderr || result.stdout).toBe(0);
+          "-e",
+          "import('vikiclow/plugin-sdk/workflow').then(()=>process.exit(0)).catch((err)=>{console.error(err);process.exit(1);})",
+        ],
+        {
+          cwd: process.cwd(),
+          encoding: "utf8",
+        },
+      );
+      expect(result.status, result.stderr || result.stdout).toBe(0);
     },
   );
 
@@ -141,15 +141,15 @@ describe("plugin-sdk subpath exports", () => {
       const result = spawnSync(
         process.execPath,
         [
-        "-e",
-        "import('vikiclow/plugin-sdk/prose').then(()=>process.exit(0)).catch((err)=>{console.error(err);process.exit(1);})",
-      ],
-      {
-        cwd: process.cwd(),
-        encoding: "utf8",
-      },
-    );
-    expect(result.status, result.stderr || result.stdout).toBe(0);
+          "-e",
+          "import('vikiclow/plugin-sdk/prose').then(()=>process.exit(0)).catch((err)=>{console.error(err);process.exit(1);})",
+        ],
+        {
+          cwd: process.cwd(),
+          encoding: "utf8",
+        },
+      );
+      expect(result.status, result.stderr || result.stdout).toBe(0);
     },
   );
 
