@@ -7,7 +7,7 @@ import { resolveRequiredHomeDir } from "../infra/home-dir.js";
 import { runCommandWithTimeout } from "../process/exec.js";
 import { isCronSessionKey, isSubagentSessionKey } from "../routing/session-key.js";
 import { resolveUserPath } from "../utils.js";
-import { resolveWorkspaceTemplateDir } from "./workspace-templates.js";
+import { resolveWorkspaceTemplatePath } from "./workspace-templates.js";
 
 export function resolveDefaultAgentWorkspaceDir(
   env: NodeJS.ProcessEnv = process.env,
@@ -108,8 +108,7 @@ async function loadTemplate(name: string): Promise<string> {
   }
 
   const pending = (async () => {
-    const templateDir = await resolveWorkspaceTemplateDir();
-    const templatePath = path.join(templateDir, name);
+    const templatePath = await resolveWorkspaceTemplatePath(name);
     try {
       const content = await fs.readFile(templatePath, "utf-8");
       return stripFrontMatter(content);

@@ -484,6 +484,10 @@ jobs:
         if: matrix.task == 'test'
         run: pnpm canvas:a2ui:bundle
 
+      - name: Seed packaged workspace templates (Windows)
+        if: matrix.task == 'test'
+        run: node --import tsx scripts/copy-workspace-templates.ts
+
       - name: Run ${{ matrix.task }} (${{ matrix.runtime }})
         run: ${{ matrix.command }}
 

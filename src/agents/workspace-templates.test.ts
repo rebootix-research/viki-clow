@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   resetWorkspaceTemplateDirCache,
   resolveWorkspaceTemplateDir,
+  resolveWorkspaceTemplatePath,
 } from "./workspace-templates.js";
 
 const tempDirs: string[] = [];
@@ -50,5 +51,20 @@ describe("resolveWorkspaceTemplateDir", () => {
 
     const resolved = await resolveWorkspaceTemplateDir({ cwd: distDir, moduleUrl });
     expect(path.normalize(resolved)).toBe(path.resolve("docs", "reference", "templates"));
+  });
+
+  it("falls back to dist templates when the source template file is missing", async () => {
+    const root = await makeTempRoot();
+    await fs.writeFile(path.join(root, "package.json"), JSON.stringify({ name: "vikiclow" }));
+
+    const docsTemplatesDir = path.join(root, "docs", "reference", "templates");
+    const distTemplatesDir = path.join(root, "dist", "docs", "reference", "templates");
+    const moduleUrl = pathToFileURL(path.join(root, "dist", "entry.mjs")).toString();
+    await fs.mkdir(docsTemplatesDir, { recursive: true });
+    await fs.mkdir(distTemplatesDir, { recursive: true });
+    await fs.writeFile(path.join(distTemplatesDir, "IDENTITY.md"), "# identity\n");
+
+    const resolved = await resolveWorkspaceTemplatePath("IDENTITY.md", { cwd: root, moduleUrl });
+    expect(resolved).toBe(path.join(distTemplatesDir, "IDENTITY.md"));
   });
 });

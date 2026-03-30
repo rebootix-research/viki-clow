@@ -22,7 +22,7 @@ function copyWorkspaceTemplates() {
   });
 
   if (verbose) {
-    const files = fs.readdirSync(distDir).sort();
+    const files = fs.readdirSync(distDir).toSorted();
     console.log(`[copy-workspace-templates] Copied workspace templates: ${files.join(", ")}`);
   } else {
     console.log("[copy-workspace-templates] Copied workspace templates.");

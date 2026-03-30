@@ -53,7 +53,7 @@ enum ShellExecutor {
         let outTask = Task { stdoutPipe.fileHandleForReading.readToEndSafely() }
         let errTask = Task { stderrPipe.fileHandleForReading.readToEndSafely() }
 
-        let waitTask = Task.detached { () -> ShellResult in
+        func finalizeResult(timedOut: Bool) async -> ShellResult {
             process.waitUntilExit()
             let out = await outTask.value
             let err = await errTask.value
@@ -61,39 +61,36 @@ enum ShellExecutor {
             return ShellResult(
                 stdout: String(bytes: out, encoding: .utf8) ?? "",
                 stderr: String(bytes: err, encoding: .utf8) ?? "",
-                exitCode: status,
-                timedOut: false,
-                success: status == 0,
-                errorMessage: status == 0 ? nil : "exit \(status)")
+                exitCode: timedOut ? nil : status,
+                timedOut: timedOut,
+                success: !timedOut && status == 0,
+                errorMessage: timedOut ? "timeout" : (status == 0 ? nil : "exit \(status)"))
         }
 
         if let timeout, timeout > 0 {
-            let nanos = UInt64(timeout * 1_000_000_000)
-            let timeoutTask = Task.detached { () -> Bool in
+            let pollIntervalNanos = UInt64(10_000_000)
+            let timeoutNanos = UInt64(timeout * 1_000_000_000)
+            var remainingNanos = timeoutNanos
+
+            while process.isRunning && remainingNanos > 0 {
+                let sleepFor = min(remainingNanos, pollIntervalNanos)
                 do {
-                    try await Task.sleep(nanoseconds: nanos)
+                    try await Task.sleep(nanoseconds: sleepFor)
                 } catch {
-                    return false
+                    break
                 }
-                guard process.isRunning else {
-                    return false
-                }
-                process.terminate()
-                return true
+                remainingNanos -= sleepFor
             }
 
-            var result = await waitTask.value
-            let timedOut = await timeoutTask.value
-            if timedOut {
-                result.timedOut = true
-                result.success = false
-                result.exitCode = nil
-                result.errorMessage = "timeout"
+            if process.isRunning {
+                process.terminate()
+                return await finalizeResult(timedOut: true)
             }
-            return result
+
+            return await finalizeResult(timedOut: false)
         }
 
-        return await waitTask.value
+        return await finalizeResult(timedOut: false)
     }
 
     static func run(command: [String], cwd: String?, env: [String: String]?, timeout: Double?) async -> Response {
