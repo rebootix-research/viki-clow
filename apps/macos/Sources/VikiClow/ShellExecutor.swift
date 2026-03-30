@@ -53,7 +53,7 @@ enum ShellExecutor {
         let outTask = Task { stdoutPipe.fileHandleForReading.readToEndSafely() }
         let errTask = Task { stderrPipe.fileHandleForReading.readToEndSafely() }
 
-        let waitTask = Task { () -> ShellResult in
+        let waitTask = Task.detached { () -> ShellResult in
             process.waitUntilExit()
             let out = await outTask.value
             let err = await errTask.value
@@ -69,7 +69,7 @@ enum ShellExecutor {
 
         if let timeout, timeout > 0 {
             let nanos = UInt64(timeout * 1_000_000_000)
-            let timeoutTask = Task { () -> Bool in
+            let timeoutTask = Task.detached { () -> Bool in
                 do {
                     try await Task.sleep(nanoseconds: nanos)
                 } catch {
@@ -83,7 +83,6 @@ enum ShellExecutor {
             }
 
             var result = await waitTask.value
-            timeoutTask.cancel()
             let timedOut = await timeoutTask.value
             if timedOut {
                 result.timedOut = true
