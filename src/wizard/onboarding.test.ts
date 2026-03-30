@@ -88,6 +88,22 @@ const ensureControlUiAssetsBuilt = vi.hoisted(() => vi.fn(async () => ({ ok: tru
 const runTui = vi.hoisted(() => vi.fn(async (_options: unknown) => {}));
 const setupOnboardingShellCompletion = vi.hoisted(() => vi.fn(async () => {}));
 const probeGatewayReachable = vi.hoisted(() => vi.fn(async () => ({ ok: true })));
+const bundleSupportedCapabilities = vi.hoisted(() =>
+  vi.fn(async ({ config, workspaceDir }: { config: unknown; workspaceDir: string }) => ({
+    config,
+    inventory: {
+      manifestPath: path.join(workspaceDir, ".vikiclow", "capabilities", "bundle-inventory.json"),
+      voice: {
+        ready: true,
+        notes: [],
+      },
+      summary: {
+        enabledPlugins: 0,
+        installedSkills: 0,
+      },
+    },
+  })),
+);
 
 vi.mock("../commands/onboard-channels.js", () => ({
   setupChannels,
@@ -194,6 +210,10 @@ vi.mock("./onboarding.finalize.js", () => ({
 
 vi.mock("./onboarding.completion.js", () => ({
   setupOnboardingShellCompletion,
+}));
+
+vi.mock("../capabilities/bundle.js", () => ({
+  bundleSupportedCapabilities,
 }));
 
 function createRuntime(opts?: { throwsOnExit?: boolean }): RuntimeEnv {

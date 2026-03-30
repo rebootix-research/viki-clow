@@ -4,8 +4,12 @@ import type { WindowsAclEntry, WindowsAclSummary } from "./windows-acl.js";
 const MOCK_USERNAME = "MockUser";
 
 vi.mock("node:os", () => ({
-  default: { userInfo: () => ({ username: MOCK_USERNAME }) },
+  default: {
+    userInfo: () => ({ username: MOCK_USERNAME }),
+    tmpdir: () => "C:\\temp",
+  },
   userInfo: () => ({ username: MOCK_USERNAME }),
+  tmpdir: () => "C:\\temp",
 }));
 
 const {

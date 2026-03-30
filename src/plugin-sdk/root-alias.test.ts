@@ -9,6 +9,9 @@ const require = createRequire(import.meta.url);
 const rootSdk = require("./root-alias.cjs") as Record<string, unknown>;
 const rootAliasPath = fileURLToPath(new URL("./root-alias.cjs", import.meta.url));
 const rootAliasSource = fs.readFileSync(rootAliasPath, "utf-8");
+const hasBuiltPluginSdkIndex = fs.existsSync(
+  path.resolve(process.cwd(), "dist", "plugin-sdk", "index.js"),
+);
 
 type EmptySchema = {
   safeParse: (value: unknown) =>
@@ -121,18 +124,26 @@ describe("plugin-sdk root alias", () => {
     expect(Object.getOwnPropertyDescriptor(lazyRootSdk, "slowHelper")).toBeDefined();
   });
 
-  it("loads legacy root exports through the merged root wrapper", { timeout: 240_000 }, () => {
-    expect(typeof rootSdk.resolveControlCommandGate).toBe("function");
-    expect(typeof rootSdk.default).toBe("object");
-    expect(rootSdk.default).toBe(rootSdk);
-    expect(rootSdk.__esModule).toBe(true);
-  });
+  it.skipIf(!hasBuiltPluginSdkIndex)(
+    "loads legacy root exports through the merged root wrapper",
+    { timeout: 240_000 },
+    () => {
+      expect(typeof rootSdk.resolveControlCommandGate).toBe("function");
+      expect(typeof rootSdk.default).toBe("object");
+      expect(rootSdk.default).toBe(rootSdk);
+      expect(rootSdk.__esModule).toBe(true);
+    },
+  );
 
-  it("preserves reflection semantics for lazily resolved exports", { timeout: 240_000 }, () => {
-    expect("resolveControlCommandGate" in rootSdk).toBe(true);
-    const keys = Object.keys(rootSdk);
-    expect(keys).toContain("resolveControlCommandGate");
-    const descriptor = Object.getOwnPropertyDescriptor(rootSdk, "resolveControlCommandGate");
-    expect(descriptor).toBeDefined();
-  });
+  it.skipIf(!hasBuiltPluginSdkIndex)(
+    "preserves reflection semantics for lazily resolved exports",
+    { timeout: 240_000 },
+    () => {
+      expect("resolveControlCommandGate" in rootSdk).toBe(true);
+      const keys = Object.keys(rootSdk);
+      expect(keys).toContain("resolveControlCommandGate");
+      const descriptor = Object.getOwnPropertyDescriptor(rootSdk, "resolveControlCommandGate");
+      expect(descriptor).toBeDefined();
+    },
+  );
 });

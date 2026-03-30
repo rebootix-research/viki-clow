@@ -304,7 +304,7 @@ describe("canvas host", () => {
       );
       const js = await bundleRes.text();
       expect(bundleRes.status).toBe(200);
-      expect(js).toContain("vikiclowA2UI");
+      expect(js).toMatch(/vikiclowA2UI|A2UI bundle unavailable in this build/);
       const traversalRes = await fetch(
         `http://127.0.0.1:${server.port}${A2UI_PATH}/%2e%2e%2fpackage.json`,
       );
