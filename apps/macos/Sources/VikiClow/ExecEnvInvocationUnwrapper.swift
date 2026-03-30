@@ -74,6 +74,61 @@ enum ExecEnvInvocationUnwrapper {
         return Array(command[idx...])
     }
 
+    static func usesModifiers(_ command: [String]) -> Bool {
+        var idx = 1
+        var expectsOptionValue = false
+        while idx < command.count {
+            let token = command[idx].trimmingCharacters(in: .whitespacesAndNewlines)
+            if token.isEmpty {
+                idx += 1
+                continue
+            }
+            if expectsOptionValue {
+                return true
+            }
+            if token == "--" || token == "-" {
+                idx += 1
+                break
+            }
+            if self.isEnvAssignment(token) {
+                return true
+            }
+            if !token.hasPrefix("-") || token == "-" {
+                break
+            }
+
+            let lower = token.lowercased()
+            let flag = lower.split(separator: "=", maxSplits: 1).first.map(String.init) ?? lower
+            if ExecEnvOptions.flagOnly.contains(flag) {
+                return true
+            }
+            if ExecEnvOptions.withValue.contains(flag) {
+                if lower.contains("=") {
+                    return true
+                }
+                expectsOptionValue = true
+                idx += 1
+                continue
+            }
+            if lower.hasPrefix("-u") ||
+                lower.hasPrefix("-c") ||
+                lower.hasPrefix("-s") ||
+                lower.hasPrefix("--unset=") ||
+                lower.hasPrefix("--chdir=") ||
+                lower.hasPrefix("--split-string=") ||
+                lower.hasPrefix("--default-signal=") ||
+                lower.hasPrefix("--ignore-signal=") ||
+                lower.hasPrefix("--block-signal=")
+            {
+                return true
+            }
+
+            return true
+        }
+
+        return false
+    }
+
     static func unwrapDispatchWrappersForResolution(_ command: [String]) -> [String] {
         var current = command
         var depth = 0
@@ -82,6 +137,9 @@ enum ExecEnvInvocationUnwrapper {
                 break
             }
             guard ExecCommandToken.basenameLower(token) == "env" else {
+                break
+            }
+            if self.usesModifiers(current) {
                 break
             }
             guard let unwrapped = self.unwrap(current), !unwrapped.isEmpty else {

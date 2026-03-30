@@ -11,6 +11,7 @@ SKIP_SMOKE_IMAGE_BUILD="${VIKICLOW_INSTALL_SMOKE_SKIP_IMAGE_BUILD:-0}"
 SKIP_NONROOT_IMAGE_BUILD="${VIKICLOW_INSTALL_NONROOT_SKIP_IMAGE_BUILD:-0}"
 NODE_BIN="$(command -v node || command -v node.exe || true)"
 NPM_BIN="$(command -v npm || command -v npm.exe || command -v npm.cmd || true)"
+COREPACK_BIN="$(command -v corepack || command -v corepack.cmd || command -v corepack.exe || true)"
 
 if [[ -z "$NODE_BIN" ]]; then
   echo "node or node.exe is required for installer smoke packaging" >&2
@@ -19,6 +20,11 @@ fi
 
 if [[ -z "$NPM_BIN" ]]; then
   echo "npm or npm.cmd is required for installer smoke packaging" >&2
+  exit 1
+fi
+
+if [[ -z "$COREPACK_BIN" ]]; then
+  echo "corepack is required for installer smoke packaging" >&2
   exit 1
 fi
 
@@ -111,8 +117,23 @@ cleanup() {
 }
 trap cleanup EXIT
 
+ensure_pack_build_artifacts() {
+  if [[ -f "$ROOT_DIR/dist/entry.js" || -f "$ROOT_DIR/dist/entry.mjs" ]]; then
+    return
+  fi
+
+  echo "==> Build local Vikiclow dist for installer smoke"
+  pushd "$ROOT_DIR" >/dev/null
+  if [[ ! -d "$ROOT_DIR/node_modules" ]]; then
+    "$COREPACK_BIN" pnpm install --frozen-lockfile
+  fi
+  "$COREPACK_BIN" pnpm build:docker
+  popd >/dev/null
+}
+
 echo "==> Pack local Vikiclow tarball for installer smoke"
 pushd "$ROOT_DIR" >/dev/null
+ensure_pack_build_artifacts
 PACK_NAME="$("$NPM_BIN" pack --ignore-scripts --pack-destination "$PACK_DIR_NATIVE" . | tail -n1 | tr -d '\r')"
 PACKAGE_VERSION="$("$NODE_BIN" -p "require('./package.json').version")"
 popd >/dev/null

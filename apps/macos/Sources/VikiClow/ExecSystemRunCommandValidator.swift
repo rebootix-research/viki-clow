@@ -63,7 +63,7 @@ enum ExecSystemRunCommandValidator {
             return .invalid(message: "INVALID_REQUEST: rawCommand does not match command")
         }
 
-        return .ok(ResolvedCommand(displayCommand: normalizedRaw ?? inferred))
+        return .ok(ResolvedCommand(displayCommand: inferred))
     }
 
     private static func normalizeRaw(_ rawCommand: String?) -> String? {
