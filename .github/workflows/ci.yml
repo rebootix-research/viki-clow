@@ -181,36 +181,44 @@ jobs:
         include:
           - runtime: node
             task: test
+            run_on_push: "false"
             command: pnpm canvas:a2ui:bundle && pnpm test
           - runtime: node
             task: extensions
+            run_on_push: "true"
             command: pnpm test:extensions
           - runtime: node
             task: protocol
+            run_on_push: "true"
             command: pnpm protocol:check
           - runtime: bun
             task: test
+            run_on_push: "false"
             command: pnpm canvas:a2ui:bundle && bunx vitest run --config vitest.unit.config.ts
     steps:
       - name: Skip bun lane on push
         if: github.event_name == 'push' && matrix.runtime == 'bun'
         run: echo "Skipping bun test lane on push events."
 
+      - name: Skip monolithic node test lane on push
+        if: github.event_name == 'push' && matrix.task == 'test' && matrix.runtime == 'node'
+        run: echo "Skipping monolithic Linux node test lane on push; sharded job covers this lane."
+
       - name: Checkout
-        if: github.event_name != 'push' || matrix.runtime != 'bun'
+        if: github.event_name != 'push' || (matrix.runtime != 'bun' && matrix.run_on_push != 'false')
         uses: actions/checkout@v4
         with:
           submodules: false
 
       - name: Setup Node environment
-        if: matrix.runtime != 'bun' || github.event_name != 'push'
+        if: github.event_name != 'push' || (matrix.runtime != 'bun' && matrix.run_on_push != 'false')
         uses: ./.github/actions/setup-node-env
         with:
           install-bun: "${{ matrix.runtime == 'bun' }}"
           use-sticky-disk: "false"
 
       - name: Configure Node test resources
-        if: (github.event_name != 'push' || matrix.runtime != 'bun') && matrix.task == 'test' && matrix.runtime == 'node'
+        if: (github.event_name != 'push' || (matrix.runtime != 'bun' && matrix.run_on_push != 'false')) && matrix.task == 'test' && matrix.runtime == 'node'
         run: |
           # `pnpm test` runs `scripts/test-parallel.mjs`, which spawns multiple Node processes.
           # Keep the Linux push lane single-worker to avoid OOM churn from the
@@ -219,8 +227,39 @@ jobs:
           echo "VIKICLOW_TEST_MAX_OLD_SPACE_SIZE_MB=8192" >> "$GITHUB_ENV"
 
       - name: Run ${{ matrix.task }} (${{ matrix.runtime }})
-        if: matrix.runtime != 'bun' || github.event_name != 'push'
+        if: github.event_name != 'push' || (matrix.runtime != 'bun' && matrix.run_on_push != 'false')
         run: ${{ matrix.command }}
+
+  checks-linux-sharded:
+    needs: [docs-scope, changed-scope]
+    if: needs.docs-scope.outputs.docs_only != 'true' && github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard_index: [1, 2, 3, 4]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node environment
+        uses: ./.github/actions/setup-node-env
+        with:
+          install-bun: "false"
+          use-sticky-disk: "false"
+
+      - name: Configure Node test resources
+        run: |
+          echo "VIKICLOW_TEST_WORKERS=1" >> "$GITHUB_ENV"
+          echo "VIKICLOW_TEST_MAX_OLD_SPACE_SIZE_MB=8192" >> "$GITHUB_ENV"
+          echo "VIKICLOW_TEST_SHARDS=4" >> "$GITHUB_ENV"
+          echo "VIKICLOW_TEST_SHARD_INDEX=${{ matrix.shard_index }}" >> "$GITHUB_ENV"
+
+      - name: Run test shard (Linux)
+        run: pnpm canvas:a2ui:bundle && pnpm test
 
   # Types, lint, and format check.
   check:
@@ -581,7 +620,7 @@ jobs:
       - name: TS tests (macOS)
         env:
           NODE_OPTIONS: --max-old-space-size=4096
-        run: pnpm test
+        run: pnpm test:ci:macos
 
       # --- Xcode/Swift setup ---
       - name: Select latest available Xcode
