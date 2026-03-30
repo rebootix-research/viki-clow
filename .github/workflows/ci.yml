@@ -6,7 +6,9 @@ on:
   pull_request:
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Namespace the workflow-level queue so a stale historical run cannot keep
+  # future pushes pinned behind an orphaned concurrency slot.
+  group: ci-v2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
