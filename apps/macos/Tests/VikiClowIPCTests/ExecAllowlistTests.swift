@@ -216,8 +216,8 @@ struct ExecAllowlistTests {
             cwd: nil,
             env: ["PATH": "/usr/bin:/bin"])
         #expect(resolutions.count == 1)
-        #expect(resolutions[0].resolvedPath == "/usr/bin/printf")
-        #expect(resolutions[0].executableName == "printf")
+        #expect(resolutions[0].resolvedPath == "/usr/bin/env")
+        #expect(resolutions[0].executableName == "env")
     }
 
     @Test func `match all requires every segment to match`() {

@@ -69,24 +69,27 @@ enum ShellExecutor {
 
         if let timeout, timeout > 0 {
             let nanos = UInt64(timeout * 1_000_000_000)
-            return await withTaskGroup(of: ShellResult.self) { group in
-                group.addTask { await waitTask.value }
-                group.addTask {
-                    try? await Task.sleep(nanoseconds: nanos)
-                    if process.isRunning { process.terminate() }
-                    _ = await waitTask.value // drain pipes after termination
-                    return ShellResult(
-                        stdout: "",
-                        stderr: "",
-                        exitCode: nil,
-                        timedOut: true,
-                        success: false,
-                        errorMessage: "timeout")
+            let timeoutTask = Task { () -> Bool in
+                try? await Task.sleep(nanoseconds: nanos)
+                guard process.isRunning else {
+                    return false
                 }
-                let first = await group.next()!
-                group.cancelAll()
-                return first
+                process.terminate()
+                return true
             }
+
+            let result = await waitTask.value
+            let timedOut = await timeoutTask.value
+            guard timedOut else {
+                return result
+            }
+
+            var timeoutResult = result
+            timeoutResult.timedOut = true
+            timeoutResult.success = false
+            timeoutResult.exitCode = nil
+            timeoutResult.errorMessage = "timeout"
+            return timeoutResult
         }
 
         return await waitTask.value

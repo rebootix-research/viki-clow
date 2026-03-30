@@ -48,22 +48,20 @@ enum ExecSystemRunCommandValidator {
         let normalizedRaw = self.normalizeRaw(rawCommand)
         let shell = ExecShellWrapperParser.extract(command: command, rawCommand: nil)
         let shellCommand = shell.isWrapper ? self.trimmedNonEmpty(shell.command) : nil
+        let displayCommand = ExecCommandFormatter.displayString(for: command)
 
-        let envManipulationBeforeShellWrapper = self.hasEnvManipulationBeforeShellWrapper(command)
-        let shellWrapperPositionalArgv = self.hasTrailingPositionalArgvAfterInlineCommand(command)
-        let mustBindDisplayToFullArgv = envManipulationBeforeShellWrapper || shellWrapperPositionalArgv
-
-        let inferred: String = if let shellCommand, !mustBindDisplayToFullArgv {
-            shellCommand
-        } else {
-            ExecCommandFormatter.displayString(for: command)
+        if shell.isWrapper {
+            if let raw = normalizedRaw, let shellCommand, raw != shellCommand {
+                return .invalid(message: "INVALID_REQUEST: rawCommand does not match command")
+            }
+            return .ok(ResolvedCommand(displayCommand: displayCommand))
         }
 
-        if let raw = normalizedRaw, raw != inferred {
+        if let raw = normalizedRaw, raw != displayCommand {
             return .invalid(message: "INVALID_REQUEST: rawCommand does not match command")
         }
 
-        return .ok(ResolvedCommand(displayCommand: inferred))
+        return .ok(ResolvedCommand(displayCommand: displayCommand))
     }
 
     private static func normalizeRaw(_ rawCommand: String?) -> String? {
