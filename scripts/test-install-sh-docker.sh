@@ -74,6 +74,13 @@ join_native_path() {
   "$NODE_BIN" -e "const path=require('node:path'); process.stdout.write(path.join(process.argv[1], process.argv[2]));" "$1" "$2"
 }
 
+read_package_version() {
+  "$NODE_BIN" <<'NODE'
+const pkg = require('./package.json')
+process.stdout.write(pkg.version)
+NODE
+}
+
 docker_cmd() {
   if [[ "$WINDOWS_HOST" == "1" ]]; then
     "$NODE_BIN" - "$@" <<'NODE'
@@ -127,6 +134,7 @@ ensure_pack_build_artifacts() {
   if [[ ! -d "$ROOT_DIR/node_modules" ]]; then
     "$COREPACK_BIN" pnpm install --frozen-lockfile
   fi
+  "$COREPACK_BIN" pnpm canvas:a2ui:bundle
   "$COREPACK_BIN" pnpm build:docker
   popd >/dev/null
 }
@@ -135,7 +143,7 @@ echo "==> Pack local Vikiclow tarball for installer smoke"
 pushd "$ROOT_DIR" >/dev/null
 ensure_pack_build_artifacts
 PACK_NAME="$("$NPM_BIN" pack --ignore-scripts --pack-destination "$PACK_DIR_NATIVE" . | tail -n1 | tr -d '\r')"
-PACKAGE_VERSION="$("$NODE_BIN" -p "require('./package.json').version")"
+PACKAGE_VERSION="$(read_package_version)"
 popd >/dev/null
 PACK_FILE="$(join_native_path "$PACK_DIR_NATIVE" "$PACK_NAME")"
 
@@ -150,25 +158,28 @@ else
 fi
 
 echo "==> Run installer smoke test (root): $INSTALL_URL"
-docker_cmd run --rm -t \
-  --mount "type=bind,source=${LATEST_DIR},target=/out" \
-  --mount "type=bind,source=${PACK_DIR},target=/pack" \
-  --mount "type=bind,source=${SCRIPTS_DIR},target=/repo-scripts,readonly" \
-  -e VIKICLOW_INSTALL_URL="$INSTALL_URL" \
-  -e VIKICLOW_INSTALL_LOCAL_SCRIPT="/repo-scripts/install.sh" \
-  -e VIKICLOW_INSTALL_METHOD=npm \
-  -e VIKICLOW_INSTALL_PACKAGE="vikiclow" \
-  -e VIKICLOW_INSTALL_SPEC="/pack/${PACK_NAME}" \
-  -e VIKICLOW_INSTALL_EXPECT_VERSION="$PACKAGE_VERSION" \
-  -e VIKICLOW_INSTALL_LATEST_OUT="/out/latest" \
-  -e VIKICLOW_INSTALL_SMOKE_PREVIOUS="${VIKICLOW_INSTALL_SMOKE_PREVIOUS:-}" \
-  -e VIKICLOW_INSTALL_SMOKE_SKIP_PREVIOUS="${VIKICLOW_INSTALL_SMOKE_SKIP_PREVIOUS:-0}" \
-  -e VIKICLOW_NO_ONBOARD=1 \
-  -e VIKICLOW_NO_PROMPT=1 \
-  -e VIKICLOW_VERBOSE="${VIKICLOW_VERBOSE:-0}" \
-  -e VIKICLOW_NPM_LOGLEVEL="${VIKICLOW_NPM_LOGLEVEL:-error}" \
-  -e DEBIAN_FRONTEND=noninteractive \
+smoke_run_args=(
+  run --rm -t
+  --mount "type=bind,source=${LATEST_DIR},target=/out"
+  --mount "type=bind,source=${PACK_DIR},target=/pack"
+  --mount "type=bind,source=${SCRIPTS_DIR},target=/repo-scripts,readonly"
+  -e "VIKICLOW_INSTALL_URL=${INSTALL_URL}"
+  -e "VIKICLOW_INSTALL_LOCAL_SCRIPT=/repo-scripts/install.sh"
+  -e "VIKICLOW_INSTALL_METHOD=npm"
+  -e "VIKICLOW_INSTALL_PACKAGE=vikiclow"
+  -e "VIKICLOW_INSTALL_SPEC=/pack/${PACK_NAME}"
+  -e "VIKICLOW_INSTALL_EXPECT_VERSION=${PACKAGE_VERSION}"
+  -e "VIKICLOW_INSTALL_LATEST_OUT=/out/latest"
+  -e "VIKICLOW_INSTALL_SMOKE_PREVIOUS=${VIKICLOW_INSTALL_SMOKE_PREVIOUS:-}"
+  -e "VIKICLOW_INSTALL_SMOKE_SKIP_PREVIOUS=${VIKICLOW_INSTALL_SMOKE_SKIP_PREVIOUS:-0}"
+  -e "VIKICLOW_NO_ONBOARD=1"
+  -e "VIKICLOW_NO_PROMPT=1"
+  -e "VIKICLOW_VERBOSE=${VIKICLOW_VERBOSE:-0}"
+  -e "VIKICLOW_NPM_LOGLEVEL=${VIKICLOW_NPM_LOGLEVEL:-error}"
+  -e "DEBIAN_FRONTEND=noninteractive"
   "$SMOKE_IMAGE"
+)
+docker_cmd "${smoke_run_args[@]}"
 
 LATEST_VERSION=""
 if [[ -f "$LATEST_FILE" ]]; then
@@ -192,21 +203,24 @@ else
   fi
 
   echo "==> Run installer non-root test: $INSTALL_URL"
-  docker_cmd run --rm -t \
-    --mount "type=bind,source=${PACK_DIR},target=/pack" \
-    --mount "type=bind,source=${SCRIPTS_DIR},target=/repo-scripts,readonly" \
-    -e VIKICLOW_INSTALL_URL="$INSTALL_URL" \
-    -e VIKICLOW_INSTALL_LOCAL_SCRIPT="/repo-scripts/install.sh" \
-    -e VIKICLOW_INSTALL_METHOD=npm \
-    -e VIKICLOW_INSTALL_PACKAGE="vikiclow" \
-    -e VIKICLOW_INSTALL_SPEC="/pack/${PACK_NAME}" \
-    -e VIKICLOW_INSTALL_EXPECT_VERSION="$LATEST_VERSION" \
-    -e VIKICLOW_NO_ONBOARD=1 \
-    -e VIKICLOW_NO_PROMPT=1 \
-    -e VIKICLOW_VERBOSE="${VIKICLOW_VERBOSE:-0}" \
-    -e VIKICLOW_NPM_LOGLEVEL="${VIKICLOW_NPM_LOGLEVEL:-error}" \
-    -e DEBIAN_FRONTEND=noninteractive \
+  nonroot_run_args=(
+    run --rm -t
+    --mount "type=bind,source=${PACK_DIR},target=/pack"
+    --mount "type=bind,source=${SCRIPTS_DIR},target=/repo-scripts,readonly"
+    -e "VIKICLOW_INSTALL_URL=${INSTALL_URL}"
+    -e "VIKICLOW_INSTALL_LOCAL_SCRIPT=/repo-scripts/install.sh"
+    -e "VIKICLOW_INSTALL_METHOD=npm"
+    -e "VIKICLOW_INSTALL_PACKAGE=vikiclow"
+    -e "VIKICLOW_INSTALL_SPEC=/pack/${PACK_NAME}"
+    -e "VIKICLOW_INSTALL_EXPECT_VERSION=${LATEST_VERSION}"
+    -e "VIKICLOW_NO_ONBOARD=1"
+    -e "VIKICLOW_NO_PROMPT=1"
+    -e "VIKICLOW_VERBOSE=${VIKICLOW_VERBOSE:-0}"
+    -e "VIKICLOW_NPM_LOGLEVEL=${VIKICLOW_NPM_LOGLEVEL:-error}"
+    -e "DEBIAN_FRONTEND=noninteractive"
     "$NONROOT_IMAGE"
+  )
+  docker_cmd "${nonroot_run_args[@]}"
 fi
 
 if [[ "${VIKICLOW_INSTALL_SMOKE_SKIP_CLI:-0}" == "1" ]]; then
@@ -225,12 +239,16 @@ if [[ ! -f "$ROOT_DIR/scripts/install-cli.sh" ]]; then
 fi
 
 echo "==> Run CLI installer non-root test (same image)"
-docker_cmd run --rm -t \
-  --mount "type=bind,source=${SCRIPTS_DIR},target=/repo-scripts,readonly" \
-  --entrypoint /bin/bash \
-  -e VIKICLOW_INSTALL_URL="$INSTALL_URL" \
-  -e VIKICLOW_INSTALL_CLI_URL="$CLI_INSTALL_URL" \
-  -e VIKICLOW_NO_ONBOARD=1 \
-  -e VIKICLOW_NO_PROMPT=1 \
-  -e DEBIAN_FRONTEND=noninteractive \
-  "$NONROOT_IMAGE" -lc "bash /repo-scripts/install-cli.sh --set-npm-prefix --no-onboard"
+cli_run_args=(
+  run --rm -t
+  --mount "type=bind,source=${SCRIPTS_DIR},target=/repo-scripts,readonly"
+  --entrypoint /bin/bash
+  -e "VIKICLOW_INSTALL_URL=${INSTALL_URL}"
+  -e "VIKICLOW_INSTALL_CLI_URL=${CLI_INSTALL_URL}"
+  -e "VIKICLOW_NO_ONBOARD=1"
+  -e "VIKICLOW_NO_PROMPT=1"
+  -e "DEBIAN_FRONTEND=noninteractive"
+  "$NONROOT_IMAGE"
+  -lc "bash /repo-scripts/install-cli.sh --set-npm-prefix --no-onboard"
+)
+docker_cmd "${cli_run_args[@]}"
