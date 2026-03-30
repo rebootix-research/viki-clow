@@ -185,19 +185,25 @@ describe("resolvePreferredVikiClowTmpDir", () => {
     expect(tmpdir).toHaveBeenCalled();
   });
 
-  it("falls back when /tmp/vikiclow is a symlink", () => {
+  it.runIf(process.platform !== "win32")("falls back when /tmp/vikiclow is a symlink", () => {
     expectFallsBackToOsTmpDir({ lstatSync: symlinkTmpDirLstat() });
   });
 
-  it("falls back when /tmp/vikiclow is not owned by the current user", () => {
-    expectFallsBackToOsTmpDir({ lstatSync: vi.fn(() => makeDirStat({ uid: 0 })) });
-  });
+  it.runIf(process.platform !== "win32")(
+    "falls back when /tmp/vikiclow is not owned by the current user",
+    () => {
+      expectFallsBackToOsTmpDir({ lstatSync: vi.fn(() => makeDirStat({ uid: 0 })) });
+    },
+  );
 
-  it("falls back when /tmp/vikiclow is group/other writable", () => {
-    expectFallsBackToOsTmpDir({ lstatSync: vi.fn(() => makeDirStat({ mode: 0o40777 })) });
-  });
+  it.runIf(process.platform !== "win32")(
+    "falls back when /tmp/vikiclow is group/other writable",
+    () => {
+      expectFallsBackToOsTmpDir({ lstatSync: vi.fn(() => makeDirStat({ mode: 0o40777 })) });
+    },
+  );
 
-  it("throws when fallback path is a symlink", () => {
+  it.runIf(process.platform !== "win32")("throws when fallback path is a symlink", () => {
     const lstatSync = symlinkTmpDirLstat();
     const fallbackLstatSync = vi.fn(() => makeDirStat({ isSymbolicLink: true, mode: 0o120777 }));
 
@@ -284,7 +290,11 @@ describe("resolvePreferredVikiClowTmpDir", () => {
     });
 
     expect(resolved).toBe(fallbackPath);
-    expect(chmodSync).toHaveBeenCalledWith(fallbackPath, 0o700);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("tightened permissions on temp dir"));
+    if (process.platform !== "win32") {
+      expect(chmodSync).toHaveBeenCalledWith(fallbackPath, 0o700);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("tightened permissions on temp dir"),
+      );
+    }
   });
 });
