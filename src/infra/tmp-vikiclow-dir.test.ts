@@ -192,13 +192,16 @@ describe("resolvePreferredVikiClowTmpDir", () => {
   it.runIf(process.platform !== "win32")(
     "falls back when /tmp/vikiclow is not owned by the current user",
     () => {
-    expectFallsBackToOsTmpDir({ lstatSync: vi.fn(() => makeDirStat({ uid: 0 })) });
+      expectFallsBackToOsTmpDir({ lstatSync: vi.fn(() => makeDirStat({ uid: 0 })) });
     },
   );
 
-  it.runIf(process.platform !== "win32")("falls back when /tmp/vikiclow is group/other writable", () => {
-    expectFallsBackToOsTmpDir({ lstatSync: vi.fn(() => makeDirStat({ mode: 0o40777 })) });
-  });
+  it.runIf(process.platform !== "win32")(
+    "falls back when /tmp/vikiclow is group/other writable",
+    () => {
+      expectFallsBackToOsTmpDir({ lstatSync: vi.fn(() => makeDirStat({ mode: 0o40777 })) });
+    },
+  );
 
   it.runIf(process.platform !== "win32")("throws when fallback path is a symlink", () => {
     const lstatSync = symlinkTmpDirLstat();
@@ -289,7 +292,9 @@ describe("resolvePreferredVikiClowTmpDir", () => {
     expect(resolved).toBe(fallbackPath);
     if (process.platform !== "win32") {
       expect(chmodSync).toHaveBeenCalledWith(fallbackPath, 0o700);
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining("tightened permissions on temp dir"));
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("tightened permissions on temp dir"),
+      );
     }
   });
 });

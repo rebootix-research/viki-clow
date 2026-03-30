@@ -371,14 +371,10 @@ describe("config strict validation", () => {
 
       expect(snap.valid).toBe(false);
       expect(snap.issues).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ path: "routing.allowFrom" }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ path: "routing.allowFrom" })]),
       );
       expect(snap.legacyIssues).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ path: "routing.allowFrom" }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ path: "routing.allowFrom" })]),
       );
       expect(snap.parsed).toMatchObject({
         routing: { allowFrom: ["+15555550123"] },
@@ -398,9 +394,7 @@ describe("config strict validation", () => {
         const snap = await readConfigFileSnapshot();
         expect(snap.valid).toBe(false);
         expect(snap.issues).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({ path: "gateway.bind" }),
-          ]),
+          expect.arrayContaining([expect.objectContaining({ path: "gateway.bind" })]),
         );
         expect(snap.legacyIssues).toHaveLength(0);
         expect(snap.resolved).toMatchObject({
@@ -425,14 +419,10 @@ describe("config strict validation", () => {
       const snap = await readConfigFileSnapshot();
       expect(snap.valid).toBe(false);
       expect(snap.issues).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ path: "gateway.bind" }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ path: "gateway.bind" })]),
       );
       expect(snap.legacyIssues).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ path: "gateway.bind" }),
-        ]),
+        expect.arrayContaining([expect.objectContaining({ path: "gateway.bind" })]),
       );
       expect(snap.parsed).toMatchObject({
         gateway: { bind: "0.0.0.0" },
