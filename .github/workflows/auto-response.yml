@@ -5,6 +5,7 @@ on:
     types: [opened, edited, labeled]
   issue_comment:
     types: [created]
+  # zizmor: ignore[dangerous-triggers] This workflow does not check out PR code and only mutates labels/comments through the GitHub API.
   pull_request_target:
     types: [labeled]
 

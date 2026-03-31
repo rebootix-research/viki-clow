@@ -1,6 +1,7 @@
 name: Labeler
 
 on:
+  # zizmor: ignore[dangerous-triggers] This workflow only applies labels and reads metadata; it never checks out or runs untrusted PR code.
   pull_request_target:
     types: [opened, synchronize, reopened]
   issues:
