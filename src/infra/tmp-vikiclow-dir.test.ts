@@ -49,6 +49,7 @@ function resolveWithReadOnlyTmpFallback(params: {
   fallbackPath: string;
   fallbackLstatSync: NonNullable<TmpDirOptions["lstatSync"]>;
   chmodSync?: NonNullable<TmpDirOptions["chmodSync"]>;
+  mkdtempSync?: NonNullable<TmpDirOptions["mkdtempSync"]>;
   warn?: NonNullable<TmpDirOptions["warn"]>;
 }) {
   return resolvePreferredVikiClowTmpDir({
@@ -64,6 +65,7 @@ function resolveWithReadOnlyTmpFallback(params: {
     }),
     mkdirSync: vi.fn(),
     chmodSync: params.chmodSync,
+    mkdtempSync: params.mkdtempSync,
     getuid: vi.fn(() => 501),
     tmpdir: vi.fn(() => "/var/fallback"),
     warn: params.warn,
@@ -94,6 +96,7 @@ function resolveWithMocks(params: {
   fallbackLstatSync?: NonNullable<TmpDirOptions["lstatSync"]>;
   accessSync?: NonNullable<TmpDirOptions["accessSync"]>;
   chmodSync?: NonNullable<TmpDirOptions["chmodSync"]>;
+  mkdtempSync?: NonNullable<TmpDirOptions["mkdtempSync"]>;
   warn?: NonNullable<TmpDirOptions["warn"]>;
   uid?: number;
   tmpdirPath?: string;
@@ -123,6 +126,7 @@ function resolveWithMocks(params: {
     chmodSync,
     lstatSync: wrappedLstatSync,
     mkdirSync,
+    mkdtempSync: params.mkdtempSync,
     getuid,
     tmpdir,
     warn,
@@ -203,17 +207,24 @@ describe("resolvePreferredVikiClowTmpDir", () => {
     },
   );
 
-  it.runIf(process.platform !== "win32")("throws when fallback path is a symlink", () => {
-    const lstatSync = symlinkTmpDirLstat();
-    const fallbackLstatSync = vi.fn(() => makeDirStat({ isSymbolicLink: true, mode: 0o120777 }));
+  it.runIf(process.platform !== "win32")(
+    "uses an isolated fallback when the canonical fallback path is a symlink",
+    () => {
+      const isolatedPath = path.join("/var/fallback", "vikiclow-501-isolated");
+      const lstatSync = symlinkTmpDirLstat();
+      const fallbackLstatSync = vi.fn(() => makeDirStat({ isSymbolicLink: true, mode: 0o120777 }));
+      const mkdtempSync = vi.fn(() => isolatedPath);
 
-    expect(() =>
-      resolveWithMocks({
+      const { resolved } = resolveWithMocks({
         lstatSync,
         fallbackLstatSync,
-      }),
-    ).toThrow(/Unsafe fallback VikiClow temp dir/);
-  });
+        mkdtempSync,
+      });
+
+      expect(resolved).toBe(isolatedPath);
+      expect(mkdtempSync).toHaveBeenCalledWith(path.join("/var/fallback", "vikiclow-501-"));
+    },
+  );
 
   it("creates fallback directory when missing, then validates ownership and mode", () => {
     const lstatSync = symlinkTmpDirLstat();
@@ -297,4 +308,41 @@ describe("resolvePreferredVikiClowTmpDir", () => {
       );
     }
   });
+
+  it.runIf(process.platform !== "win32")(
+    "uses an isolated fallback when the canonical fallback stays unsafe after recreation",
+    () => {
+      const fallbackPath = fallbackTmp();
+      const isolatedPath = path.join("/var/fallback", "vikiclow-501-isolated");
+      const mkdtempSync = vi.fn(() => isolatedPath);
+      const lstatSync = vi.fn<NonNullable<TmpDirOptions["lstatSync"]>>(() => {
+        throw nodeErrorWithCode("ENOENT");
+      });
+      const fallbackLstatSync = vi
+        .fn<NonNullable<TmpDirOptions["lstatSync"]>>()
+        .mockImplementationOnce(() => {
+          throw nodeErrorWithCode("ENOENT");
+        })
+        .mockImplementation(() => makeDirStat({ mode: 0o40777 }));
+      const warn = vi.fn();
+
+      const resolved = resolveWithReadOnlyTmpFallback({
+        fallbackPath,
+        fallbackLstatSync: vi.fn((target: string) => {
+          if (target === fallbackPath) {
+            return fallbackLstatSync(target);
+          }
+          return lstatSync(target);
+        }),
+        mkdtempSync,
+        warn,
+      });
+
+      expect(resolved).toBe(isolatedPath);
+      expect(mkdtempSync).toHaveBeenCalledWith(path.join("/var/fallback", "vikiclow-501-"));
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("using isolated temp dir fallback"),
+      );
+    },
+  );
 });
