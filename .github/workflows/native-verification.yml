@@ -34,7 +34,7 @@ jobs:
 
       - name: Upload runtime stack proof artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: runtime-stack-proof
           path: .artifacts/runtime-stack-proof/
@@ -63,7 +63,7 @@ jobs:
 
       - name: Upload execution surface proof artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: execution-surface-proof
           path: .artifacts/execution-surface/
@@ -89,7 +89,7 @@ jobs:
 
       - name: Upload voice proof artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: voice-proof
           path: .artifacts/voice-proof/
@@ -145,7 +145,7 @@ jobs:
 
       - name: Upload native browser artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: browser-native-windows
           path: |
@@ -267,7 +267,7 @@ jobs:
 
       - name: Upload Android artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-native
           path: |

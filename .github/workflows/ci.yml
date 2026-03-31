@@ -106,7 +106,7 @@ jobs:
         run: pnpm build
 
       - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist-build
           path: dist/
@@ -164,7 +164,7 @@ jobs:
         run: pnpm release:proof
 
       - name: Upload release proof artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-proof
           path: .artifacts/release-proof/
@@ -192,7 +192,7 @@ jobs:
         run: pnpm capabilities:proof
 
       - name: Upload capability foundry proof artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: capability-bundle-proof
           path: .artifacts/capability-bundle/
@@ -627,7 +627,7 @@ jobs:
           node -e "const fs=require('node:fs'); const path=require('node:path'); const files=['dist/Viki Browser.exe','dist/viki-browser-launch.mjs','dist/browser/control-service.js','dist/browser/browserd.js','dist/browser-native/sea-bootstrap.cjs','dist/browser-native/sea-config.json','dist/browser-native/sea-prep.blob']; const payload={generatedAt:new Date().toISOString(),files:files.map((file)=>({path:file,exists:fs.existsSync(path.resolve(file))}))}; fs.mkdirSync(path.resolve('.artifacts/browser-native-ci'),{recursive:true}); fs.writeFileSync(path.resolve('.artifacts/browser-native-ci/browser-native-artifacts.json'),JSON.stringify(payload,null,2)+'\n');"
 
       - name: Upload native browser artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: browser-native-windows
           path: |
@@ -958,7 +958,7 @@ jobs:
 
       - name: Upload Android unit test reports
         if: always() && matrix.task == 'test'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-test-report
           path: |
@@ -968,7 +968,7 @@ jobs:
 
       - name: Upload Android debug APK
         if: always() && matrix.task == 'build'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-debug-apk
           path: apps/android/app/build/outputs/apk/debug/*.apk
