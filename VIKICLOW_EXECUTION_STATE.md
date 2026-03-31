@@ -2,7 +2,86 @@
 
 ## Current Objective
 
-Complete the Capability Foundry bundle/proof lane by wiring the persisted foundry registry into the shipped capability inventory, refreshing proof output, and keeping CI-valid proof coverage green.
+Finalize the Capability Foundry upgrade by proving the shipped CLI entrypoint, bundle inventory, mission writeback, and persisted foundry registry work end-to-end, then publish the branch update and verify GitHub Actions on the pushed SHA.
+
+## Capability Foundry Finalization Pass
+
+### Starting State For This Pass
+
+- Capability Foundry discovery, ingestion, promotion, and registry code was already present on `codex/capability-foundry-bundle-proof`.
+- The remaining live blocker was the mission finalization proof path: `corepack pnpm capabilities:proof` crashed because foundry route usage writeback referenced an out-of-scope `status` symbol in [src/missions/runtime.ts](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/src/missions/runtime.ts).
+- The packaged `vikiclow.mjs` entrypoint also needed a fresh post-foundry build so the new `capabilities foundry ...` surface existed in the shipped CLI, not only through source-backed execution.
+
+### Completed Workstreams In This Pass
+
+- Fixed the Capability Foundry mission terminal writeback path in [src/missions/runtime.ts](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/src/missions/runtime.ts) so foundry route usage is recorded against the persisted terminal mission state instead of a block-scoped variable.
+- Revalidated the focused mission/runtime/memory suites and the full Capability Foundry suites:
+  - runtime planning
+  - mission persistence
+  - mission writeback
+  - foundry discovery / ingest / test / promote / route CLI
+- Rebuilt the shipped CLI and reran the native browser executable packaging so the packaged `vikiclow.mjs` entrypoint reflects the foundry command surface.
+- Captured a real packaged CLI proof run under `.artifacts/foundry-cli` using `vikiclow.mjs capabilities foundry discover/test/promote/routes`.
+- Refreshed the shipped proof artifacts with a passing `corepack pnpm capabilities:proof`.
+
+### Exact Files Changed In This Pass
+
+- `VIKICLOW_EXECUTION_STATE.md`
+
+### Exact Capabilities / Sources Supported
+
+- Capability types:
+  - `skill`
+  - `plugin`
+  - `mcp_server`
+  - `repo_integration`
+  - `asset_dependency`
+- Source kinds:
+  - `local_repo`
+  - `npm_registry`
+  - `github_repo`
+- Curated source families actively handled by the foundry registry:
+  - bundled Vikiclow skills
+  - bundled Vikiclow plugins
+  - curated MCP npm packages
+  - curated upstream repo integrations for Graphiti / LangGraph / Temporal
+  - local asset/runtime dependencies for voice/browser support
+
+### Tests / Proofs Run In This Pass
+
+- `corepack pnpm exec vitest run --config vitest.config.ts src/missions/runtime.test.ts src/commands/agent.mission-runtime.test.ts src/memory/mission-writeback.test.ts src/capabilities/runtime.test.ts`
+- `corepack pnpm exec tsc -p tsconfig.json --noEmit --pretty false`
+- `corepack pnpm capabilities:proof`
+- `corepack pnpm exec vitest run --config vitest.config.ts src/capabilities/foundry.test.ts src/cli/capabilities-cli.test.ts`
+- `corepack pnpm check:docs`
+- `git diff --check`
+- `corepack pnpm build`
+- `node .\\vikiclow.mjs capabilities foundry discover --json`
+- packaged CLI proof sequence written to `.artifacts/foundry-cli`:
+  - `node .\\vikiclow.mjs capabilities foundry discover --workspace <artifact-workspace> --json`
+  - `node .\\vikiclow.mjs capabilities foundry test --workspace <artifact-workspace> --json -- <ids>`
+  - `node .\\vikiclow.mjs capabilities foundry promote --workspace <artifact-workspace> --json --bundle -- <ids>`
+  - `node .\\vikiclow.mjs capabilities foundry routes --workspace <artifact-workspace> --json "create a browser automation skill with persistent memory"`
+
+### Artifacts Produced In This Pass
+
+- [capability-bundle-proof.json](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/capability-bundle/capability-bundle-proof.json)
+- [capability-bundle-proof.md](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/capability-bundle/capability-bundle-proof.md)
+- [bundle-inventory.json](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/capability-bundle/bundle-inventory.json)
+- [bundle-inventory.md](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/capability-bundle/bundle-inventory.md)
+- [foundry discover proof](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/foundry-cli/discover.json)
+- [foundry test proof](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/foundry-cli/test.json)
+- [foundry promote proof](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/foundry-cli/promote.json)
+- [foundry routes proof](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/foundry-cli/routes.json)
+
+### GitHub Actions Results After Push
+
+- Pending the next publish from this pass.
+
+### Remaining Blockers
+
+- None for the repo-side Capability Foundry implementation itself.
+- The remaining work after this commit is publish/CI observation on the branch SHA created from this pass.
 
 ## Capability Foundry Pass
 
