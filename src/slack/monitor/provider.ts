@@ -46,14 +46,33 @@ import {
 import { registerSlackMonitorSlashCommands } from "./slash.js";
 import type { MonitorSlackOpts } from "./types.js";
 
-const slackBoltModule = SlackBolt as typeof import("@slack/bolt") & {
-  default?: typeof import("@slack/bolt");
+type SlackBoltConstructors = {
+  App?: typeof import("@slack/bolt").App;
+  HTTPReceiver?: typeof import("@slack/bolt").HTTPReceiver;
 };
-// Bun allows named imports from CJS; Node ESM doesn't. Use default+fallback for compatibility.
-// Fix: Check if module has App property directly (Node 25.x ESM/CJS compat issue)
-const slackBolt =
-  (slackBoltModule.App ? slackBoltModule : slackBoltModule.default) ?? slackBoltModule;
-const { App, HTTPReceiver } = slackBolt;
+
+function resolveSlackBoltConstructors(source: unknown) {
+  const moduleShape = source as SlackBoltConstructors & { default?: unknown };
+  const defaultShape = moduleShape?.default as SlackBoltConstructors | undefined;
+  const defaultCtor =
+    typeof moduleShape?.default === "function"
+      ? (moduleShape.default as typeof import("@slack/bolt").App)
+      : undefined;
+
+  const App =
+    moduleShape?.App ??
+    defaultShape?.App ??
+    defaultCtor;
+  const HTTPReceiver = moduleShape?.HTTPReceiver ?? defaultShape?.HTTPReceiver;
+
+  if (typeof App !== "function" || typeof HTTPReceiver !== "function") {
+    throw new TypeError("Slack Bolt constructors are unavailable");
+  }
+
+  return { App, HTTPReceiver };
+}
+
+const { App, HTTPReceiver } = resolveSlackBoltConstructors(SlackBolt);
 
 const SLACK_WEBHOOK_MAX_BODY_BYTES = 1024 * 1024;
 const SLACK_WEBHOOK_BODY_TIMEOUT_MS = 30_000;
