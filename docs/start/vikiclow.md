@@ -83,6 +83,8 @@ The capability proof refreshes the bundled inventory, provenance, routing hints,
 vikiclow capabilities list
 vikiclow capabilities discover "publish a browser workflow"
 vikiclow capabilities fetch playwright browser_profiles
+vikiclow capabilities foundry discover
+vikiclow capabilities foundry routes "create a reusable browser workflow skill"
 vikiclow capabilities plan "create a reusable automation skill"
 vikiclow capabilities bundle
 ```

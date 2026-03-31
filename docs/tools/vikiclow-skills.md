@@ -59,6 +59,11 @@ vikiclow capabilities list
 vikiclow capabilities discover "publish a browser workflow"
 vikiclow capabilities fetch playwright browser_profiles
 vikiclow capabilities inspect
+vikiclow capabilities foundry discover
+vikiclow capabilities foundry ingest mcp:filesystem repo:langgraph
+vikiclow capabilities foundry test skill:viki-skill-factory
+vikiclow capabilities foundry promote skill:viki-skill-factory --bundle
+vikiclow capabilities foundry routes "create a reusable browser workflow skill"
 vikiclow capabilities bundle
 vikiclow capabilities bootstrap
 vikiclow capabilities plan "create a reusable automation skill"

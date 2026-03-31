@@ -60,7 +60,9 @@ function formatPlan(plan: Awaited<ReturnType<typeof ensureCapabilitiesForObjecti
   return lines;
 }
 
-function formatDiscovery(discovery: Awaited<ReturnType<typeof discoverCapabilitySources>>): string[] {
+function formatDiscovery(
+  discovery: Awaited<ReturnType<typeof discoverCapabilitySources>>,
+): string[] {
   const lines = [`Objective: ${discovery.objective}`];
   lines.push(`Catalog revision: ${discovery.catalogRevision}`);
   lines.push(`Inferred: ${discovery.inferred.join(", ") || "none"}`);
@@ -250,7 +252,10 @@ export function registerCapabilitiesCli(program: Command) {
           ? capabilityIds.map((id) => String(id).trim()).filter(Boolean)
           : [String(capabilityIds).trim()].filter(Boolean);
         const inspection = await inspectCapabilityRegistry({
-          ids: ids.length > 0 ? (ids as Parameters<typeof inspectCapabilityRegistry>[0]["ids"]) : undefined,
+          ids:
+            ids.length > 0
+              ? (ids as Parameters<typeof inspectCapabilityRegistry>[0]["ids"])
+              : undefined,
         });
         if (opts.json) {
           defaultRuntime.log(JSON.stringify(inspection, null, 2));
@@ -360,7 +365,9 @@ export function registerCapabilitiesCli(program: Command) {
           return;
         }
         defaultRuntime.log(`Registry: ${result.registryPath}`);
-        defaultRuntime.log(`Supported sources: ${result.registry.supportedSources.join(", ") || "none"}`);
+        defaultRuntime.log(
+          `Supported sources: ${result.registry.supportedSources.join(", ") || "none"}`,
+        );
         for (const line of formatFoundryCandidates(result.registry.candidates)) {
           defaultRuntime.log(line);
         }

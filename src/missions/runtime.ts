@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { recordCapabilityFoundryRouteUsage } from "../capabilities/foundry.js";
-import type { CapabilityPlan } from "../capabilities/types.js";
 import { summarizeCapabilityPlan } from "../capabilities/runtime.js";
+import type { CapabilityPlan } from "../capabilities/types.js";
 import type { AgentEventPayload } from "../infra/agent-events.js";
 import { recordGraphitiMissionWriteback } from "../memory/graphiti-backbone.js";
 import { appendMissionMemoryWriteback } from "../memory/mission-writeback.js";
@@ -484,17 +484,17 @@ export class MissionRunTracker {
     sessionFile?: string;
     aborted?: boolean;
   }): Promise<MissionRecord> {
+    const terminalStatus: MissionTerminalState =
+      this.terminalStatus ?? (params.aborted ? "blocked" : "completed");
     await this.queueUpdate((record) => {
-      const status: MissionTerminalState =
-        this.terminalStatus ?? (params.aborted ? "blocked" : "completed");
-      record.status = status;
+      record.status = terminalStatus;
       record.currentState =
-        status === "completed"
+        terminalStatus === "completed"
           ? "Mission completed"
-          : status === "needs_approval"
+          : terminalStatus === "needs_approval"
             ? "Mission paused for approval"
             : "Mission blocked";
-      record.terminalMessage = buildMissionTerminalNotice(record, status);
+      record.terminalMessage = buildMissionTerminalNotice(record, terminalStatus);
       updateProof(record, Date.now(), {
         swarmCount: record.plan.swarms.length,
         domains: record.plan.domains,
@@ -503,12 +503,12 @@ export class MissionRunTracker {
           ? truncate(params.replyText, 180)
           : record.currentState,
         checkpoint: record.checkpoint,
-        terminalState: status,
+        terminalState: terminalStatus,
         terminalMessage: record.terminalMessage,
       });
       const activeAttempt = record.attempts.find((attempt) => attempt.runId === record.runId);
       if (activeAttempt) {
-        activeAttempt.status = status;
+        activeAttempt.status = terminalStatus;
         activeAttempt.endedAt = Date.now();
       }
       if (params.replyText?.trim()) {
@@ -529,19 +529,20 @@ export class MissionRunTracker {
       }
       for (const subtask of record.subtasks) {
         if (subtask.status === "planned" || subtask.status === "running") {
-          subtask.status = status === "completed" ? "completed" : status;
+          subtask.status = terminalStatus === "completed" ? "completed" : terminalStatus;
           subtask.updatedAt = Date.now();
         }
       }
     });
     await this.updateChain;
     if (this.record.capabilityPlan?.foundry?.routes.length) {
+      const terminalOutcome = terminalStatus === "completed" ? "success" : "failure";
       await recordCapabilityFoundryRouteUsage({
         objective: this.record.objective,
         routes: this.record.capabilityPlan.foundry.routes,
-        outcome: status === "completed" ? "success" : "failure",
+        outcome: terminalOutcome,
         missionId: this.record.id,
-        note: status === "completed" ? "mission-completed" : "mission-blocked",
+        note: terminalOutcome === "success" ? "mission-completed" : "mission-blocked",
       });
     }
     const writeback = await appendMissionMemoryWriteback(this.record);

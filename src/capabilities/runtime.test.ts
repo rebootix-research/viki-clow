@@ -71,6 +71,11 @@ describe("capability runtime", () => {
       expect(plan.provisioned.some((record) => record.id === "browser_profiles")).toBe(true);
       expect(plan.provisioned.some((record) => record.id === "generated_skill")).toBe(true);
       expect(plan.generatedSkillPath).toContain("SKILL.md");
+      expect(plan.foundry?.registryPath).toContain(
+        path.join("capabilities", "foundry", "registry.json"),
+      );
+      expect(plan.foundry?.bundled).toBeGreaterThan(0);
+      expect(plan.foundry?.routes.length).toBeGreaterThan(0);
       expect(plan.routing?.find((route) => route.id === "browser_profiles")).toBeTruthy();
       expect(
         plan.routing?.find((route) => route.id === "browser_profiles")?.matchedHints,
@@ -79,10 +84,12 @@ describe("capability runtime", () => {
 
       const manifest = await loadCapabilityManifest();
       expect(manifest.records.some((record) => record.id === "browser_profiles")).toBe(true);
+      expect(manifest.records.find((record) => record.id === "browser_profiles")?.usageCount).toBe(
+        1,
+      );
       expect(
-        manifest.records.find((record) => record.id === "browser_profiles")?.usageCount,
-      ).toBe(1);
-      expect(manifest.records.find((record) => record.id === "browser_profiles")?.route).toBeTruthy();
+        manifest.records.find((record) => record.id === "browser_profiles")?.route,
+      ).toBeTruthy();
       expect(
         await fs
           .readFile(path.join(workspaceDir, ".vikiclow", "browser", "README.txt"), "utf8")
@@ -94,9 +101,10 @@ describe("capability runtime", () => {
         workspaceDir,
         autoInstall: true,
       });
-      expect(
-        secondPlan.routing?.find((route) => route.id === "browser_profiles")?.usageCount,
-      ).toBe(2);
+      expect(secondPlan.routing?.find((route) => route.id === "browser_profiles")?.usageCount).toBe(
+        2,
+      );
+      expect(secondPlan.foundry?.routes.length).toBeGreaterThan(0);
     });
   });
 
@@ -154,6 +162,7 @@ describe("capability runtime", () => {
       expect(plan.ready.some((record) => record.id === "git")).toBe(true);
       expect(plan.missing.some((record) => record.id === "ffmpeg")).toBe(true);
       expect(plan.provisioned.some((record) => record.id === "playwright")).toBe(true);
+      expect(plan.foundry?.bundled).toBeGreaterThan(0);
     });
   });
 });

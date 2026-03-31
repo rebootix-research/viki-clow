@@ -127,11 +127,10 @@ export function buildCapabilityRouting(objective: string): Array<{
   matchedHints: string[];
 }> {
   const normalized = normalizeCapabilityObjective(objective);
-  return CAPABILITY_CATALOG
-    .map((spec) => ({
-      id: spec.id,
-      matchedHints: spec.objectiveHints.filter((hint) => normalized.includes(hint)),
-    }))
+  return CAPABILITY_CATALOG.map((spec) => ({
+    id: spec.id,
+    matchedHints: spec.objectiveHints.filter((hint) => normalized.includes(hint)),
+  }))
     .filter((entry) => entry.matchedHints.length > 0)
     .toSorted((left, right) => {
       if (right.matchedHints.length !== left.matchedHints.length) {

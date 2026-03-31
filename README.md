@@ -91,6 +91,14 @@ Capability Foundry is Vikiclow’s controlled supply chain for new capability:
 
 Capability Foundry is exposed through the CLI, proof artifacts, the bundled capability inventory, and the runtime routing layer.
 
+Key commands:
+
+- `vikiclow capabilities foundry discover`
+- `vikiclow capabilities foundry ingest <candidate-id>`
+- `vikiclow capabilities foundry test <candidate-id>`
+- `vikiclow capabilities foundry promote <candidate-id> --bundle`
+- `vikiclow capabilities foundry routes "<objective>"`
+
 ### Full PC and web execution
 
 VikiClow can use Viki Browser, raw HTTP/web-fetch routes, local commands, file surfaces, device-linked actions, and channel-connected control.

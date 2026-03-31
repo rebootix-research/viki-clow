@@ -191,9 +191,9 @@ describe("mission runtime", () => {
       expect(record?.artifacts.some((artifact) => artifact.label === "Capability preflight")).toBe(
         true,
       );
-      expect(record?.capabilityPlan?.routing?.some((route) => route.id === "browser_profiles")).toBe(
-        true,
-      );
+      expect(
+        record?.capabilityPlan?.routing?.some((route) => route.id === "browser_profiles"),
+      ).toBe(true);
       expect(
         record?.artifacts.some((artifact) => artifact.label === "Generated mission skill"),
       ).toBe(true);
@@ -206,7 +206,7 @@ describe("mission runtime", () => {
         path.join(memoryDir, writebackFile ?? ""),
         "utf8",
       );
-      expect(writebackContents).toContain("Capability foundry:");
+      expect(writebackContents).toContain("Capability Foundry:");
       expect(writebackContents).toContain("browser_profiles");
     });
   });

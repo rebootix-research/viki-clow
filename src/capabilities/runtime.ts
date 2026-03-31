@@ -1,7 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { runExec } from "../process/exec.js";
-import { CAPABILITY_SPECS, buildCapabilityRouting, inferCapabilityIdsForObjective } from "./catalog.js";
+import {
+  CAPABILITY_SPECS,
+  buildCapabilityRouting,
+  inferCapabilityIdsForObjective,
+} from "./catalog.js";
 import { buildCapabilityFoundryRoutes, refreshCapabilityFoundry } from "./foundry.js";
 import { loadCapabilityManifest, upsertCapabilityRecords } from "./store.js";
 import type {
@@ -127,7 +131,9 @@ async function annotateCapabilityRecords(params: {
   const manifest = await loadCapabilityManifest(params.env);
   const existingById = new Map(manifest.records.map((record) => [record.id, record] as const));
   const objectiveRoutes = new Map(
-    buildCapabilityRouting(params.objective).map((entry) => [entry.id, entry.matchedHints] as const),
+    buildCapabilityRouting(params.objective).map(
+      (entry) => [entry.id, entry.matchedHints] as const,
+    ),
   );
   const inferred = new Set(params.inferred);
   return params.records.map((record) =>

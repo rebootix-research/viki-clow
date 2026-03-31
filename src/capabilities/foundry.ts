@@ -5,8 +5,11 @@ import { buildWorkspaceSkillStatus, type SkillStatusEntry } from "../agents/skil
 import type { VikiClowConfig } from "../config/config.js";
 import { loadConfig } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
+import {
+  loadPluginManifestRegistry,
+  type PluginManifestRecord,
+} from "../plugins/manifest-registry.js";
 import { runExec } from "../process/exec.js";
-import { loadPluginManifestRegistry, type PluginManifestRecord } from "../plugins/manifest-registry.js";
 import { scanDirectoryWithSummary } from "../security/skill-scanner.js";
 import {
   CAPABILITY_CATALOG,
@@ -26,13 +29,9 @@ import {
 import type {
   CapabilityDiscoveryRecord,
   CapabilityFoundryCandidate,
-  CapabilityFoundryCompatibility,
-  CapabilityFoundryInstallMethod,
-  CapabilityFoundryKind,
   CapabilityFoundryOutcome,
   CapabilityFoundryRegistry,
   CapabilityFoundryRoute,
-  CapabilityFoundryRuntimeRegistration,
   CapabilityFoundryScope,
   CapabilityFoundryState,
   CapabilityFoundryTestStatus,
@@ -166,14 +165,26 @@ function resolveFoundrySandboxDir(
   candidateId: string,
   env: NodeJS.ProcessEnv = process.env,
 ): string {
-  return path.join(resolveStateDir(env), "capabilities", "foundry", "sandbox", normalizeFoundryId(candidateId));
+  return path.join(
+    resolveStateDir(env),
+    "capabilities",
+    "foundry",
+    "sandbox",
+    normalizeFoundryId(candidateId),
+  );
 }
 
 function resolveFoundryProofPath(
   candidateId: string,
   env: NodeJS.ProcessEnv = process.env,
 ): string {
-  return path.join(resolveStateDir(env), "capabilities", "foundry", "proofs", `${normalizeFoundryId(candidateId)}.json`);
+  return path.join(
+    resolveStateDir(env),
+    "capabilities",
+    "foundry",
+    "proofs",
+    `${normalizeFoundryId(candidateId)}.json`,
+  );
 }
 
 async function writeJsonAtomic(filePath: string, value: unknown): Promise<void> {
@@ -233,7 +244,8 @@ function makeRecord(
     details,
     source: spec.source,
     objective: params?.objective?.trim() || undefined,
-    matchedHints: params?.matchedHints && params.matchedHints.length > 0 ? params.matchedHints : undefined,
+    matchedHints:
+      params?.matchedHints && params.matchedHints.length > 0 ? params.matchedHints : undefined,
     inspectedBy: params?.inspectedBy,
   };
 }
@@ -388,7 +400,10 @@ async function inspectCapabilitySource(
     case "node":
     case "python":
     case "ffmpeg": {
-      const result = await checkCommand(spec.source.command ?? id, spec.source.args ?? ["--version"]);
+      const result = await checkCommand(
+        spec.source.command ?? id,
+        spec.source.args ?? ["--version"],
+      );
       return {
         spec,
         record: makeRecord(spec, result.ok ? "ready" : "missing", result.details, {
@@ -435,11 +450,16 @@ async function inspectCapabilitySource(
       } catch (error) {
         return {
           spec,
-          record: makeRecord(spec, "failed", error instanceof Error ? error.message : String(error), {
-            objective,
-            matchedHints,
-            inspectedBy: "fetch",
-          }),
+          record: makeRecord(
+            spec,
+            "failed",
+            error instanceof Error ? error.message : String(error),
+            {
+              objective,
+              matchedHints,
+              inspectedBy: "fetch",
+            },
+          ),
         };
       }
       const recheck = await checkCommand(
@@ -503,8 +523,8 @@ function mergeCandidate(
       sourceRef: existing?.provenance.sourceRef ?? seed.provenance?.sourceRef,
       fetchedFrom: existing?.provenance.fetchedFrom ?? seed.provenance?.fetchedFrom,
     },
-    test:
-      existing?.test ?? seed.test ?? { status: "pending", summary: "Candidate not yet tested." },
+    test: existing?.test ??
+      seed.test ?? { status: "pending", summary: "Candidate not yet tested." },
     registration: seed.registration,
     promotedAt: existing?.promotedAt,
     rejectedAt: existing?.rejectedAt,
@@ -536,8 +556,7 @@ function buildSkillSeed(skill: SkillStatusEntry): FoundrySeed {
     name: skill.name,
     type: "skill",
     summary: skill.description,
-    compatibility:
-      skill.eligible ? "compatible" : skill.install.length > 0 ? "wrapped" : "manual",
+    compatibility: skill.eligible ? "compatible" : skill.install.length > 0 ? "wrapped" : "manual",
     scope: skill.bundled ? "bundled" : "optional",
     source: {
       kind: "local_repo",
@@ -762,7 +781,8 @@ function buildStaticRemoteSeeds(rootDir: string): FoundrySeed[] {
         entrypoint: path.join(rootDir, ".vikiclow-foundry", "graphiti"),
         autoBundled: false,
         routeHints: ["graphiti", "memory", "knowledge graph"],
-        usageRecipe: "Vendor when the mission needs upstream Graphiti source inspection or adapter refresh.",
+        usageRecipe:
+          "Vendor when the mission needs upstream Graphiti source inspection or adapter refresh.",
       },
       objectiveHints: ["graphiti", "memory", "knowledge graph"],
       tags: ["repo", "memory", "graphiti"],
@@ -791,7 +811,8 @@ function buildStaticRemoteSeeds(rootDir: string): FoundrySeed[] {
         entrypoint: path.join(rootDir, ".vikiclow-foundry", "langgraph"),
         autoBundled: false,
         routeHints: ["langgraph", "swarm", "graph", "orchestration"],
-        usageRecipe: "Vendor when the mission needs upstream LangGraph source inspection or adapter refresh.",
+        usageRecipe:
+          "Vendor when the mission needs upstream LangGraph source inspection or adapter refresh.",
       },
       objectiveHints: ["langgraph", "swarm", "graph", "orchestration"],
       tags: ["repo", "langgraph", "swarm"],
@@ -820,7 +841,8 @@ function buildStaticRemoteSeeds(rootDir: string): FoundrySeed[] {
         entrypoint: path.join(rootDir, ".vikiclow-foundry", "temporal-sdk-typescript"),
         autoBundled: false,
         routeHints: ["temporal", "workflow", "durable"],
-        usageRecipe: "Vendor when the mission needs upstream Temporal SDK inspection or adapter refresh.",
+        usageRecipe:
+          "Vendor when the mission needs upstream Temporal SDK inspection or adapter refresh.",
       },
       objectiveHints: ["temporal", "workflow", "durable"],
       tags: ["repo", "temporal", "durable"],
@@ -935,7 +957,9 @@ export function discoverCapabilitySources(params: CapabilityDiscoveryParams): {
     inferred.push("generated_skill");
   }
   const directIds = new Set<CapabilityId>(inferred);
-  const discovered = CAPABILITY_CATALOG.map((spec) => classifyDiscovery(spec, directIds, objective));
+  const discovered = CAPABILITY_CATALOG.map((spec) =>
+    classifyDiscovery(spec, directIds, objective),
+  );
   return {
     objective,
     catalogRevision: CAPABILITY_CATALOG_REVISION,
@@ -1065,7 +1089,10 @@ export async function discoverCapabilityFoundry(params: FoundryDiscoverParams): 
   const built = await buildFoundrySeeds(params);
   const revision = computeFoundryCatalogRevision(built.candidates);
   const mergedCandidates = built.candidates.map((seed) =>
-    mergeCandidate(seed, existing.candidates.find((candidate) => candidate.id === seed.id)),
+    mergeCandidate(
+      seed,
+      existing.candidates.find((candidate) => candidate.id === seed.id),
+    ),
   );
   const preserved = existing.candidates.filter(
     (candidate) => !mergedCandidates.some((entry) => entry.id === candidate.id),
@@ -1209,9 +1236,7 @@ async function fetchLocalCandidate(
   };
 }
 
-export async function ingestCapabilityFoundryCandidates(
-  params: FoundryIngestParams,
-): Promise<{
+export async function ingestCapabilityFoundryCandidates(params: FoundryIngestParams): Promise<{
   registry: CapabilityFoundryRegistry;
   registryPath: string;
   candidates: CapabilityFoundryCandidate[];
@@ -1345,8 +1370,12 @@ async function inspectFoundryCandidate(
   if (candidate.type === "repo_integration") {
     const repoDir = candidate.sandbox?.path;
     const readmeExists = await pathExists(repoDir ? path.join(repoDir, "README.md") : undefined);
-    const packageExists = await pathExists(repoDir ? path.join(repoDir, "package.json") : undefined);
-    const pyprojectExists = await pathExists(repoDir ? path.join(repoDir, "pyproject.toml") : undefined);
+    const packageExists = await pathExists(
+      repoDir ? path.join(repoDir, "package.json") : undefined,
+    );
+    const pyprojectExists = await pathExists(
+      repoDir ? path.join(repoDir, "pyproject.toml") : undefined,
+    );
     const ok = readmeExists || packageExists || pyprojectExists;
     return {
       ...candidate,
@@ -1494,8 +1523,12 @@ async function testFoundryCandidate(
   if (candidate.type === "repo_integration") {
     const repoDir = candidate.sandbox?.path;
     const readmeExists = await pathExists(repoDir ? path.join(repoDir, "README.md") : undefined);
-    const packageExists = await pathExists(repoDir ? path.join(repoDir, "package.json") : undefined);
-    const pyprojectExists = await pathExists(repoDir ? path.join(repoDir, "pyproject.toml") : undefined);
+    const packageExists = await pathExists(
+      repoDir ? path.join(repoDir, "package.json") : undefined,
+    );
+    const pyprojectExists = await pathExists(
+      repoDir ? path.join(repoDir, "pyproject.toml") : undefined,
+    );
     const passed = readmeExists || packageExists || pyprojectExists;
     return {
       ...candidate,
@@ -1508,7 +1541,9 @@ async function testFoundryCandidate(
         testedAt: now,
         proofPath,
       },
-      rejectionReason: passed ? candidate.rejectionReason : "repo clone missing expected project files",
+      rejectionReason: passed
+        ? candidate.rejectionReason
+        : "repo clone missing expected project files",
       rejectedAt: passed ? candidate.rejectedAt : now,
       scope: passed ? candidate.scope : "rejected",
     };
@@ -1564,9 +1599,7 @@ export async function sandboxTestCapabilityFoundryCandidates(
   };
 }
 
-export async function promoteCapabilityFoundryCandidates(
-  params: FoundryPromoteParams,
-): Promise<{
+export async function promoteCapabilityFoundryCandidates(params: FoundryPromoteParams): Promise<{
   registry: CapabilityFoundryRegistry;
   registryPath: string;
   candidates: CapabilityFoundryCandidate[];
@@ -1592,8 +1625,12 @@ export async function promoteCapabilityFoundryCandidates(
       }
       return {
         ...candidate,
-        state: (params.bundle || candidate.scope === "bundled" ? "bundled" : "promoted") as CapabilityFoundryState,
-        scope: (params.bundle || candidate.scope === "bundled" ? "bundled" : candidate.scope) as CapabilityFoundryScope,
+        state: (params.bundle || candidate.scope === "bundled"
+          ? "bundled"
+          : "promoted") as CapabilityFoundryState,
+        scope: (params.bundle || candidate.scope === "bundled"
+          ? "bundled"
+          : candidate.scope) as CapabilityFoundryScope,
         promotedAt: now,
         rejectedAt: undefined,
         rejectionReason: undefined,
@@ -1629,20 +1666,23 @@ export async function rejectCapabilityFoundryCandidates(
   const ids = new Set(params.ids);
   const rejected = registry.candidates
     .filter((candidate) => ids.has(candidate.id))
-    .map((candidate) =>
-      ({
-        ...candidate,
-        state: "rejected" as CapabilityFoundryState,
-        scope: "rejected" as CapabilityFoundryScope,
-        rejectedAt: now,
-        rejectionReason: params.reason.trim(),
-        test: {
-          ...candidate.test,
-          status: (candidate.test.status === "passed" ? "passed" : "failed") as CapabilityFoundryTestStatus,
-          summary: params.reason.trim(),
-          testedAt: now,
-        },
-      }) satisfies CapabilityFoundryCandidate,
+    .map(
+      (candidate) =>
+        ({
+          ...candidate,
+          state: "rejected" as CapabilityFoundryState,
+          scope: "rejected" as CapabilityFoundryScope,
+          rejectedAt: now,
+          rejectionReason: params.reason.trim(),
+          test: {
+            ...candidate.test,
+            status: (candidate.test.status === "passed"
+              ? "passed"
+              : "failed") as CapabilityFoundryTestStatus,
+            summary: params.reason.trim(),
+            testedAt: now,
+          },
+        }) satisfies CapabilityFoundryCandidate,
     );
   for (const candidate of rejected) {
     await writeFoundryProof(candidate, params.env);
@@ -1660,14 +1700,19 @@ export async function rejectCapabilityFoundryCandidates(
   };
 }
 
-function scoreFoundryCandidate(candidate: CapabilityFoundryCandidate, objective: string): {
+function scoreFoundryCandidate(
+  candidate: CapabilityFoundryCandidate,
+  objective: string,
+): {
   score: number;
   reasons: string[];
 } {
   const normalized = normalizeCapabilityObjective(objective);
   const tokens = normalized.split(/\s+/u).filter(Boolean);
   const matchedHints = candidate.classification.objectiveHints.filter((hint) =>
-    tokens.some((token) => token.includes(hint) || hint.includes(token) || normalized.includes(hint)),
+    tokens.some(
+      (token) => token.includes(hint) || hint.includes(token) || normalized.includes(hint),
+    ),
   );
   const matchedTags = candidate.classification.tags.filter((tag) =>
     tokens.some((token) => token.includes(tag) || tag.includes(token) || normalized.includes(tag)),
@@ -1688,9 +1733,7 @@ function scoreFoundryCandidate(candidate: CapabilityFoundryCandidate, objective:
   return { score, reasons };
 }
 
-export async function buildCapabilityFoundryRoutes(
-  params: FoundryRouteParams,
-): Promise<{
+export async function buildCapabilityFoundryRoutes(params: FoundryRouteParams): Promise<{
   registry: CapabilityFoundryRegistry;
   registryPath: string;
   routes: CapabilityFoundryRoute[];
@@ -1752,9 +1795,7 @@ export async function recordCapabilityFoundryRouteUsage(params: {
   );
 }
 
-export async function refreshCapabilityFoundry(
-  params: FoundryRefreshParams,
-): Promise<{
+export async function refreshCapabilityFoundry(params: FoundryRefreshParams): Promise<{
   registry: CapabilityFoundryRegistry;
   registryPath: string;
   bundled: CapabilityFoundryCandidate[];
@@ -1792,7 +1833,12 @@ export async function refreshCapabilityFoundry(
   const finalRegistry = await loadCapabilityFoundryRegistry(params.env);
   return {
     registry: finalRegistry,
-    registryPath: path.join(resolveStateDir(params.env ?? process.env), "capabilities", "foundry", "registry.json"),
+    registryPath: path.join(
+      resolveStateDir(params.env ?? process.env),
+      "capabilities",
+      "foundry",
+      "registry.json",
+    ),
     bundled: finalRegistry.candidates.filter((candidate) => candidate.state === "bundled"),
     promoted: finalRegistry.candidates.filter((candidate) => candidate.state === "promoted"),
     discovered: finalRegistry.candidates.length,

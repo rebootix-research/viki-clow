@@ -11,19 +11,16 @@ vi.mock("../process/exec.js", () => ({
   runExec,
 }));
 
-let discoverCapabilitySources: typeof import("./foundry.js").discoverCapabilitySources;
+let buildCapabilityFoundryRoutes: typeof import("./foundry.js").buildCapabilityFoundryRoutes;
 let discoverCapabilityFoundry: typeof import("./foundry.js").discoverCapabilityFoundry;
 let ingestCapabilityFoundryCandidates: typeof import("./foundry.js").ingestCapabilityFoundryCandidates;
-let fetchCapabilityRecords: typeof import("./foundry.js").fetchCapabilityRecords;
 let inspectCapabilityFoundryRegistry: typeof import("./foundry.js").inspectCapabilityFoundryRegistry;
-let inspectCapabilityRegistry: typeof import("./foundry.js").inspectCapabilityRegistry;
-let sandboxTestCapabilityFoundryCandidates: typeof import("./foundry.js").sandboxTestCapabilityFoundryCandidates;
+let loadCapabilityFoundryRegistry: typeof import("./store.js").loadCapabilityFoundryRegistry;
 let promoteCapabilityFoundryCandidates: typeof import("./foundry.js").promoteCapabilityFoundryCandidates;
-let buildCapabilityFoundryRoutes: typeof import("./foundry.js").buildCapabilityFoundryRoutes;
 let recordCapabilityFoundryRouteUsage: typeof import("./foundry.js").recordCapabilityFoundryRouteUsage;
 let refreshCapabilityFoundry: typeof import("./foundry.js").refreshCapabilityFoundry;
-let loadCapabilityRegistry: typeof import("./store.js").loadCapabilityRegistry;
-let loadCapabilityFoundryRegistry: typeof import("./store.js").loadCapabilityFoundryRegistry;
+let rejectCapabilityFoundryCandidates: typeof import("./foundry.js").rejectCapabilityFoundryCandidates;
+let sandboxTestCapabilityFoundryCandidates: typeof import("./foundry.js").sandboxTestCapabilityFoundryCandidates;
 
 const tempDirs: string[] = [];
 
@@ -33,15 +30,22 @@ async function withTempDirs<T>(
   const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "vikiclow-foundry-state-"));
   const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "vikiclow-foundry-workspace-"));
   tempDirs.push(stateDir, workspaceDir);
-  const previous = process.env.VIKICLOW_STATE_DIR;
+  const previousStateDir = process.env.VIKICLOW_STATE_DIR;
+  const previousManifestCache = process.env.VIKICLOW_DISABLE_PLUGIN_MANIFEST_CACHE;
   process.env.VIKICLOW_STATE_DIR = stateDir;
+  process.env.VIKICLOW_DISABLE_PLUGIN_MANIFEST_CACHE = "1";
   try {
     return await run({ stateDir, workspaceDir });
   } finally {
-    if (previous === undefined) {
+    if (previousStateDir === undefined) {
       delete process.env.VIKICLOW_STATE_DIR;
     } else {
-      process.env.VIKICLOW_STATE_DIR = previous;
+      process.env.VIKICLOW_STATE_DIR = previousStateDir;
+    }
+    if (previousManifestCache === undefined) {
+      delete process.env.VIKICLOW_DISABLE_PLUGIN_MANIFEST_CACHE;
+    } else {
+      process.env.VIKICLOW_DISABLE_PLUGIN_MANIFEST_CACHE = previousManifestCache;
     }
   }
 }
@@ -55,300 +59,241 @@ afterEach(async () => {
 
 beforeEach(async () => {
   vi.resetModules();
-  ({ discoverCapabilitySources, fetchCapabilityRecords, inspectCapabilityRegistry } = await import(
-    "./foundry.js"
-  ));
   ({
+    buildCapabilityFoundryRoutes,
     discoverCapabilityFoundry,
     ingestCapabilityFoundryCandidates,
     inspectCapabilityFoundryRegistry,
-    sandboxTestCapabilityFoundryCandidates,
     promoteCapabilityFoundryCandidates,
-    buildCapabilityFoundryRoutes,
     recordCapabilityFoundryRouteUsage,
     refreshCapabilityFoundry,
+    rejectCapabilityFoundryCandidates,
+    sandboxTestCapabilityFoundryCandidates,
   } = await import("./foundry.js"));
-  ({ loadCapabilityRegistry } = await import("./store.js"));
   ({ loadCapabilityFoundryRegistry } = await import("./store.js"));
 });
 
-describe("capability foundry", () => {
-  it("classifies the curated catalog for an objective", () => {
-    const discovery = discoverCapabilitySources({
-      objective: "Use Playwright to publish the workflow and create a reusable automation skill",
-    });
+describe("Capability Foundry", () => {
+  it("discovers curated local, registry, repo, and asset candidates into the persisted registry", async () => {
+    await withTempDirs(async ({ workspaceDir }) => {
+      const result = await discoverCapabilityFoundry({
+        workspaceDir,
+        rootDir: process.cwd(),
+        env: process.env,
+      });
 
-    expect(discovery.inferred).toEqual(
-      expect.arrayContaining(["playwright", "generated_skill"]),
-    );
-    expect(discovery.direct.some((record) => record.id === "playwright")).toBe(true);
-    expect(discovery.direct.some((record) => record.id === "browser_profiles")).toBe(true);
+      expect(result.registry.supportedSources).toEqual(
+        expect.arrayContaining(["repo-skills", "repo-plugins", "npm-mcp", "github-repo"]),
+      );
+      expect(result.registry.candidates.some((candidate) => candidate.type === "skill")).toBe(true);
+      expect(
+        result.registry.candidates.some((candidate) => candidate.id === "plugin:workflow"),
+      ).toBe(true);
+      expect(
+        result.registry.candidates.some((candidate) => candidate.id === "mcp:filesystem"),
+      ).toBe(true);
+      expect(
+        result.registry.candidates.some((candidate) => candidate.id === "repo:langgraph"),
+      ).toBe(true);
+      expect(
+        result.registry.candidates.some((candidate) => candidate.id === "asset:voice-runtime-pack"),
+      ).toBe(true);
+
+      const persisted = await loadCapabilityFoundryRegistry();
+      expect(persisted.candidates.length).toBe(result.registry.candidates.length);
+    });
   });
 
-  it("fetches selected capability sources and persists the registry", async () => {
-    let playwrightVersionChecks = 0;
+  it("ingests, tests, promotes, routes, and records usage for local capability candidates", async () => {
+    await withTempDirs(async ({ workspaceDir }) => {
+      const discovered = await discoverCapabilityFoundry({
+        workspaceDir,
+        rootDir: process.cwd(),
+        env: process.env,
+      });
+      const skillCandidate = discovered.registry.candidates.find(
+        (candidate) => candidate.type === "skill" && candidate.compatibility !== "incompatible",
+      );
+      expect(skillCandidate).toBeTruthy();
+
+      const ingested = await ingestCapabilityFoundryCandidates({
+        ids: [skillCandidate!.id],
+        workspaceDir,
+        rootDir: process.cwd(),
+        env: process.env,
+      });
+      expect(ingested.candidates[0]?.state).toBe("fetched");
+      expect(ingested.candidates[0]?.sandbox?.path).toBeTruthy();
+
+      const tested = await sandboxTestCapabilityFoundryCandidates({
+        ids: [skillCandidate!.id],
+        workspaceDir,
+        rootDir: process.cwd(),
+        env: process.env,
+      });
+      expect(tested.candidates[0]?.state).toBe("tested");
+      expect(tested.candidates[0]?.test.status).toBe("passed");
+      expect(tested.candidates[0]?.test.proofPath).toBeTruthy();
+
+      const promoted = await promoteCapabilityFoundryCandidates({
+        ids: [skillCandidate!.id],
+        bundle: true,
+        workspaceDir,
+        rootDir: process.cwd(),
+        env: process.env,
+      });
+      expect(promoted.candidates[0]?.state).toBe("bundled");
+
+      const routeObjective = [
+        skillCandidate!.name,
+        ...skillCandidate!.classification.objectiveHints.slice(0, 3),
+      ]
+        .filter(Boolean)
+        .join(" ");
+      const routes = await buildCapabilityFoundryRoutes({
+        objective: routeObjective,
+        workspaceDir,
+        rootDir: process.cwd(),
+        env: process.env,
+      });
+      expect(routes.routes.some((route) => route.candidateId === skillCandidate!.id)).toBe(true);
+
+      await recordCapabilityFoundryRouteUsage({
+        objective: routeObjective,
+        routes: routes.routes.filter((route) => route.candidateId === skillCandidate!.id),
+        outcome: "success",
+        missionId: "mission-foundry-success",
+        note: "local-skill-route",
+      });
+
+      const persisted = await loadCapabilityFoundryRegistry();
+      const updated = persisted.candidates.find((candidate) => candidate.id === skillCandidate!.id);
+      expect(updated?.usage.success).toBeGreaterThan(0);
+      expect(updated?.usage.lastOutcome).toBe("success");
+      expect(persisted.usage.some((entry) => entry.missionId === "mission-foundry-success")).toBe(
+        true,
+      );
+    });
+  });
+
+  it("ingests and promotes curated npm and github candidates through the sandbox pipeline", async () => {
     runExec.mockImplementation(async (command: string, args: string[]) => {
-      if (command === "corepack" && args.join(" ") === "pnpm exec playwright --version") {
-        playwrightVersionChecks += 1;
-        if (playwrightVersionChecks === 1) {
-          throw new Error("playwright missing");
-        }
-        return { stdout: "Version 1.55.0", stderr: "" };
+      if (command === "npm" && args[0] === "view") {
+        return {
+          stdout: JSON.stringify({ version: "1.2.3", license: "MIT" }),
+          stderr: "",
+        };
       }
-      if (command === "corepack" && args.join(" ") === "pnpm exec playwright install chromium") {
-        return { stdout: "installed", stderr: "" };
+      if (command === "npm" && args[0] === "pack") {
+        const outDir = args.at(-1);
+        if (!outDir) {
+          throw new Error("missing pack destination");
+        }
+        const tarball = "server-filesystem-1.2.3.tgz";
+        await fs.mkdir(outDir, { recursive: true });
+        await fs.writeFile(path.join(outDir, tarball), "tarball", "utf8");
+        return { stdout: `${tarball}\n`, stderr: "" };
+      }
+      if (command === "git" && args[0] === "clone") {
+        const repoDir = args.at(-1);
+        if (!repoDir) {
+          throw new Error("missing repo clone dir");
+        }
+        await fs.mkdir(repoDir, { recursive: true });
+        await fs.writeFile(path.join(repoDir, "README.md"), "# LangGraph\n", "utf8");
+        return { stdout: "cloned\n", stderr: "" };
+      }
+      if (command === "git" && args[0] === "-C" && args[2] === "rev-parse") {
+        return { stdout: "deadbeefcafebabe\n", stderr: "" };
       }
       throw new Error(`unexpected command: ${command} ${args.join(" ")}`);
     });
 
     await withTempDirs(async ({ workspaceDir }) => {
-      const objective = "Use Playwright to publish the workflow and create a reusable automation skill";
-      const fetched = await fetchCapabilityRecords({
-        ids: ["playwright", "browser_profiles", "generated_skill"],
-        objective,
-        workspaceDir,
-        autoInstall: true,
-      });
-
-      expect(fetched.records.some((record) => record.id === "playwright")).toBe(true);
-      expect(fetched.records.some((record) => record.id === "browser_profiles")).toBe(true);
-      expect(fetched.records.some((record) => record.id === "generated_skill")).toBe(true);
-
-      const registry = await loadCapabilityRegistry();
-      expect(registry.catalogRevision).toBeTruthy();
-      expect(registry.objective).toBe(objective);
-      expect(registry.records.some((record) => record.id === "browser_profiles")).toBe(true);
-      expect(
-        await fs
-          .readFile(path.join(workspaceDir, ".vikiclow", "browser", "README.txt"), "utf8")
-          .then((contents) => contents.includes("Viki Browser mission profiles")),
-      ).toBe(true);
-
-      const inspection = await inspectCapabilityRegistry({ ids: ["generated_skill"] });
-      expect(inspection.records[0]?.spec.id).toBe("generated_skill");
-    });
-  });
-
-  it("discovers curated Foundry sources across skills, plugins, MCP servers, repos, and assets", async () => {
-    await withTempDirs(async ({ workspaceDir }) => {
-      const { registry, registryPath } = await discoverCapabilityFoundry({
-        workspaceDir,
-        rootDir: process.cwd(),
-        env: process.env,
-      });
-
-      const registryStat = await fs.stat(registryPath);
-      expect(registryStat.isFile()).toBe(true);
-      expect(registry.supportedSources).toEqual(
-        expect.arrayContaining(["repo-skills", "repo-plugins", "npm-mcp", "github-repo"]),
-      );
-      expect(registry.candidates.some((candidate) => candidate.type === "skill")).toBe(true);
-      expect(registry.candidates.some((candidate) => candidate.type === "plugin")).toBe(true);
-      expect(registry.candidates.some((candidate) => candidate.type === "mcp_server")).toBe(true);
-      expect(registry.candidates.some((candidate) => candidate.type === "repo_integration")).toBe(true);
-      expect(registry.candidates.some((candidate) => candidate.type === "asset_dependency")).toBe(true);
-      expect(registry.candidates.every((candidate) => candidate.state === "discovered")).toBe(true);
-    });
-  });
-
-  it("ingests fetched Foundry candidates and persists provenance", async () => {
-    await withTempDirs(async ({ workspaceDir }) => {
-      const discovered = await discoverCapabilityFoundry({
-        workspaceDir,
-        rootDir: process.cwd(),
-        env: process.env,
-      });
-      const localSkill = discovered.registry.candidates.find(
-        (candidate) => candidate.type === "skill" && candidate.source.kind === "local_repo",
-      );
-      const localPlugin = discovered.registry.candidates.find(
-        (candidate) => candidate.type === "plugin" && candidate.source.kind === "local_repo",
-      );
-      const npmCandidate = discovered.registry.candidates.find(
-        (candidate) => candidate.source.kind === "npm_registry",
-      );
-      const githubCandidate = discovered.registry.candidates.find(
-        (candidate) => candidate.source.kind === "github_repo",
-      );
-      const assetCandidate = discovered.registry.candidates.find(
-        (candidate) => candidate.type === "asset_dependency",
-      );
-
-      expect(localSkill).toBeTruthy();
-      expect(localPlugin).toBeTruthy();
-      expect(npmCandidate).toBeTruthy();
-      expect(githubCandidate).toBeTruthy();
-      expect(assetCandidate).toBeTruthy();
-
-      runExec.mockImplementation(async (command: string, args: string[]) => {
-        const joined = args.join(" ");
-        if (command === "npm" && joined.startsWith("view ")) {
-          return { stdout: JSON.stringify({ version: "1.2.3", license: "MIT" }), stderr: "" };
-        }
-        if (command === "npm" && joined.startsWith("pack ")) {
-          const destination = args[args.indexOf("--pack-destination") + 1];
-          await fs.mkdir(destination, { recursive: true });
-          const tarball = "candidate.tgz";
-          await fs.writeFile(path.join(destination, tarball), "tarball", "utf8");
-          return { stdout: `${tarball}\n`, stderr: "" };
-        }
-        if (command === "git" && args[0] === "clone") {
-          const repoDir = args[args.length - 1];
-          await fs.mkdir(repoDir, { recursive: true });
-          await fs.writeFile(path.join(repoDir, "README.md"), "# repo integration\n", "utf8");
-          await fs.writeFile(path.join(repoDir, "package.json"), "{\"name\":\"repo\"}\n", "utf8");
-          return { stdout: "cloned", stderr: "" };
-        }
-        if (command === "git" && joined === `-C ${args[1]} rev-parse HEAD`) {
-          return { stdout: "abc123", stderr: "" };
-        }
-        throw new Error(`unexpected command: ${command} ${joined}`);
-      });
+      const ids = ["mcp:filesystem", "repo:langgraph"];
 
       const ingested = await ingestCapabilityFoundryCandidates({
-        workspaceDir,
-        rootDir: process.cwd(),
-        env: process.env,
-        ids: [localSkill!.id, localPlugin!.id, npmCandidate!.id, githubCandidate!.id, assetCandidate!.id],
-      });
-
-      const states = new Map(ingested.candidates.map((candidate) => [candidate.id, candidate.state]));
-      expect(states.get(localSkill!.id)).toBe("fetched");
-      expect(states.get(localPlugin!.id)).toBe("fetched");
-      expect(states.get(npmCandidate!.id)).toBe("fetched");
-      expect(states.get(githubCandidate!.id)).toBe("fetched");
-      expect(states.get(assetCandidate!.id)).toBe("fetched");
-
-      const registry = await loadCapabilityFoundryRegistry(process.env);
-      expect(registry.candidates.some((candidate) => candidate.id === npmCandidate!.id)).toBe(true);
-      expect(
-        registry.candidates.find((candidate) => candidate.id === npmCandidate!.id)?.provenance
-          .fetchedFrom,
-      ).toContain("candidate.tgz");
-      expect(
-        registry.candidates.find((candidate) => candidate.id === githubCandidate!.id)?.provenance
-          .fetchedFrom,
-      ).toContain(path.join("repo"));
-    });
-  });
-
-  it("inspects, tests, promotes, routes, and records usage for viable Foundry candidates", async () => {
-    await withTempDirs(async ({ workspaceDir }) => {
-      const discovered = await discoverCapabilityFoundry({
-        workspaceDir,
-        rootDir: process.cwd(),
-        env: process.env,
-      });
-      const localSkill = discovered.registry.candidates.find(
-        (candidate) => candidate.type === "skill" && candidate.source.kind === "local_repo",
-      );
-      const localPlugin = discovered.registry.candidates.find(
-        (candidate) => candidate.type === "plugin" && candidate.source.kind === "local_repo",
-      );
-      expect(localSkill).toBeTruthy();
-      expect(localPlugin).toBeTruthy();
-
-      runExec.mockImplementation(async (command: string, args: string[]) => {
-        const joined = args.join(" ");
-        if (command === "npm" && joined.startsWith("view ")) {
-          return { stdout: JSON.stringify({ version: "1.2.3", license: "MIT" }), stderr: "" };
-        }
-        if (command === "npm" && joined.startsWith("pack ")) {
-          const destination = args[args.indexOf("--pack-destination") + 1];
-          await fs.mkdir(destination, { recursive: true });
-          const tarball = "candidate.tgz";
-          await fs.writeFile(path.join(destination, tarball), "tarball", "utf8");
-          return { stdout: `${tarball}\n`, stderr: "" };
-        }
-        if (command === "git" && args[0] === "clone") {
-          const repoDir = args[args.length - 1];
-          await fs.mkdir(repoDir, { recursive: true });
-          await fs.writeFile(path.join(repoDir, "README.md"), "# repo integration\n", "utf8");
-          await fs.writeFile(path.join(repoDir, "package.json"), "{\"name\":\"repo\"}\n", "utf8");
-          return { stdout: "cloned", stderr: "" };
-        }
-        if (command === "git" && joined === `-C ${args[1]} rev-parse HEAD`) {
-          return { stdout: "abc123", stderr: "" };
-        }
-        if (command === "corepack" && joined === "pnpm exec playwright --version") {
-          throw new Error("playwright missing");
-        }
-        if (command === "corepack" && joined === "pnpm exec playwright install chromium") {
-          return { stdout: "installed", stderr: "" };
-        }
-        throw new Error(`unexpected command: ${command} ${joined}`);
-      });
-
-      const ids = [localSkill!.id, localPlugin!.id];
-      const ingested = await ingestCapabilityFoundryCandidates({
-        workspaceDir,
-        rootDir: process.cwd(),
-        env: process.env,
         ids,
+        workspaceDir,
+        rootDir: process.cwd(),
+        env: process.env,
       });
+      expect(ingested.candidates).toHaveLength(2);
+      expect(ingested.candidates.every((candidate) => candidate.state === "fetched")).toBe(true);
+
       const inspected = await inspectCapabilityFoundryRegistry({
+        ids,
         workspaceDir,
         rootDir: process.cwd(),
         env: process.env,
-        ids,
       });
+      expect(inspected.candidates.every((candidate) => candidate.state === "inspected")).toBe(true);
+
       const tested = await sandboxTestCapabilityFoundryCandidates({
+        ids,
         workspaceDir,
         rootDir: process.cwd(),
         env: process.env,
-        ids,
       });
+      expect(tested.candidates.every((candidate) => candidate.test.status === "passed")).toBe(true);
+
       const promoted = await promoteCapabilityFoundryCandidates({
-        workspaceDir,
-        rootDir: process.cwd(),
-        env: process.env,
         ids,
-        bundle: true,
-      });
-      const routes = await buildCapabilityFoundryRoutes({
         workspaceDir,
         rootDir: process.cwd(),
         env: process.env,
-        objective: "publish the browser workflow and create a reusable automation skill",
       });
-      await recordCapabilityFoundryRouteUsage({
+      expect(promoted.candidates.every((candidate) => candidate.state === "promoted")).toBe(true);
+      expect(
+        promoted.candidates.find((candidate) => candidate.id === "mcp:filesystem")?.provenance
+          .version,
+      ).toBe("1.2.3");
+      expect(
+        promoted.candidates.find((candidate) => candidate.id === "repo:langgraph")?.provenance
+          .sourceRef,
+      ).toBe("deadbeefcafebabe");
+    });
+  });
+
+  it("records rejection reasons and preserves them in the registry", async () => {
+    await withTempDirs(async ({ workspaceDir }) => {
+      const rejected = await rejectCapabilityFoundryCandidates({
+        ids: ["repo:temporal-sdk-typescript"],
+        reason: "manual provenance review pending",
+        workspaceDir,
+        rootDir: process.cwd(),
         env: process.env,
-        objective: "publish the browser workflow and create a reusable automation skill",
-        routes: routes.routes,
-        outcome: "success",
-        missionId: "mission-123",
-        note: "foundry-test",
       });
-      const refreshed = await refreshCapabilityFoundry({
+
+      expect(rejected.candidates[0]?.state).toBe("rejected");
+      expect(rejected.candidates[0]?.rejectionReason).toBe("manual provenance review pending");
+
+      const persisted = await loadCapabilityFoundryRegistry();
+      const candidate = persisted.candidates.find(
+        (entry) => entry.id === "repo:temporal-sdk-typescript",
+      );
+      expect(candidate?.scope).toBe("rejected");
+      expect(candidate?.rejectionReason).toBe("manual provenance review pending");
+    });
+  });
+
+  it("refreshes bundled candidates into the persisted registry for bootstrap and bundle flows", async () => {
+    await withTempDirs(async ({ workspaceDir }) => {
+      const result = await refreshCapabilityFoundry({
         workspaceDir,
         rootDir: process.cwd(),
         env: process.env,
         includeRemote: false,
       });
 
-      const inspectedStates = new Map(inspected.candidates.map((candidate) => [candidate.id, candidate]));
-      expect(inspectedStates.get(localSkill!.id)?.state).toBe("inspected");
-      expect(inspectedStates.get(localSkill!.id)?.test.status).toBe("pending");
-      expect(inspectedStates.get(localPlugin!.id)?.state).toBe("inspected");
-
-      const testedStates = new Map(tested.candidates.map((candidate) => [candidate.id, candidate]));
-      expect(testedStates.get(localSkill!.id)?.test.status).toBe("passed");
-      expect(testedStates.get(localPlugin!.id)?.test.status).toBe("passed");
-
-      const promotedStates = new Map(promoted.candidates.map((candidate) => [candidate.id, candidate]));
-      expect(promotedStates.get(localSkill!.id)?.state).toBe("bundled");
-      expect(promotedStates.get(localPlugin!.id)?.state).toBe("bundled");
-      const proofStat = await fs.stat(promotedStates.get(localSkill!.id)!.test.proofPath!);
-      expect(proofStat.isFile()).toBe(true);
-
-      expect(routes.registry.candidates.some((candidate) => candidate.state === "bundled")).toBe(
-        true,
-      );
-
-      const registry = await loadCapabilityFoundryRegistry(process.env);
-      expect(registry.usage.some((entry) => entry.missionId === "mission-123")).toBe(true);
-      expect(registry.candidates.some((candidate) => candidate.state === "bundled")).toBe(true);
-      expect(refreshed.bundled.length).toBeGreaterThan(0);
+      expect(result.discovered).toBeGreaterThan(0);
+      expect(result.registryPath).toContain(path.join("capabilities", "foundry", "registry.json"));
+      expect(result.bundled.length).toBeGreaterThan(0);
+      expect(
+        result.registry.candidates.some(
+          (candidate) => candidate.state === "bundled" && candidate.registration?.autoBundled,
+        ),
+      ).toBe(true);
     });
   });
 });

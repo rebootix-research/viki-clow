@@ -59,6 +59,38 @@ describe("mission memory writeback", () => {
             usageCount: 3,
           },
         ],
+        foundry: {
+          registryPath: "/tmp/state/capabilities/foundry/registry.json",
+          discovered: 6,
+          promoted: 2,
+          bundled: 2,
+          rejected: 1,
+          routes: [
+            {
+              candidateId: "skill:viki-skill-factory",
+              name: "Viki Skill Factory",
+              type: "skill",
+              score: 7,
+              reasons: ["hint:skill", "usage:success=2"],
+              scope: "bundled",
+              state: "bundled",
+              sourceUrl:
+                "https://github.com/rebootix-research/viki-clow/tree/main/skills/viki-skill-factory",
+              usage: {
+                suggested: 3,
+                success: 2,
+                failure: 0,
+              },
+              registration: {
+                kind: "skill",
+                targetId: "viki-skill-factory",
+                entrypoint: "/tmp/workspace/skills/viki-skill-factory/SKILL.md",
+                autoBundled: true,
+                routeHints: ["skill", "factory"],
+              },
+            },
+          ],
+        },
       },
       workspaceDir,
       agentId: "main",
@@ -79,8 +111,9 @@ describe("mission memory writeback", () => {
       expect(contents).toContain("## Mission Writeback");
       expect(contents).toContain("Mission: mission-123");
       expect(contents).toContain("Status: completed");
-      expect(contents).toContain("Capability foundry:");
+      expect(contents).toContain("Capability Foundry:");
       expect(contents).toContain("browser_profiles");
+      expect(contents).toContain("skill:viki-skill-factory");
 
       const second = await appendMissionMemoryWriteback(record, {
         nowMs: Date.UTC(2026, 2, 24, 12, 0, 0),

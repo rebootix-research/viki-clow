@@ -21,9 +21,7 @@ import {
   ensureVoiceRuntimeBootstrap,
   type VoiceRuntimeBootstrapStatus,
 } from "../voice/runtime-bootstrap.js";
-import {
-  refreshCapabilityFoundry,
-} from "./foundry.js";
+import { refreshCapabilityFoundry } from "./foundry.js";
 import { ensureBaseCapabilityPack } from "./runtime.js";
 import type { CapabilityFoundryRegistry, CapabilityFoundryRoute, CapabilityPlan } from "./types.js";
 
@@ -597,7 +595,8 @@ export async function bundleSupportedCapabilities(params: {
     ),
     "",
   ].join("\n");
-  await fs.writeFile(markdownPath, `${markdown}\n`, "utf8");
+  const normalizedMarkdown = markdown.replaceAll("â€”", "-").replaceAll("Ã¢â‚¬â€", "-");
+  await fs.writeFile(markdownPath, `${normalizedMarkdown}\n`, "utf8");
 
   if (params.artifactDir) {
     await fs.mkdir(params.artifactDir, { recursive: true });

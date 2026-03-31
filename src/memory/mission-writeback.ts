@@ -90,7 +90,7 @@ function buildMissionMemoryWritebackMarkdown(record: MissionRecord, recordedAt: 
   }
 
   if (record.capabilityPlan) {
-    lines.push("- Capability foundry:");
+    lines.push("- Capability Foundry:");
     for (const line of formatCapabilityPlanLines(record.capabilityPlan)) {
       lines.push(`  ${line}`);
     }

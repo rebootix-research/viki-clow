@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { CAPABILITY_CATALOG_REVISION } from "./catalog.js";
 import { resolveStateDir } from "../config/paths.js";
+import { CAPABILITY_CATALOG_REVISION } from "./catalog.js";
 import type {
   CapabilityFoundryCandidate,
   CapabilityFoundryRegistry,
@@ -30,7 +30,8 @@ async function writeJsonAtomic(filePath: string, value: unknown): Promise<void> 
 }
 
 function normalizeRecord(record: CapabilityRecord): CapabilityRecord {
-  const checkedAt = typeof record.checkedAt === "string" ? record.checkedAt : new Date().toISOString();
+  const checkedAt =
+    typeof record.checkedAt === "string" ? record.checkedAt : new Date().toISOString();
   return {
     ...record,
     checkedAt,
@@ -151,7 +152,13 @@ export async function loadCapabilityFoundryRegistry(
             ? parsed.workspaceDir
             : undefined,
         supportedSources: Array.isArray(parsed.supportedSources)
-          ? [...new Set(parsed.supportedSources.filter((value): value is string => typeof value === "string"))]
+          ? [
+              ...new Set(
+                parsed.supportedSources.filter(
+                  (value): value is string => typeof value === "string",
+                ),
+              ),
+            ]
           : [],
         candidates: parsed.candidates.map(normalizeFoundryCandidate),
         usage: parsed.usage.filter(
@@ -281,7 +288,9 @@ export async function recordCapabilityFoundryUsage(
     };
   }
   const candidateMap = new Map(
-    registry.candidates.map((candidate) => [candidate.id, normalizeFoundryCandidate(candidate)] as const),
+    registry.candidates.map(
+      (candidate) => [candidate.id, normalizeFoundryCandidate(candidate)] as const,
+    ),
   );
   const normalizedUsage = usageRecords.map((record) => ({
     ...record,

@@ -31,15 +31,22 @@ async function withTempDirs<T>(
   const stateDir = await fs.mkdtemp(path.join(os.tmpdir(), "vikiclow-cli-cap-state-"));
   const workspaceDir = await fs.mkdtemp(path.join(os.tmpdir(), "vikiclow-cli-cap-workspace-"));
   tempDirs.push(stateDir, workspaceDir);
-  const previous = process.env.VIKICLOW_STATE_DIR;
+  const previousStateDir = process.env.VIKICLOW_STATE_DIR;
+  const previousManifestCache = process.env.VIKICLOW_DISABLE_PLUGIN_MANIFEST_CACHE;
   process.env.VIKICLOW_STATE_DIR = stateDir;
+  process.env.VIKICLOW_DISABLE_PLUGIN_MANIFEST_CACHE = "1";
   try {
     return await run({ stateDir, workspaceDir });
   } finally {
-    if (previous === undefined) {
+    if (previousStateDir === undefined) {
       delete process.env.VIKICLOW_STATE_DIR;
     } else {
-      process.env.VIKICLOW_STATE_DIR = previous;
+      process.env.VIKICLOW_STATE_DIR = previousStateDir;
+    }
+    if (previousManifestCache === undefined) {
+      delete process.env.VIKICLOW_DISABLE_PLUGIN_MANIFEST_CACHE;
+    } else {
+      process.env.VIKICLOW_DISABLE_PLUGIN_MANIFEST_CACHE = previousManifestCache;
     }
   }
 }
@@ -55,21 +62,15 @@ describe("registerCapabilitiesCli", () => {
     await program.parseAsync(args, { from: "user" });
   }
 
-  function getCapabilityCommandSurface() {
-    const program = new Command();
-    registerCapabilitiesCli(program);
-    const root = program.commands.find((command) => command.name() === "capabilities");
-    expect(root).toBeTruthy();
-    return root!;
-  }
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   afterEach(async () => {
     await Promise.all(
-      tempDirs.splice(0, tempDirs.length).map((dir) => fs.rm(dir, { recursive: true, force: true })),
+      tempDirs
+        .splice(0, tempDirs.length)
+        .map((dir) => fs.rm(dir, { recursive: true, force: true })),
     );
   });
 
@@ -80,16 +81,10 @@ describe("registerCapabilitiesCli", () => {
       "Use Playwright to publish the workflow and create a reusable automation skill",
     ]);
 
-    expect(runtime.log.mock.calls.flat().join("\n")).toContain("Catalog revision:");
-    expect(runtime.log.mock.calls.flat().join("\n")).toContain("Direct:");
-    expect(runtime.log.mock.calls.flat().join("\n")).toContain("playwright");
-  });
-
-  it("exposes the capability command surface used by the Foundry backend", () => {
-    const surface = getCapabilityCommandSurface();
-    expect(surface.commands.map((command) => command.name())).toEqual(
-      expect.arrayContaining(["list", "discover", "fetch", "inspect", "bundle", "bootstrap", "plan"]),
-    );
+    const output = runtime.log.mock.calls.flat().join("\n");
+    expect(output).toContain("Catalog revision:");
+    expect(output).toContain("Direct:");
+    expect(output).toContain("playwright");
   });
 
   it("inspects an empty registry without failing", async () => {
@@ -97,7 +92,9 @@ describe("registerCapabilitiesCli", () => {
       await runCli(["capabilities", "inspect"]);
     });
 
-    expect(runtime.log.mock.calls.flat().join("\n")).toContain("No capability records recorded yet.");
+    expect(runtime.log.mock.calls.flat().join("\n")).toContain(
+      "No capability records recorded yet.",
+    );
   });
 
   it("fetches capabilities through the CLI and persists the registry", async () => {
@@ -117,7 +114,8 @@ describe("registerCapabilitiesCli", () => {
     });
 
     await withTempDirs(async ({ workspaceDir }) => {
-      const objective = "Use Playwright to publish the workflow and create a reusable automation skill";
+      const objective =
+        "Use Playwright to publish the workflow and create a reusable automation skill";
       await runCli([
         "capabilities",
         "fetch",
@@ -130,8 +128,65 @@ describe("registerCapabilitiesCli", () => {
         objective,
       ]);
 
-      expect(runtime.log.mock.calls.flat().join("\n")).toContain("Registry:");
-      expect(runtime.log.mock.calls.flat().join("\n")).toContain("playwright");
+      const output = runtime.log.mock.calls.flat().join("\n");
+      expect(output).toContain("Registry:");
+      expect(output).toContain("playwright");
     });
+  });
+
+  it("discovers Capability Foundry candidates through the CLI", async () => {
+    await withTempDirs(async ({ workspaceDir }) => {
+      await runCli(["capabilities", "foundry", "discover", "--workspace", workspaceDir]);
+    });
+
+    const output = runtime.log.mock.calls.flat().join("\n");
+    expect(output).toContain("Registry:");
+    expect(output).toContain("plugin:workflow");
+    expect(output).toContain("mcp:filesystem");
+  });
+
+  it("promotes a local Foundry candidate and exposes it through routes", async () => {
+    await withTempDirs(async ({ workspaceDir }) => {
+      await runCli([
+        "capabilities",
+        "foundry",
+        "promote",
+        "skill:viki-skill-factory",
+        "--bundle",
+        "--workspace",
+        workspaceDir,
+      ]);
+      await runCli([
+        "capabilities",
+        "foundry",
+        "routes",
+        "Use the viki skill factory to build a reusable browser automation workflow",
+        "--workspace",
+        workspaceDir,
+      ]);
+    });
+
+    const output = runtime.log.mock.calls.flat().join("\n");
+    expect(output).toContain("skill:viki-skill-factory");
+    expect(output).toContain("score=");
+  });
+
+  it("rejects Foundry candidates with a recorded reason through the CLI", async () => {
+    await withTempDirs(async ({ workspaceDir }) => {
+      await runCli([
+        "capabilities",
+        "foundry",
+        "reject",
+        "repo:langgraph",
+        "--reason",
+        "manual review",
+        "--workspace",
+        workspaceDir,
+      ]);
+    });
+
+    const output = runtime.log.mock.calls.flat().join("\n");
+    expect(output).toContain("repo:langgraph");
+    expect(output).toContain("manual review");
   });
 });
