@@ -158,7 +158,7 @@ describe("resolvePreferredVikiClowTmpDir", () => {
     const { resolved, accessSync, tmpdir } = resolveWithMocks({ lstatSync });
 
     expect(lstatSync).toHaveBeenCalledTimes(1);
-    expect(accessSync).toHaveBeenCalledTimes(1);
+    expect(accessSync).not.toHaveBeenCalled();
     expect(resolved).toBe(POSIX_VIKICLOW_TMP_DIR);
     expect(tmpdir).not.toHaveBeenCalled();
   });

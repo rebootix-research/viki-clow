@@ -94,6 +94,7 @@ function resolveWithMocks(params: {
   fallbackLstatSync?: NonNullable<TmpDirOptions["lstatSync"]>;
   accessSync?: NonNullable<TmpDirOptions["accessSync"]>;
   chmodSync?: NonNullable<TmpDirOptions["chmodSync"]>;
+  mkdtempSync?: NonNullable<TmpDirOptions["mkdtempSync"]>;
   warn?: NonNullable<TmpDirOptions["warn"]>;
   uid?: number;
   tmpdirPath?: string;
@@ -123,6 +124,7 @@ function resolveWithMocks(params: {
     chmodSync,
     lstatSync: wrappedLstatSync,
     mkdirSync,
+    mkdtempSync: params.mkdtempSync,
     getuid,
     tmpdir,
     warn,
@@ -141,7 +143,7 @@ describe("resolvePreferredVikiClowTmpDir", () => {
     const { resolved, accessSync, tmpdir } = resolveWithMocks({ lstatSync });
 
     expect(lstatSync).toHaveBeenCalledTimes(1);
-    expect(accessSync).toHaveBeenCalledTimes(1);
+    expect(accessSync).not.toHaveBeenCalled();
     expect(resolved).toBe(POSIX_VIKICLOW_TMP_DIR);
     expect(tmpdir).not.toHaveBeenCalled();
   });
@@ -203,17 +205,24 @@ describe("resolvePreferredVikiClowTmpDir", () => {
     },
   );
 
-  it.runIf(process.platform !== "win32")("throws when fallback path is a symlink", () => {
-    const lstatSync = symlinkTmpDirLstat();
-    const fallbackLstatSync = vi.fn(() => makeDirStat({ isSymbolicLink: true, mode: 0o120777 }));
+  it.runIf(process.platform !== "win32")(
+    "uses an isolated fallback when the canonical fallback path is a symlink",
+    () => {
+      const isolatedPath = path.join("/var/fallback", "vikiclow-501-isolated");
+      const lstatSync = symlinkTmpDirLstat();
+      const fallbackLstatSync = vi.fn(() => makeDirStat({ isSymbolicLink: true, mode: 0o120777 }));
+      const mkdtempSync = vi.fn(() => isolatedPath);
 
-    expect(() =>
-      resolveWithMocks({
+      const { resolved } = resolveWithMocks({
         lstatSync,
         fallbackLstatSync,
-      }),
-    ).toThrow(/Unsafe fallback VikiClow temp dir/);
-  });
+        mkdtempSync,
+      });
+
+      expect(resolved).toBe(isolatedPath);
+      expect(mkdtempSync).toHaveBeenCalledWith(path.join("/var/fallback", "vikiclow-501-"));
+    },
+  );
 
   it("creates fallback directory when missing, then validates ownership and mode", () => {
     const lstatSync = symlinkTmpDirLstat();

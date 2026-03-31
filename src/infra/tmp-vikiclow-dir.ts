@@ -96,11 +96,24 @@ export function resolvePreferredVikiClowTmpDir(
     return st.isDirectory() && !st.isSymbolicLink() && isSecureDirForUser(st);
   };
 
+  const hasUsableDirAccess = (st: { mode?: number }): boolean => {
+    if (platform === "win32") {
+      return true;
+    }
+    if (typeof st.mode === "number") {
+      return (st.mode & 0o300) === 0o300;
+    }
+    return false;
+  };
+
   const resolveDirState = (candidatePath: string): "available" | "missing" | "invalid" => {
     try {
       const candidate = lstatSync(candidatePath);
       if (!isTrustedTmpDir(candidate)) {
         return "invalid";
+      }
+      if (hasUsableDirAccess(candidate)) {
+        return "available";
       }
       accessSync(candidatePath, TMP_DIR_ACCESS_MODE);
       return "available";
@@ -170,7 +183,6 @@ export function resolvePreferredVikiClowTmpDir(
 
     for (const base of isolatedRoots) {
       try {
-        accessSync(base, TMP_DIR_ACCESS_MODE);
         const prefix = path.join(base, uid === undefined ? "vikiclow-" : `vikiclow-${uid}-`);
         const isolatedPath = mkdtempSync(prefix);
         try {
