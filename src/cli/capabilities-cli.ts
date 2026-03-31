@@ -1,13 +1,20 @@
 import type { Command } from "commander";
 import { resolveDefaultAgentId, resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
 import {
+  buildCapabilityFoundryRoutes,
   bundleSupportedCapabilities,
   discoverCapabilitySources,
+  discoverCapabilityFoundry,
   fetchCapabilityRecords,
+  ingestCapabilityFoundryCandidates,
+  inspectCapabilityFoundryRegistry,
   inspectCapabilityRegistry,
   ensureBaseCapabilityPack,
   ensureCapabilitiesForObjective,
   loadCapabilityManifest,
+  promoteCapabilityFoundryCandidates,
+  rejectCapabilityFoundryCandidates,
+  sandboxTestCapabilityFoundryCandidates,
 } from "../capabilities/index.js";
 import { loadConfig } from "../config/config.js";
 import { defaultRuntime } from "../runtime.js";
@@ -35,6 +42,20 @@ function formatPlan(plan: Awaited<ReturnType<typeof ensureCapabilitiesForObjecti
   }
   if (plan.generatedSkillPath) {
     lines.push(`Generated skill: ${plan.generatedSkillPath}`);
+  }
+  if (plan.foundry) {
+    lines.push(
+      `Foundry: discovered=${plan.foundry.discovered} promoted=${plan.foundry.promoted} bundled=${plan.foundry.bundled} rejected=${plan.foundry.rejected}`,
+    );
+    if (plan.foundry.routes.length > 0) {
+      lines.push("Foundry routes:");
+      for (const route of plan.foundry.routes) {
+        const reasons = route.reasons.length > 0 ? route.reasons.join(", ") : "none";
+        lines.push(
+          `- ${route.candidateId} (${route.type}) :: ${route.scope}/${route.state} :: score=${route.score} :: ${reasons}`,
+        );
+      }
+    }
   }
   return lines;
 }
@@ -81,6 +102,49 @@ function formatRegistryRecords(records: RegistryRecordLine[]): string[] {
     lines.push(`${record.label}${source}: ${record.status}${objective}${details}`);
   }
   return lines;
+}
+
+type FoundryCandidateLine = {
+  id: string;
+  name: string;
+  type: string;
+  state: string;
+  scope: string;
+  compatibility: string;
+  source: { kind: string; sourceUrl: string };
+  test: { status: string; summary: string; proofPath?: string };
+  rejectionReason?: string;
+};
+
+type FoundryRouteLine = {
+  candidateId: string;
+  name: string;
+  type: string;
+  scope: string;
+  state: string;
+  score: number;
+  reasons: string[];
+};
+
+function formatFoundryCandidates(records: FoundryCandidateLine[]): string[] {
+  if (records.length === 0) {
+    return ["No Capability Foundry candidates recorded yet."];
+  }
+  return records.map((record) => {
+    const rejection = record.rejectionReason ? ` :: rejected=${record.rejectionReason}` : "";
+    const proof = record.test.proofPath ? ` :: proof=${record.test.proofPath}` : "";
+    return `${record.id} :: ${record.name} :: ${record.type} :: ${record.scope}/${record.state} :: ${record.compatibility} :: source=${record.source.kind} :: test=${record.test.status}${proof}${rejection}`;
+  });
+}
+
+function formatFoundryRoutes(routes: FoundryRouteLine[]): string[] {
+  if (routes.length === 0) {
+    return ["No Foundry routes matched this objective."];
+  }
+  return routes.map((route) => {
+    const reasons = route.reasons.length > 0 ? route.reasons.join(", ") : "none";
+    return `${route.candidateId} :: ${route.name} :: ${route.type} :: ${route.scope}/${route.state} :: score=${route.score} :: reasons=${reasons}`;
+  });
 }
 
 function resolveWorkspaceForDefaultAgent(): string {
@@ -270,6 +334,209 @@ export function registerCapabilitiesCli(program: Command) {
           return;
         }
         for (const line of formatPlan(plan)) {
+          defaultRuntime.log(line);
+        }
+      });
+    });
+
+  const foundry = capabilities
+    .command("foundry")
+    .description("Inspect, test, promote, and route Capability Foundry candidates");
+
+  foundry
+    .command("discover")
+    .description("Discover curated Capability Foundry candidates")
+    .option("--workspace <path>", "Workspace directory")
+    .option("--json", "Output JSON", false)
+    .action(async (opts) => {
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        const result = await discoverCapabilityFoundry({
+          workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
+          rootDir: process.cwd(),
+          env: process.env,
+        });
+        if (opts.json) {
+          defaultRuntime.log(JSON.stringify(result, null, 2));
+          return;
+        }
+        defaultRuntime.log(`Registry: ${result.registryPath}`);
+        defaultRuntime.log(`Supported sources: ${result.registry.supportedSources.join(", ") || "none"}`);
+        for (const line of formatFoundryCandidates(result.registry.candidates)) {
+          defaultRuntime.log(line);
+        }
+      });
+    });
+
+  foundry
+    .command("ingest [candidate...]")
+    .description("Fetch and normalize selected Foundry candidates")
+    .option("--workspace <path>", "Workspace directory")
+    .option("--json", "Output JSON", false)
+    .action(async (candidateIds, opts) => {
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        const ids = Array.isArray(candidateIds)
+          ? candidateIds.map((id) => String(id).trim()).filter(Boolean)
+          : [String(candidateIds).trim()].filter(Boolean);
+        if (ids.length === 0) {
+          throw new Error("Provide at least one candidate id.");
+        }
+        const result = await ingestCapabilityFoundryCandidates({
+          ids,
+          workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
+          rootDir: process.cwd(),
+          env: process.env,
+        });
+        if (opts.json) {
+          defaultRuntime.log(JSON.stringify(result, null, 2));
+          return;
+        }
+        defaultRuntime.log(`Registry: ${result.registryPath}`);
+        for (const line of formatFoundryCandidates(result.candidates)) {
+          defaultRuntime.log(line);
+        }
+      });
+    });
+
+  foundry
+    .command("inspect [candidate...]")
+    .description("Inspect Foundry candidates and persist inspection state")
+    .option("--workspace <path>", "Workspace directory")
+    .option("--json", "Output JSON", false)
+    .action(async (candidateIds, opts) => {
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        const ids = Array.isArray(candidateIds)
+          ? candidateIds.map((id) => String(id).trim()).filter(Boolean)
+          : [String(candidateIds).trim()].filter(Boolean);
+        const result = await inspectCapabilityFoundryRegistry({
+          ids: ids.length > 0 ? ids : undefined,
+          workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
+          rootDir: process.cwd(),
+          env: process.env,
+        });
+        if (opts.json) {
+          defaultRuntime.log(JSON.stringify(result, null, 2));
+          return;
+        }
+        defaultRuntime.log(`Registry: ${result.registryPath}`);
+        for (const line of formatFoundryCandidates(result.candidates)) {
+          defaultRuntime.log(line);
+        }
+      });
+    });
+
+  foundry
+    .command("test [candidate...]")
+    .description("Run sandbox/compatibility validation for Foundry candidates")
+    .option("--workspace <path>", "Workspace directory")
+    .option("--json", "Output JSON", false)
+    .action(async (candidateIds, opts) => {
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        const ids = Array.isArray(candidateIds)
+          ? candidateIds.map((id) => String(id).trim()).filter(Boolean)
+          : [String(candidateIds).trim()].filter(Boolean);
+        const result = await sandboxTestCapabilityFoundryCandidates({
+          ids: ids.length > 0 ? ids : undefined,
+          workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
+          rootDir: process.cwd(),
+          env: process.env,
+        });
+        if (opts.json) {
+          defaultRuntime.log(JSON.stringify(result, null, 2));
+          return;
+        }
+        defaultRuntime.log(`Registry: ${result.registryPath}`);
+        for (const line of formatFoundryCandidates(result.candidates)) {
+          defaultRuntime.log(line);
+        }
+      });
+    });
+
+  foundry
+    .command("promote [candidate...]")
+    .description("Promote tested Foundry candidates into runtime registration")
+    .option("--workspace <path>", "Workspace directory")
+    .option("--bundle", "Mark promoted candidates as bundled", false)
+    .option("--json", "Output JSON", false)
+    .action(async (candidateIds, opts) => {
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        const ids = Array.isArray(candidateIds)
+          ? candidateIds.map((id) => String(id).trim()).filter(Boolean)
+          : [String(candidateIds).trim()].filter(Boolean);
+        if (ids.length === 0) {
+          throw new Error("Provide at least one candidate id.");
+        }
+        const result = await promoteCapabilityFoundryCandidates({
+          ids,
+          bundle: opts.bundle === true,
+          workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
+          rootDir: process.cwd(),
+          env: process.env,
+        });
+        if (opts.json) {
+          defaultRuntime.log(JSON.stringify(result, null, 2));
+          return;
+        }
+        defaultRuntime.log(`Registry: ${result.registryPath}`);
+        for (const line of formatFoundryCandidates(result.candidates)) {
+          defaultRuntime.log(line);
+        }
+      });
+    });
+
+  foundry
+    .command("reject [candidate...]")
+    .description("Reject Foundry candidates with a recorded reason")
+    .requiredOption("--reason <text>", "Reason for rejecting the candidate")
+    .option("--workspace <path>", "Workspace directory")
+    .option("--json", "Output JSON", false)
+    .action(async (candidateIds, opts) => {
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        const ids = Array.isArray(candidateIds)
+          ? candidateIds.map((id) => String(id).trim()).filter(Boolean)
+          : [String(candidateIds).trim()].filter(Boolean);
+        if (ids.length === 0) {
+          throw new Error("Provide at least one candidate id.");
+        }
+        const result = await rejectCapabilityFoundryCandidates({
+          ids,
+          reason: String(opts.reason),
+          workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
+          rootDir: process.cwd(),
+          env: process.env,
+        });
+        if (opts.json) {
+          defaultRuntime.log(JSON.stringify(result, null, 2));
+          return;
+        }
+        defaultRuntime.log(`Registry: ${result.registryPath}`);
+        for (const line of formatFoundryCandidates(result.candidates)) {
+          defaultRuntime.log(line);
+        }
+      });
+    });
+
+  foundry
+    .command("routes <objective...>")
+    .description("Score promoted/bundled Foundry candidates against a mission objective")
+    .option("--workspace <path>", "Workspace directory")
+    .option("--json", "Output JSON", false)
+    .action(async (objectiveParts, opts) => {
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        const objective = Array.isArray(objectiveParts)
+          ? objectiveParts.join(" ").trim()
+          : String(objectiveParts);
+        const result = await buildCapabilityFoundryRoutes({
+          objective,
+          workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
+          rootDir: process.cwd(),
+          env: process.env,
+        });
+        if (opts.json) {
+          defaultRuntime.log(JSON.stringify(result, null, 2));
+          return;
+        }
+        defaultRuntime.log(`Registry: ${result.registryPath}`);
+        for (const line of formatFoundryRoutes(result.routes)) {
           defaultRuntime.log(line);
         }
       });
