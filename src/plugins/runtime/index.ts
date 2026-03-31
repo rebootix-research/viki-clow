@@ -15,7 +15,7 @@ import { createRuntimeSystem } from "./runtime-system.js";
 import { createRuntimeTools } from "./runtime-tools.js";
 import type { PluginRuntime } from "./types.js";
 
-let cachedVersion: string | null = null;
+var cachedVersion: string | null = null;
 
 function resolveVersion(): string {
   if (cachedVersion) {

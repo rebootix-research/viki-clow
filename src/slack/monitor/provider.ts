@@ -59,10 +59,7 @@ function resolveSlackBoltConstructors(source: unknown) {
       ? (moduleShape.default as typeof import("@slack/bolt").App)
       : undefined;
 
-  const App =
-    moduleShape?.App ??
-    defaultShape?.App ??
-    defaultCtor;
+  const App = moduleShape?.App ?? defaultShape?.App ?? defaultCtor;
   const HTTPReceiver = moduleShape?.HTTPReceiver ?? defaultShape?.HTTPReceiver;
 
   if (typeof App !== "function" || typeof HTTPReceiver !== "function") {
@@ -71,8 +68,6 @@ function resolveSlackBoltConstructors(source: unknown) {
 
   return { App, HTTPReceiver };
 }
-
-const { App, HTTPReceiver } = resolveSlackBoltConstructors(SlackBolt);
 
 const SLACK_WEBHOOK_MAX_BODY_BYTES = 1024 * 1024;
 const SLACK_WEBHOOK_BODY_TIMEOUT_MS = 30_000;
@@ -114,6 +109,7 @@ function publishSlackDisconnectedStatus(
 }
 
 export async function monitorSlackProvider(opts: MonitorSlackOpts = {}) {
+  const { App, HTTPReceiver } = resolveSlackBoltConstructors(SlackBolt);
   const cfg = opts.config ?? loadConfig();
   const runtime: RuntimeEnv = opts.runtime ?? createNonExitingRuntime();
 
