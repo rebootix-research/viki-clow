@@ -2,6 +2,9 @@ import type { Command } from "commander";
 import { resolveDefaultAgentId, resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
 import {
   bundleSupportedCapabilities,
+  discoverCapabilitySources,
+  fetchCapabilityRecords,
+  inspectCapabilityRegistry,
   ensureBaseCapabilityPack,
   ensureCapabilitiesForObjective,
   loadCapabilityManifest,
@@ -36,6 +39,50 @@ function formatPlan(plan: Awaited<ReturnType<typeof ensureCapabilitiesForObjecti
   return lines;
 }
 
+function formatDiscovery(discovery: Awaited<ReturnType<typeof discoverCapabilitySources>>): string[] {
+  const lines = [`Objective: ${discovery.objective}`];
+  lines.push(`Catalog revision: ${discovery.catalogRevision}`);
+  lines.push(`Inferred: ${discovery.inferred.join(", ") || "none"}`);
+  const sections: Array<[string, typeof discovery.discovered]> = [
+    ["Direct", discovery.direct],
+    ["Related", discovery.related],
+    ["Available", discovery.available],
+  ];
+  for (const [label, records] of sections) {
+    if (records.length === 0) {
+      continue;
+    }
+    lines.push(`${label}:`);
+    for (const record of records) {
+      const reason = record.matchReasons.length > 0 ? ` :: ${record.matchReasons.join(", ")}` : "";
+      lines.push(`- ${record.label} (${record.relevance})${reason}`);
+    }
+  }
+  return lines;
+}
+
+type RegistryRecordLine = {
+  label: string;
+  status: string;
+  details?: string;
+  source?: { kind?: string };
+  objective?: string;
+};
+
+function formatRegistryRecords(records: RegistryRecordLine[]): string[] {
+  if (records.length === 0) {
+    return ["No capability records recorded yet."];
+  }
+  const lines: string[] = [];
+  for (const record of records) {
+    const source = record.source?.kind ? ` [${record.source.kind}]` : "";
+    const objective = record.objective ? ` :: objective=${record.objective}` : "";
+    const details = record.details ? ` :: ${record.details}` : "";
+    lines.push(`${record.label}${source}: ${record.status}${objective}${details}`);
+  }
+  return lines;
+}
+
 function resolveWorkspaceForDefaultAgent(): string {
   const cfg = loadConfig();
   const agentId = resolveDefaultAgentId(cfg);
@@ -62,10 +109,93 @@ export function registerCapabilitiesCli(program: Command) {
           defaultRuntime.log("No capabilities recorded yet.");
           return;
         }
-        for (const record of manifest.records) {
+        defaultRuntime.log(`Catalog revision: ${manifest.catalogRevision}`);
+        for (const line of formatRegistryRecords(manifest.records)) {
+          defaultRuntime.log(line);
+        }
+      });
+    });
+
+  capabilities
+    .command("discover <objective...>")
+    .description("Classify the curated capability catalog against a mission objective")
+    .option("--json", "Output JSON", false)
+    .action(async (objectiveParts, opts) => {
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        const objective = Array.isArray(objectiveParts)
+          ? objectiveParts.join(" ").trim()
+          : String(objectiveParts);
+        const discovery = discoverCapabilitySources({ objective });
+        if (opts.json) {
+          defaultRuntime.log(JSON.stringify(discovery, null, 2));
+          return;
+        }
+        for (const line of formatDiscovery(discovery)) {
+          defaultRuntime.log(line);
+        }
+      });
+    });
+
+  capabilities
+    .command("fetch [capability...]")
+    .description("Inspect and persist selected capability sources")
+    .option("--workspace <path>", "Workspace directory")
+    .option("--objective <text>", "Objective used to annotate generated capabilities")
+    .option("--no-auto-install", "Do not auto-install runtime adapters")
+    .option("--json", "Output JSON", false)
+    .action(async (capabilityIds, opts) => {
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        const ids = Array.isArray(capabilityIds)
+          ? capabilityIds.map((id) => String(id).trim()).filter(Boolean)
+          : [String(capabilityIds).trim()].filter(Boolean);
+        if (ids.length === 0 && !String(opts.objective ?? "").trim()) {
+          throw new Error("Provide at least one capability id or an --objective.");
+        }
+        const objective = String(opts.objective ?? "").trim();
+        const selectedIds =
+          ids.length > 0
+            ? (ids as Parameters<typeof fetchCapabilityRecords>[0]["ids"])
+            : discoverCapabilitySources({ objective }).inferred;
+        const fetched = await fetchCapabilityRecords({
+          ids: selectedIds,
+          objective,
+          workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
+          autoInstall: opts.autoInstall !== false,
+          env: process.env,
+        });
+        if (opts.json) {
+          defaultRuntime.log(JSON.stringify(fetched, null, 2));
+          return;
+        }
+        defaultRuntime.log(`Registry: ${fetched.registryPath}`);
+        for (const record of fetched.records) {
           defaultRuntime.log(
-            `${record.label}: ${record.status}${record.details ? ` :: ${record.details}` : ""}`,
+            `${record.label} (${record.id}): ${record.status}${record.details ? ` :: ${record.details}` : ""}`,
           );
+        }
+      });
+    });
+
+  capabilities
+    .command("inspect [capability...]")
+    .description("Inspect the persisted capability registry")
+    .option("--json", "Output JSON", false)
+    .action(async (capabilityIds, opts) => {
+      await runCommandWithRuntime(defaultRuntime, async () => {
+        const ids = Array.isArray(capabilityIds)
+          ? capabilityIds.map((id) => String(id).trim()).filter(Boolean)
+          : [String(capabilityIds).trim()].filter(Boolean);
+        const inspection = await inspectCapabilityRegistry({
+          ids: ids.length > 0 ? (ids as Parameters<typeof inspectCapabilityRegistry>[0]["ids"]) : undefined,
+        });
+        if (opts.json) {
+          defaultRuntime.log(JSON.stringify(inspection, null, 2));
+          return;
+        }
+        defaultRuntime.log(`Catalog revision: ${inspection.registry.catalogRevision}`);
+        defaultRuntime.log(`Generated at: ${inspection.registry.generatedAt}`);
+        for (const line of formatRegistryRecords(inspection.records)) {
+          defaultRuntime.log(line);
         }
       });
     });

@@ -1,3 +1,5 @@
+import type { CapabilityPlan } from "../capabilities/types.js";
+
 export type MissionTerminalState = "completed" | "failed" | "blocked" | "needs_approval";
 
 export type MissionStatus = "queued" | "running" | MissionTerminalState;
@@ -264,6 +266,7 @@ export type MissionRecord = {
   checkpoint?: MissionCheckpoint;
   proof?: MissionProof;
   backbone?: MissionRuntimeBackbone;
+  capabilityPlan?: CapabilityPlan;
   resume: MissionResume;
   attempts: MissionAttempt[];
   terminalMessage?: string;

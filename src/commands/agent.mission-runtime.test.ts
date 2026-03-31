@@ -36,6 +36,8 @@ vi.mock("../capabilities/runtime.js", () => ({
     missing: [],
     failed: [],
   })),
+  formatCapabilityPlanLines: vi.fn(() => []),
+  summarizeCapabilityPlan: vi.fn(() => ""),
 }));
 
 vi.mock("../agents/auth-profiles.js", async (importOriginal) => {

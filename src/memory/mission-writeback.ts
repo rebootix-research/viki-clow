@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { formatCapabilityPlanLines } from "../capabilities/runtime.js";
 import type { MissionRecord } from "../missions/types.js";
 import { shortenHomePath } from "../utils.js";
 
@@ -85,6 +86,13 @@ function buildMissionMemoryWritebackMarkdown(record: MissionRecord, recordedAt: 
       lines.push(
         `- Latest approval: ${lastApproval.status}${lastApproval.command ? ` :: ${lastApproval.command}` : ""}`,
       );
+    }
+  }
+
+  if (record.capabilityPlan) {
+    lines.push("- Capability foundry:");
+    for (const line of formatCapabilityPlanLines(record.capabilityPlan)) {
+      lines.push(`  ${line}`);
     }
   }
 

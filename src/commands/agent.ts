@@ -191,6 +191,33 @@ function formatCapabilityPlanPrompt(
     }
     lines.push(`${label}: ${records.map((record) => record.id).join(", ")}`);
   }
+  if (plan.routing && plan.routing.length > 0) {
+    lines.push("Routing:");
+    for (const route of plan.routing) {
+      const hints = route.matchedHints.length > 0 ? ` hints=${route.matchedHints.join(",")}` : "";
+      const derivedFrom =
+        route.derivedFrom && route.derivedFrom.length > 0
+          ? ` derivedFrom=${route.derivedFrom.join(",")}`
+          : "";
+      lines.push(
+        `- ${route.id} :: source=${route.source}${derivedFrom}${hints} :: usage=${route.usageCount}`,
+      );
+    }
+  }
+  if (plan.foundry) {
+    lines.push(
+      `Foundry: discovered=${plan.foundry.discovered} promoted=${plan.foundry.promoted} bundled=${plan.foundry.bundled} rejected=${plan.foundry.rejected}`,
+    );
+    if (plan.foundry.routes.length > 0) {
+      lines.push("Foundry routes:");
+      for (const route of plan.foundry.routes) {
+        const reasons = route.reasons.length > 0 ? route.reasons.join(",") : "none";
+        lines.push(
+          `- ${route.candidateId} :: ${route.type} :: ${route.scope}/${route.state} :: score=${route.score} :: reasons=${reasons}`,
+        );
+      }
+    }
+  }
   if (plan.generatedSkillPath) {
     lines.push(`Generated skill: ${plan.generatedSkillPath}`);
   }

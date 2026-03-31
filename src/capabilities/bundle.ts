@@ -21,8 +21,11 @@ import {
   ensureVoiceRuntimeBootstrap,
   type VoiceRuntimeBootstrapStatus,
 } from "../voice/runtime-bootstrap.js";
+import {
+  refreshCapabilityFoundry,
+} from "./foundry.js";
 import { ensureBaseCapabilityPack } from "./runtime.js";
-import type { CapabilityPlan } from "./types.js";
+import type { CapabilityFoundryRegistry, CapabilityFoundryRoute, CapabilityPlan } from "./types.js";
 
 export type BundledSkillStatus = "ready" | "installed" | "available" | "skipped" | "failed";
 export type BundledPluginStatus = "enabled" | "available" | "skipped" | "failed";
@@ -67,6 +70,17 @@ export type CapabilityBundleInventory = {
   memory: {
     graphitiProofPath: string;
     delegatedBackend?: string;
+  };
+  foundry: {
+    registryPath: string;
+    supportedSources: string[];
+    sourceCatalogRevision: string;
+    discovered: number;
+    promoted: number;
+    bundled: number;
+    rejected: number;
+    routes: CapabilityFoundryRoute[];
+    registry: CapabilityFoundryRegistry;
   };
   plugins: BundledPluginInventoryEntry[];
   skills: BundledSkillInventoryEntry[];
@@ -446,6 +460,27 @@ export async function bundleSupportedCapabilities(params: {
     delegatedBackend: memoryConfig?.neo4jUri ? "neo4j-or-shadow" : "local-shadow",
     lastSyncReason: "capability-bundle",
   });
+  const foundry = await refreshCapabilityFoundry({
+    workspaceDir: params.workspaceDir,
+    rootDir,
+    env,
+    includeRemote: false,
+  });
+  const foundryRoutes = foundry.registry.candidates
+    .filter((candidate) => candidate.state === "promoted" || candidate.state === "bundled")
+    .slice(0, 12)
+    .map((candidate) => ({
+      candidateId: candidate.id,
+      name: candidate.name,
+      type: candidate.type,
+      score: candidate.state === "bundled" ? 2 : 1,
+      reasons: candidate.classification.selectionNotes,
+      scope: candidate.scope,
+      state: candidate.state,
+      sourceUrl: candidate.source.sourceUrl,
+      registration: candidate.registration,
+      usage: candidate.usage,
+    }));
 
   let sourceProofPath: string | undefined;
   let sourceMarkdownPath: string | undefined;
@@ -483,6 +518,17 @@ export async function bundleSupportedCapabilities(params: {
     memory: {
       graphitiProofPath: graphitiProof.paths.proofPath,
       delegatedBackend: graphitiProof.delegatedBackend,
+    },
+    foundry: {
+      registryPath: foundry.registryPath,
+      supportedSources: foundry.registry.supportedSources,
+      sourceCatalogRevision: foundry.registry.sourceCatalogRevision,
+      discovered: foundry.discovered,
+      promoted: foundry.promoted.length,
+      bundled: foundry.bundled.length,
+      rejected: foundry.rejected,
+      routes: foundryRoutes,
+      registry: foundry.registry,
     },
     plugins: pluginBundle.entries,
     skills: skillBundle.entries,
@@ -522,6 +568,20 @@ export async function bundleSupportedCapabilities(params: {
     "",
     `- Graphiti proof: \`${inventory.memory.graphitiProofPath}\``,
     `- Delegated backend: \`${inventory.memory.delegatedBackend ?? "local-shadow"}\``,
+    "",
+    "## Capability Foundry",
+    "",
+    `- Registry: \`${inventory.foundry.registryPath}\``,
+    `- Supported sources: \`${inventory.foundry.supportedSources.join(", ") || "none"}\``,
+    `- Discovered: \`${inventory.foundry.discovered}\``,
+    `- Promoted: \`${inventory.foundry.promoted}\``,
+    `- Bundled: \`${inventory.foundry.bundled}\``,
+    `- Rejected: \`${inventory.foundry.rejected}\``,
+    "",
+    ...inventory.foundry.routes.map(
+      (route) =>
+        `- \`${route.candidateId}\` — ${route.name} (${route.type}) :: score=${route.score} :: ${route.scope}/${route.state}`,
+    ),
     "",
     "## Enabled Plugins",
     "",

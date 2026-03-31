@@ -162,6 +162,27 @@ describe("mission runtime", () => {
         ],
         missing: [],
         failed: [],
+        routing: [
+          {
+            id: "playwright",
+            source: "objective",
+            matchedHints: ["browser", "web", "playwright"],
+            usageCount: 1,
+          },
+          {
+            id: "browser_profiles",
+            source: "derived",
+            matchedHints: ["playwright"],
+            derivedFrom: ["playwright"],
+            usageCount: 1,
+          },
+          {
+            id: "generated_skill",
+            source: "objective",
+            matchedHints: ["skill", "workflow", "automation"],
+            usageCount: 1,
+          },
+        ],
         generatedSkillPath: "/tmp/workspace/skills/generated-browser-skill/SKILL.md",
       });
 
@@ -170,10 +191,23 @@ describe("mission runtime", () => {
       expect(record?.artifacts.some((artifact) => artifact.label === "Capability preflight")).toBe(
         true,
       );
+      expect(record?.capabilityPlan?.routing?.some((route) => route.id === "browser_profiles")).toBe(
+        true,
+      );
       expect(
         record?.artifacts.some((artifact) => artifact.label === "Generated mission skill"),
       ).toBe(true);
       expect(record?.checkpoint?.summary).toContain("Capability preflight");
+      const memoryDir = path.join(workspaceDir, "memory");
+      const memoryFiles = await fs.readdir(memoryDir);
+      const writebackFile = memoryFiles.find((entry) => entry.endsWith(".md"));
+      expect(writebackFile).toBeDefined();
+      const writebackContents = await fs.readFile(
+        path.join(memoryDir, writebackFile ?? ""),
+        "utf8",
+      );
+      expect(writebackContents).toContain("Capability foundry:");
+      expect(writebackContents).toContain("browser_profiles");
     });
   });
 

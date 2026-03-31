@@ -170,6 +170,34 @@ jobs:
           path: .artifacts/release-proof/
           retention-days: 7
 
+  capabilities-proof:
+    name: Capability Foundry proof
+    needs: [docs-scope, changed-scope, check]
+    if: needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_node == 'true')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Setup Node environment
+        uses: ./.github/actions/setup-node-env
+        with:
+          install-bun: "false"
+          use-sticky-disk: "false"
+
+      - name: Run capability foundry proof
+        run: pnpm capabilities:proof
+
+      - name: Upload capability foundry proof artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: capability-bundle-proof
+          path: .artifacts/capability-bundle/
+          retention-days: 7
+
   checks:
     needs: [docs-scope, changed-scope]
     if: needs.docs-scope.outputs.docs_only != 'true' && (github.event_name == 'push' || needs.changed-scope.outputs.run_node == 'true')

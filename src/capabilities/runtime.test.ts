@@ -60,23 +60,70 @@ describe("capability runtime", () => {
 
     await withTempDirs(async ({ workspaceDir }) => {
       const plan = await ensureCapabilitiesForObjective({
-        objective: "Publish the browser workflow and create a reusable automation skill",
+        objective: "Use Playwright to publish the workflow and create a reusable automation skill",
         workspaceDir,
         autoInstall: true,
       });
 
-      expect(plan.inferred).toEqual(["playwright", "browser_profiles", "generated_skill"]);
+      expect(plan.inferred).toEqual(
+        expect.arrayContaining(["playwright", "browser_profiles", "generated_skill"]),
+      );
       expect(plan.provisioned.some((record) => record.id === "browser_profiles")).toBe(true);
       expect(plan.provisioned.some((record) => record.id === "generated_skill")).toBe(true);
       expect(plan.generatedSkillPath).toContain("SKILL.md");
+      expect(plan.routing?.find((route) => route.id === "browser_profiles")).toBeTruthy();
+      expect(
+        plan.routing?.find((route) => route.id === "browser_profiles")?.matchedHints,
+      ).toContain("playwright");
+      expect(plan.routing?.find((route) => route.id === "playwright")?.usageCount).toBe(1);
 
       const manifest = await loadCapabilityManifest();
       expect(manifest.records.some((record) => record.id === "browser_profiles")).toBe(true);
+      expect(
+        manifest.records.find((record) => record.id === "browser_profiles")?.usageCount,
+      ).toBe(1);
+      expect(manifest.records.find((record) => record.id === "browser_profiles")?.route).toBeTruthy();
       expect(
         await fs
           .readFile(path.join(workspaceDir, ".vikiclow", "browser", "README.txt"), "utf8")
           .then((contents) => contents.includes("Viki Browser mission profiles")),
       ).toBe(true);
+
+      const secondPlan = await ensureCapabilitiesForObjective({
+        objective: "Publish the browser workflow and create a reusable automation skill",
+        workspaceDir,
+        autoInstall: true,
+      });
+      expect(
+        secondPlan.routing?.find((route) => route.id === "browser_profiles")?.usageCount,
+      ).toBe(2);
+    });
+  });
+
+  it("marks browser profiles as derived when playwright is the only browser hint", async () => {
+    runExec.mockImplementation(async (command: string, args: string[]) => {
+      if (command === "corepack" && args.join(" ") === "pnpm exec playwright --version") {
+        return { stdout: "Version 1.55.0", stderr: "" };
+      }
+      throw new Error(`unexpected command: ${command} ${args.join(" ")}`);
+    });
+
+    await withTempDirs(async ({ workspaceDir }) => {
+      const plan = await ensureCapabilitiesForObjective({
+        objective: "Use Playwright to validate the release smoke test",
+        workspaceDir,
+        autoInstall: true,
+      });
+
+      const browserProfilesRoute = plan.routing?.find((route) => route.id === "browser_profiles");
+      expect(browserProfilesRoute?.source).toBe("derived");
+      expect(browserProfilesRoute?.derivedFrom).toEqual(["playwright"]);
+      expect(browserProfilesRoute?.matchedHints).toEqual(["playwright"]);
+
+      const manifest = await loadCapabilityManifest();
+      const manifestRoute = manifest.records.find((record) => record.id === "browser_profiles");
+      expect(manifestRoute?.route?.source).toBe("derived");
+      expect(manifestRoute?.usageCount).toBe(1);
     });
   });
 

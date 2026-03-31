@@ -3,6 +3,7 @@ import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import net from "node:net";
 import path from "node:path";
+import { summarizeCapabilityPlan } from "../capabilities/runtime.js";
 import { resolveStateDir } from "../config/paths.js";
 import type { MissionRecord } from "../missions/types.js";
 import type { ResolvedGraphitiConfig } from "./backend-config.js";
@@ -73,6 +74,7 @@ export type GraphitiBackboneEntry = {
   workspaceDir?: string;
   writebackPath?: string;
   writebackRelativePath?: string;
+  capabilitySummary?: string;
   terminalMessage?: string;
   evidenceCount: number;
   artifactCount: number;
@@ -93,6 +95,7 @@ export type GraphitiBackboneProof = {
   latestMissionId?: string;
   latestWritebackPath?: string;
   latestWritebackRelativePath?: string;
+  latestCapabilitySummary?: string;
   latestStatus?: string;
   latestSummary?: string;
   neo4j: GraphitiNeo4jState;
@@ -120,7 +123,12 @@ function summarizeMission(record: MissionRecord): string {
   const checkpoint = record.checkpoint?.summary?.trim();
   const terminal = record.terminalMessage?.trim();
   const summary = terminal || checkpoint || record.currentState || record.objective;
-  return `${record.id} :: ${status} :: ${summary}`;
+  const capabilitySummary = record.capabilityPlan
+    ? summarizeCapabilityPlan(record.capabilityPlan)
+    : "";
+  return [record.id, status, summary, capabilitySummary ? `capabilities=${capabilitySummary}` : ""]
+    .filter(Boolean)
+    .join(" :: ");
 }
 
 function scoreMissionEntry(entry: GraphitiBackboneEntry, query: string): number {
@@ -129,6 +137,7 @@ function scoreMissionEntry(entry: GraphitiBackboneEntry, query: string): number 
     entry.objective,
     entry.status,
     entry.summary,
+    entry.capabilitySummary ?? "",
     entry.terminalMessage ?? "",
     entry.writebackRelativePath ?? "",
   ]
@@ -286,6 +295,7 @@ export function buildGraphitiNeo4jMissionQuery(): string {
     "    mission.sessionId = $sessionId,",
     "    mission.sessionKey = $sessionKey,",
     "    mission.workspaceDir = $workspaceDir,",
+    "    mission.capabilitySummary = $capabilitySummary,",
     "    mission.terminalMessage = $terminalMessage,",
     "    mission.summary = $summary,",
     "    mission.evidenceCount = $evidenceCount,",
@@ -312,6 +322,7 @@ export function buildGraphitiNeo4jSearchQuery(): string {
     "OPTIONAL MATCH (mission)-[:WROTE_BACK]->(writeback:VikiWriteback)",
     "WHERE toLower(coalesce(mission.objective, '')) CONTAINS $query",
     "   OR toLower(coalesce(mission.summary, '')) CONTAINS $query",
+    "   OR toLower(coalesce(mission.capabilitySummary, '')) CONTAINS $query",
     "   OR toLower(coalesce(mission.terminalMessage, '')) CONTAINS $query",
     "   OR toLower(coalesce(writeback.relativePath, '')) CONTAINS $query",
     "RETURN mission.missionId AS missionId,",
@@ -375,6 +386,7 @@ async function syncGraphitiEntryToNeo4j(
         sessionId: entry.sessionId ?? null,
         sessionKey: entry.sessionKey ?? null,
         workspaceDir: entry.workspaceDir ?? null,
+        capabilitySummary: entry.capabilitySummary ?? null,
         terminalMessage: entry.terminalMessage ?? null,
         summary: entry.summary,
         evidenceCount: entry.evidenceCount,
@@ -434,6 +446,9 @@ export async function recordGraphitiMissionWriteback(params: {
     workspaceDir: params.record.workspaceDir,
     writebackPath: params.writeback?.path,
     writebackRelativePath: params.writeback?.relativePath,
+    capabilitySummary: params.record.capabilityPlan
+      ? summarizeCapabilityPlan(params.record.capabilityPlan)
+      : undefined,
     terminalMessage: params.record.terminalMessage,
     evidenceCount: params.record.evidence.length,
     artifactCount: params.record.artifacts.length,
@@ -485,6 +500,7 @@ export async function writeGraphitiBackboneProof(params: {
     latestMissionId: latest?.missionId,
     latestWritebackPath: latest?.writebackPath,
     latestWritebackRelativePath: latest?.writebackRelativePath,
+    latestCapabilitySummary: latest?.capabilitySummary,
     latestStatus: latest?.status,
     latestSummary: latest?.summary,
     neo4j,

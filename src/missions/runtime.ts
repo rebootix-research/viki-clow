@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import type { CapabilityPlan } from "../capabilities/types.js";
+import { summarizeCapabilityPlan } from "../capabilities/runtime.js";
 import type { AgentEventPayload } from "../infra/agent-events.js";
 import { recordGraphitiMissionWriteback } from "../memory/graphiti-backbone.js";
 import { appendMissionMemoryWriteback } from "../memory/mission-writeback.js";
@@ -435,11 +436,13 @@ export class MissionRunTracker {
       plan.failed.length > 0 ? `failed=${plan.failed.map((record) => record.id).join(",")}` : "",
     ].filter(Boolean);
     const summary = summaryParts.length > 0 ? summaryParts.join(" | ") : "No capability changes";
+    const capabilitySummary = summarizeCapabilityPlan(plan) || summary;
     await this.queueUpdate((record) => {
+      record.capabilityPlan = plan;
       appendArtifact(record, {
         kind: "evidence",
         label: "Capability preflight",
-        value: summary,
+        value: capabilitySummary,
         createdAt: Date.now(),
       });
       if (plan.generatedSkillPath) {

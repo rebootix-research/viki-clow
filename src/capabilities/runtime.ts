@@ -1,9 +1,16 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { runExec } from "../process/exec.js";
-import { CAPABILITY_SPECS, inferCapabilityIdsForObjective } from "./catalog.js";
-import { upsertCapabilityRecords } from "./store.js";
-import type { CapabilityId, CapabilityPlan, CapabilityRecord } from "./types.js";
+import { CAPABILITY_SPECS, buildCapabilityRouting, inferCapabilityIdsForObjective } from "./catalog.js";
+import { buildCapabilityFoundryRoutes, refreshCapabilityFoundry } from "./foundry.js";
+import { loadCapabilityManifest, upsertCapabilityRecords } from "./store.js";
+import type {
+  CapabilityId,
+  CapabilityPlan,
+  CapabilityRecord,
+  CapabilityRouteMetadata,
+  CapabilityRouteSource,
+} from "./types.js";
 
 const BASE_CAPABILITY_PACK: CapabilityId[] = [
   "git",
@@ -18,7 +25,11 @@ type EnsureCapabilityParams = {
   workspaceDir?: string;
   objective: string;
   autoInstall: boolean;
+  env?: NodeJS.ProcessEnv;
 };
+
+type CapabilityPlanRoute = NonNullable<CapabilityPlan["routing"]>[number];
+type CapabilityFoundryPlan = NonNullable<CapabilityPlan["foundry"]>;
 
 async function checkCommand(
   command: string,
@@ -53,6 +64,88 @@ function makeRecord(
     checkedAt: new Date().toISOString(),
     details,
   };
+}
+
+function buildRouteMetadata(
+  params: {
+    id: CapabilityId;
+    inferred: Set<CapabilityId>;
+    objectiveRoutes: Map<CapabilityId, string[]>;
+  },
+  source: CapabilityRouteSource,
+): CapabilityRouteMetadata {
+  if (source === "bootstrap") {
+    return {
+      source,
+      matchedHints: [],
+    };
+  }
+  const directMatch = params.objectiveRoutes.get(params.id) ?? [];
+  if (directMatch.length > 0) {
+    return {
+      source,
+      matchedHints: directMatch,
+    };
+  }
+  if (params.id === "browser_profiles" && params.inferred.has("playwright")) {
+    return {
+      source: "derived",
+      matchedHints: ["playwright"],
+      derivedFrom: ["playwright" as CapabilityId],
+    };
+  }
+  return {
+    source,
+    matchedHints: [],
+  };
+}
+
+function attachUsageMetadata(
+  record: CapabilityRecord,
+  existing: CapabilityRecord | undefined,
+  route: CapabilityRouteMetadata,
+  objective: string,
+  inspectedBy: "bootstrap" | "plan",
+): CapabilityRecord {
+  return {
+    ...record,
+    objective,
+    matchedHints: route.matchedHints,
+    inspectedBy,
+    route,
+    usageCount: (existing?.usageCount ?? 0) + 1,
+  };
+}
+
+async function annotateCapabilityRecords(params: {
+  objective: string;
+  inferred: CapabilityId[];
+  records: CapabilityRecord[];
+  source: CapabilityRouteSource;
+  env?: NodeJS.ProcessEnv;
+}): Promise<CapabilityRecord[]> {
+  const manifest = await loadCapabilityManifest(params.env);
+  const existingById = new Map(manifest.records.map((record) => [record.id, record] as const));
+  const objectiveRoutes = new Map(
+    buildCapabilityRouting(params.objective).map((entry) => [entry.id, entry.matchedHints] as const),
+  );
+  const inferred = new Set(params.inferred);
+  return params.records.map((record) =>
+    attachUsageMetadata(
+      record,
+      existingById.get(record.id),
+      buildRouteMetadata(
+        {
+          id: record.id,
+          inferred,
+          objectiveRoutes,
+        },
+        params.source,
+      ),
+      params.objective,
+      params.source === "bootstrap" ? "bootstrap" : "plan",
+    ),
+  );
 }
 
 async function ensureCoreCommandCapability(
@@ -201,16 +294,59 @@ function sortRecords(records: CapabilityRecord[]): CapabilityRecord[] {
   return records.toSorted((left, right) => left.label.localeCompare(right.label));
 }
 
+async function resolveFoundryPlan(params: {
+  objective: string;
+  workspaceDir?: string;
+  env?: NodeJS.ProcessEnv;
+}): Promise<CapabilityFoundryPlan> {
+  const workspaceDir = params.workspaceDir?.trim() || process.cwd();
+  const refreshed = await refreshCapabilityFoundry({
+    workspaceDir,
+    rootDir: process.cwd(),
+    env: params.env,
+    includeRemote: false,
+  });
+  const routes = await buildCapabilityFoundryRoutes({
+    objective: params.objective,
+    workspaceDir,
+    rootDir: process.cwd(),
+    env: params.env,
+    limit: 8,
+  });
+  return {
+    registryPath: refreshed.registryPath,
+    discovered: refreshed.discovered,
+    promoted: refreshed.promoted.length,
+    bundled: refreshed.bundled.length,
+    rejected: refreshed.rejected,
+    routes: routes.routes,
+  };
+}
+
 function buildPlan(
   objective: string,
   inferred: CapabilityId[],
   records: CapabilityRecord[],
+  foundry?: CapabilityFoundryPlan,
 ): CapabilityPlan {
   const ready = sortRecords(records.filter((record) => record.status === "ready"));
   const provisioned = sortRecords(records.filter((record) => record.status === "provisioned"));
   const missing = sortRecords(records.filter((record) => record.status === "missing"));
   const failed = sortRecords(records.filter((record) => record.status === "failed"));
   const generatedSkillRecord = records.find((record) => record.id === "generated_skill");
+  const routing: CapabilityPlanRoute[] = [];
+  for (const record of records) {
+    if (!record.route) {
+      continue;
+    }
+    routing.push({
+      id: record.id,
+      matchedHints: record.route.matchedHints,
+      source: record.route.source,
+      usageCount: record.usageCount ?? 0,
+      ...(record.route.derivedFrom ? { derivedFrom: record.route.derivedFrom } : {}),
+    } as CapabilityPlanRoute);
+  }
   return {
     objective,
     inferred,
@@ -218,11 +354,112 @@ function buildPlan(
     provisioned,
     missing,
     failed,
+    routing,
+    foundry,
     generatedSkillPath:
       generatedSkillRecord?.details && generatedSkillRecord.status !== "missing"
         ? generatedSkillRecord.details
         : undefined,
   };
+}
+
+export function formatCapabilityPlanLines(plan: CapabilityPlan): string[] {
+  const lines = [`Objective: ${plan.objective}`];
+  if (plan.inferred.length > 0) {
+    lines.push(`Inferred: ${plan.inferred.join(", ")}`);
+  }
+  const sections: Array<[string, CapabilityRecord[]]> = [
+    ["Ready", plan.ready],
+    ["Provisioned", plan.provisioned],
+    ["Missing", plan.missing],
+    ["Failed", plan.failed],
+  ];
+  for (const [label, records] of sections) {
+    if (records.length === 0) {
+      continue;
+    }
+    lines.push(`${label}:`);
+    for (const record of records) {
+      lines.push(`- ${record.label}${record.details ? ` :: ${record.details}` : ""}`);
+    }
+  }
+  if (plan.routing && plan.routing.length > 0) {
+    lines.push("Routing:");
+    for (const route of plan.routing) {
+      const hints = route.matchedHints.length > 0 ? ` hints=${route.matchedHints.join(",")}` : "";
+      const derivedFrom =
+        route.derivedFrom && route.derivedFrom.length > 0
+          ? ` derivedFrom=${route.derivedFrom.join(",")}`
+          : "";
+      lines.push(
+        `- ${route.id} :: source=${route.source}${derivedFrom}${hints} :: usage=${route.usageCount}`,
+      );
+    }
+  }
+  if (plan.foundry) {
+    lines.push(
+      `Foundry: discovered=${plan.foundry.discovered} promoted=${plan.foundry.promoted} bundled=${plan.foundry.bundled} rejected=${plan.foundry.rejected}`,
+    );
+    if (plan.foundry.routes.length > 0) {
+      lines.push("Foundry routes:");
+      for (const route of plan.foundry.routes) {
+        const reasons = route.reasons.length > 0 ? route.reasons.join(",") : "none";
+        lines.push(
+          `- ${route.candidateId} :: ${route.type} :: ${route.scope}/${route.state} :: score=${route.score} :: reasons=${reasons}`,
+        );
+      }
+    }
+  }
+  if (plan.generatedSkillPath) {
+    lines.push(`Generated skill: ${plan.generatedSkillPath}`);
+  }
+  return lines;
+}
+
+export function summarizeCapabilityPlan(plan: CapabilityPlan): string {
+  const routeSummary =
+    plan.routing && plan.routing.length > 0
+      ? plan.routing
+          .map((route) => {
+            const hints = route.matchedHints.length > 0 ? route.matchedHints.join(",") : "none";
+            const derivedFrom =
+              route.derivedFrom && route.derivedFrom.length > 0
+                ? ` derivedFrom=${route.derivedFrom.join(",")}`
+                : "";
+            return `${route.id}:${route.source}${derivedFrom}:${hints}#${route.usageCount}`;
+          })
+          .join(" | ")
+      : "";
+  const foundrySummary = plan.foundry
+    ? [
+        `foundry=${plan.foundry.discovered}/${plan.foundry.promoted}/${plan.foundry.bundled}/${plan.foundry.rejected}`,
+        plan.foundry.routes.length > 0
+          ? `foundry-routes=${plan.foundry.routes
+              .map((route) => `${route.candidateId}:${route.score}`)
+              .join(",")}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" | ")
+    : "";
+  const statusSummary = [
+    plan.ready.length > 0 ? `ready=${plan.ready.map((record) => record.id).join(",")}` : "",
+    plan.provisioned.length > 0
+      ? `provisioned=${plan.provisioned.map((record) => record.id).join(",")}`
+      : "",
+    plan.missing.length > 0 ? `missing=${plan.missing.map((record) => record.id).join(",")}` : "",
+    plan.failed.length > 0 ? `failed=${plan.failed.map((record) => record.id).join(",")}` : "",
+  ]
+    .filter(Boolean)
+    .join(" | ");
+  return [
+    statusSummary,
+    routeSummary,
+    foundrySummary,
+    plan.generatedSkillPath ? `skill=${plan.generatedSkillPath}` : "",
+  ]
+    .filter(Boolean)
+    .join(" | ");
 }
 
 export async function ensureCapabilitiesForObjective(params: {
@@ -249,8 +486,20 @@ export async function ensureCapabilitiesForObjective(params: {
       }),
     ),
   );
-  await upsertCapabilityRecords(records, params.env);
-  return buildPlan(objective, unique, records);
+  const annotated = await annotateCapabilityRecords({
+    objective,
+    inferred: unique,
+    records,
+    source: "objective",
+    env: params.env,
+  });
+  await upsertCapabilityRecords(annotated, params.env);
+  const foundry = await resolveFoundryPlan({
+    objective,
+    workspaceDir: params.workspaceDir,
+    env: params.env,
+  });
+  return buildPlan(objective, unique, annotated, foundry);
 }
 
 export async function ensureBaseCapabilityPack(params: {
@@ -268,6 +517,18 @@ export async function ensureBaseCapabilityPack(params: {
       }),
     ),
   );
-  await upsertCapabilityRecords(records, params.env);
-  return buildPlan(objective, [...BASE_CAPABILITY_PACK], records);
+  const annotated = await annotateCapabilityRecords({
+    objective,
+    inferred: [...BASE_CAPABILITY_PACK],
+    records,
+    source: "bootstrap",
+    env: params.env,
+  });
+  await upsertCapabilityRecords(annotated, params.env);
+  const foundry = await resolveFoundryPlan({
+    objective,
+    workspaceDir: params.workspaceDir,
+    env: params.env,
+  });
+  return buildPlan(objective, [...BASE_CAPABILITY_PACK], annotated, foundry);
 }

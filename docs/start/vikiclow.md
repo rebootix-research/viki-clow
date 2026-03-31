@@ -1,5 +1,5 @@
 ---
-summary: "Operator guide for running VikiClow as your durable execution system."
+summary: "Operator guide for running VikiClow as a durable execution system."
 read_when:
   - Onboarding a dedicated VikiClow instance
   - Deciding how to run VikiClow safely on a personal machine
@@ -17,6 +17,7 @@ That means:
 - one visible browser runtime
 - one memory backbone
 - one bundled capability set that is ready before the first serious mission
+- one Capability Foundry inventory that records what can be discovered, promoted, and routed
 
 ## What VikiClow can do
 
@@ -29,6 +30,7 @@ It can:
 - speak, transcribe, and keep voice readiness visible
 - use local-computer and device-linked execution paths
 - persist writeback and graph-style memory across runs
+- discover curated capabilities, sandbox them, promote them, and register them at runtime
 
 ## Recommended operator shape
 
@@ -39,6 +41,7 @@ flowchart TB
   B --> D["Viki Browser"]
   B --> E["Voice runtime"]
   B --> F["Persistent memory"]
+  B --> G["Capability Foundry"]
 ```
 
 ## Fast setup
@@ -54,7 +57,8 @@ That path now expects:
 - bundled capability bootstrap
 - mandatory voice readiness
 - browser runtime support
-- mission/memory state directories
+- Capability Foundry inventory and proof
+- mission and memory state directories
 
 ### 2. Start the gateway
 
@@ -68,9 +72,22 @@ vikiclow gateway --port 18789
 vikiclow browser verify-native --json
 vikiclow memory graphiti status
 corepack pnpm execution:proof
+corepack pnpm capabilities:proof
 ```
 
-### 4. Run a real mission
+The capability proof refreshes the bundled inventory, provenance, routing hints, and proof artifacts so you can confirm the Capability Foundry lane is healthy before a serious mission.
+
+### 4. Inspect capability routing
+
+```bash
+vikiclow capabilities list
+vikiclow capabilities discover "publish a browser workflow"
+vikiclow capabilities fetch playwright browser_profiles
+vikiclow capabilities plan "create a reusable automation skill"
+vikiclow capabilities bundle
+```
+
+### 5. Run a real mission
 
 ```bash
 vikiclow agent --message "Open the release dashboard, verify the browser session, and finish the task end to end."
@@ -103,6 +120,7 @@ It is part of the runtime contract, not just prompt text:
 - `TOOLS.md`
 - `HEARTBEAT.md`
 - mission writeback under `memory/`
+- Capability Foundry inventory under `capabilities/foundry/`
 
 ## Operational stance
 
@@ -111,7 +129,7 @@ Recommended defaults:
 - keep tool access narrow until trust is established
 - use approvals for high-impact actions
 - inspect proofs and backbones, not just replies
-- treat browser and memory artifacts as the real audit trail
+- treat browser, memory, and capability artifacts as the real audit trail
 
 ## Next docs
 
@@ -119,3 +137,4 @@ Recommended defaults:
 - [Browser](/tools/browser)
 - [Memory](/concepts/memory)
 - [Security](/gateway/security)
+- [Capability Foundry](/tools/vikiclow-skills)

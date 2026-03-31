@@ -37,6 +37,29 @@ describe("mission memory writeback", () => {
       evidence: [],
       resume: { enabled: true },
       attempts: [],
+      capabilityPlan: {
+        objective: "Verify the browser flow",
+        inferred: ["playwright", "browser_profiles"],
+        ready: [],
+        provisioned: [],
+        missing: [],
+        failed: [],
+        routing: [
+          {
+            id: "playwright",
+            source: "objective",
+            matchedHints: ["browser", "playwright"],
+            usageCount: 3,
+          },
+          {
+            id: "browser_profiles",
+            source: "derived",
+            matchedHints: ["playwright"],
+            derivedFrom: ["playwright"],
+            usageCount: 3,
+          },
+        ],
+      },
       workspaceDir,
       agentId: "main",
       sessionId: "session-1",
@@ -56,6 +79,8 @@ describe("mission memory writeback", () => {
       expect(contents).toContain("## Mission Writeback");
       expect(contents).toContain("Mission: mission-123");
       expect(contents).toContain("Status: completed");
+      expect(contents).toContain("Capability foundry:");
+      expect(contents).toContain("browser_profiles");
 
       const second = await appendMissionMemoryWriteback(record, {
         nowMs: Date.UTC(2026, 2, 24, 12, 0, 0),
