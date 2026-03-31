@@ -4,6 +4,42 @@
 
 Finalize the Capability Foundry upgrade by proving the shipped CLI entrypoint, bundle inventory, mission writeback, and persisted foundry registry work end-to-end, then publish the branch update and verify GitHub Actions on the pushed SHA.
 
+## Capability Foundry Workflow Closure Pass
+
+### Remaining Blockers Before This Pass
+
+- `CI` on the follow-up branch delta was still red because `zizmor` flagged `.github/workflows/auto-response.yml` and `.github/workflows/labeler.yml` for `dangerous-triggers`.
+- The fix had not yet been merged back onto protected `main`, so the required green workflow state did not yet exist on the default branch for the updated workflow files.
+
+### Completed Workstreams In This Pass
+
+- Moved the `zizmor` suppressions onto the exact `on:` nodes in [auto-response.yml](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.github/workflows/auto-response.yml) and [labeler.yml](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.github/workflows/labeler.yml) so the `dangerous-triggers` audit passes locally.
+- Revalidated the exact failing audit with `uvx pre-commit run zizmor --files .github/workflows/auto-response.yml .github/workflows/labeler.yml`.
+- Published the workflow-only follow-up commit `6b586eb2843d450ad0746dbda8c7a374049f44da` on `codex/capability-foundry-bundle-proof`, ready for a small merge-back PR onto `main`.
+
+### Exact Files Changed In This Pass
+
+- `.github/workflows/auto-response.yml`
+- `.github/workflows/labeler.yml`
+- `VIKICLOW_EXECUTION_STATE.md`
+
+### Tests / Proofs Run In This Pass
+
+- `uvx pre-commit run zizmor --files .github/workflows/auto-response.yml .github/workflows/labeler.yml`
+- `git diff --check`
+
+### Artifacts Produced In This Pass
+
+- No new packaged artifacts were required for this workflow-only closure step.
+
+### GitHub Actions Results After Push
+
+- Pending the follow-up PR run for `6b586eb2843d450ad0746dbda8c7a374049f44da`.
+
+### Remaining Blockers
+
+- The workflow fix still needs to be merged onto protected `main` and rerun through the required GitHub Actions contexts.
+
 ## Capability Foundry Finalization Pass
 
 ### Starting State For This Pass
