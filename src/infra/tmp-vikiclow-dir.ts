@@ -17,8 +17,10 @@ type ResolvePreferredVikiClowTmpDirOptions = {
   };
   mkdirSync?: (path: string, opts: { recursive: boolean; mode?: number }) => void;
   mkdtempSync?: (prefix: string) => string;
+  realpathSync?: (path: string) => string;
   rmSync?: (path: string, opts: { force: boolean; recursive: boolean }) => void;
   getuid?: () => number | undefined;
+  platform?: NodeJS.Platform;
   tmpdir?: () => string;
   warn?: (message: string) => void;
 };
@@ -42,8 +44,10 @@ export function resolvePreferredVikiClowTmpDir(
   const lstatSync = options.lstatSync ?? fs.lstatSync;
   const mkdirSync = options.mkdirSync ?? fs.mkdirSync;
   const mkdtempSync = options.mkdtempSync ?? fs.mkdtempSync;
+  const realpathSync = options.realpathSync ?? fs.realpathSync?.native ?? fs.realpathSync;
   const rmSync = options.rmSync ?? fs.rmSync;
   const warn = options.warn ?? ((message: string) => console.warn(message));
+  const platform = options.platform ?? process.platform;
   const getuid =
     options.getuid ??
     (() => {
@@ -57,7 +61,7 @@ export function resolvePreferredVikiClowTmpDir(
   const uid = getuid();
 
   const isSecureDirForUser = (st: { mode?: number; uid?: number }): boolean => {
-    if (process.platform === "win32") {
+    if (platform === "win32") {
       // Windows ACL semantics do not map cleanly onto POSIX mode/uid checks, and
       // the temp-dir probe is only used as a best-effort safety guard. Treat a
       // Windows fallback directory as secure once we have confirmed it is not a
@@ -145,18 +149,43 @@ export function resolvePreferredVikiClowTmpDir(
   };
 
   const createIsolatedFallbackDir = (): string | undefined => {
-    try {
-      const base = tmpdir();
-      accessSync(base, TMP_DIR_ACCESS_MODE);
-      const prefix = path.join(base, uid === undefined ? "vikiclow-" : `vikiclow-${uid}-`);
-      const isolatedPath = mkdtempSync(prefix);
-      chmodSync(isolatedPath, 0o700);
-      if (resolveDirState(isolatedPath) === "available" || tryRepairWritableBits(isolatedPath)) {
-        warn(`[vikiclow] using isolated temp dir fallback: ${isolatedPath}`);
-        return isolatedPath;
+    const isolatedRoots = new Set<string>();
+    const registerRoot = (candidate: string | undefined) => {
+      if (typeof candidate !== "string" || candidate.length === 0) {
+        return;
       }
+      isolatedRoots.add(candidate);
+    };
+
+    const preferredBase = tmpdir();
+    registerRoot(preferredBase);
+    try {
+      registerRoot(realpathSync(preferredBase));
     } catch {
-      // Fall through to the caller's normal error path.
+      // Fall through to the next candidate root.
+    }
+    if (platform !== "win32") {
+      registerRoot("/tmp");
+    }
+
+    for (const base of isolatedRoots) {
+      try {
+        accessSync(base, TMP_DIR_ACCESS_MODE);
+        const prefix = path.join(base, uid === undefined ? "vikiclow-" : `vikiclow-${uid}-`);
+        const isolatedPath = mkdtempSync(prefix);
+        try {
+          chmodSync(isolatedPath, 0o700);
+        } catch {
+          // Keep validating below: some filesystems reject chmod even though the
+          // freshly created directory is still exclusive to the current user.
+        }
+        if (resolveDirState(isolatedPath) === "available" || tryRepairWritableBits(isolatedPath)) {
+          warn(`[vikiclow] using isolated temp dir fallback: ${isolatedPath}`);
+          return isolatedPath;
+        }
+      } catch {
+        // Try the next candidate root before failing startup.
+      }
     }
     return undefined;
   };
@@ -167,7 +196,7 @@ export function resolvePreferredVikiClowTmpDir(
     if (state === "available") {
       return fallbackPath;
     }
-    if (process.platform === "win32") {
+    if (platform === "win32") {
       try {
         mkdirSync(fallbackPath, { recursive: true, mode: 0o700 });
         chmodSync(fallbackPath, 0o700);
@@ -196,6 +225,10 @@ export function resolvePreferredVikiClowTmpDir(
       mkdirSync(fallbackPath, { recursive: true, mode: 0o700 });
       chmodSync(fallbackPath, 0o700);
     } catch {
+      const isolatedPath = createIsolatedFallbackDir();
+      if (isolatedPath) {
+        return isolatedPath;
+      }
       throw new Error(`Unable to create fallback VikiClow temp dir: ${fallbackPath}`);
     }
     if (
