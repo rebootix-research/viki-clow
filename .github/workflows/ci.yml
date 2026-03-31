@@ -225,6 +225,13 @@ jobs:
           # slow onboarding-heavy shard mix. Windows keeps its own shard settings.
           echo "VIKICLOW_TEST_WORKERS=1" >> "$GITHUB_ENV"
           echo "VIKICLOW_TEST_MAX_OLD_SPACE_SIZE_MB=8192" >> "$GITHUB_ENV"
+          SAFE_TMP="$RUNNER_TEMP/vikiclow-ci-node"
+          rm -rf "$SAFE_TMP"
+          mkdir -p "$SAFE_TMP"
+          chmod 700 "$SAFE_TMP"
+          echo "TMPDIR=$SAFE_TMP" >> "$GITHUB_ENV"
+          echo "TMP=$SAFE_TMP" >> "$GITHUB_ENV"
+          echo "TEMP=$SAFE_TMP" >> "$GITHUB_ENV"
 
       - name: Run ${{ matrix.task }} (${{ matrix.runtime }})
         if: github.event_name != 'push' || (matrix.runtime != 'bun' && matrix.run_on_push != 'false')
@@ -257,6 +264,13 @@ jobs:
           echo "VIKICLOW_TEST_MAX_OLD_SPACE_SIZE_MB=8192" >> "$GITHUB_ENV"
           echo "VIKICLOW_TEST_SHARDS=4" >> "$GITHUB_ENV"
           echo "VIKICLOW_TEST_SHARD_INDEX=${{ matrix.shard_index }}" >> "$GITHUB_ENV"
+          SAFE_TMP="$RUNNER_TEMP/vikiclow-ci-shard-${{ matrix.shard_index }}"
+          rm -rf "$SAFE_TMP"
+          mkdir -p "$SAFE_TMP"
+          chmod 700 "$SAFE_TMP"
+          echo "TMPDIR=$SAFE_TMP" >> "$GITHUB_ENV"
+          echo "TMP=$SAFE_TMP" >> "$GITHUB_ENV"
+          echo "TEMP=$SAFE_TMP" >> "$GITHUB_ENV"
 
       - name: Run test shard (Linux)
         run: pnpm canvas:a2ui:bundle && pnpm test
@@ -668,7 +682,7 @@ jobs:
           fi
 
           for file in "${swift_files[@]}"; do
-            swiftlint lint --config .swiftlint.yml --path "$file"
+            swiftlint lint --config .swiftlint.yml "$file"
           done
           swiftformat --lint "${swift_files[@]}" --config .swiftformat
 
