@@ -111,7 +111,11 @@ const nodeMajor = Number.parseInt(process.versions.node.split(".")[0] ?? "", 10)
 const supportsVmForks = Number.isFinite(nodeMajor) ? nodeMajor < 24 : true;
 const useVmForks =
   process.env.VIKICLOW_TEST_VM_FORKS === "1" ||
-  (process.env.VIKICLOW_TEST_VM_FORKS !== "0" && !isWindows && supportsVmForks && !lowMemLocalHost);
+  (process.env.VIKICLOW_TEST_VM_FORKS !== "0" &&
+    !isWindows &&
+    !isCI &&
+    supportsVmForks &&
+    !lowMemLocalHost);
 const disableIsolation = process.env.VIKICLOW_TEST_NO_ISOLATE === "1";
 const includeGatewaySuite = process.env.VIKICLOW_TEST_INCLUDE_GATEWAY === "1";
 const includeExtensionsSuite = process.env.VIKICLOW_TEST_INCLUDE_EXTENSIONS === "1";

@@ -52,9 +52,11 @@ enum ShellExecutor {
 
         let outTask = Task { stdoutPipe.fileHandleForReading.readToEndSafely() }
         let errTask = Task { stderrPipe.fileHandleForReading.readToEndSafely() }
+        let exitTask = Task.detached(priority: .utility) {
+            process.waitUntilExit()
+        }
 
         func finalizeResult(timedOut: Bool) async -> ShellResult {
-            process.waitUntilExit()
             let out = await outTask.value
             let err = await errTask.value
             let status = Int(process.terminationStatus)
@@ -68,28 +70,36 @@ enum ShellExecutor {
         }
 
         if let timeout, timeout > 0 {
-            let pollIntervalNanos = UInt64(10_000_000)
             let timeoutNanos = UInt64(timeout * 1_000_000_000)
-            var remainingNanos = timeoutNanos
-
-            while process.isRunning && remainingNanos > 0 {
-                let sleepFor = min(remainingNanos, pollIntervalNanos)
-                do {
-                    try await Task.sleep(nanoseconds: sleepFor)
-                } catch {
-                    break
+            let timedOut = await withTaskGroup(of: Bool.self, returning: Bool.self) { group in
+                group.addTask {
+                    await exitTask.value
+                    return false
                 }
-                remainingNanos -= sleepFor
+                group.addTask {
+                    do {
+                        try await Task.sleep(nanoseconds: timeoutNanos)
+                        return true
+                    } catch {
+                        return false
+                    }
+                }
+
+                let first = await group.next() ?? false
+                group.cancelAll()
+                return first
             }
 
-            if process.isRunning {
+            if timedOut {
                 process.terminate()
+                await exitTask.value
                 return await finalizeResult(timedOut: true)
             }
 
             return await finalizeResult(timedOut: false)
         }
 
+        await exitTask.value
         return await finalizeResult(timedOut: false)
     }
 
