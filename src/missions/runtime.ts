@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { recordCapabilityFoundryRouteUsage } from "../capabilities/foundry.js";
 import type { CapabilityPlan } from "../capabilities/types.js";
 import { summarizeCapabilityPlan } from "../capabilities/runtime.js";
 import type { AgentEventPayload } from "../infra/agent-events.js";
@@ -467,6 +468,15 @@ export class MissionRunTracker {
         checkpoint: record.checkpoint,
       });
     });
+    if (plan.foundry?.routes.length) {
+      await recordCapabilityFoundryRouteUsage({
+        objective: this.record.objective,
+        routes: plan.foundry.routes,
+        outcome: "suggested",
+        missionId: this.record.id,
+        note: "capability-preflight",
+      });
+    }
   }
 
   async finalizeCompleted(params: {
@@ -525,6 +535,15 @@ export class MissionRunTracker {
       }
     });
     await this.updateChain;
+    if (this.record.capabilityPlan?.foundry?.routes.length) {
+      await recordCapabilityFoundryRouteUsage({
+        objective: this.record.objective,
+        routes: this.record.capabilityPlan.foundry.routes,
+        outcome: status === "completed" ? "success" : "failure",
+        missionId: this.record.id,
+        note: status === "completed" ? "mission-completed" : "mission-blocked",
+      });
+    }
     const writeback = await appendMissionMemoryWriteback(this.record);
     if (writeback?.appended) {
       await this.queueUpdate((record) => {
@@ -592,6 +611,15 @@ export class MissionRunTracker {
       });
     });
     await this.updateChain;
+    if (this.record.capabilityPlan?.foundry?.routes.length) {
+      await recordCapabilityFoundryRouteUsage({
+        objective: this.record.objective,
+        routes: this.record.capabilityPlan.foundry.routes,
+        outcome: "failure",
+        missionId: this.record.id,
+        note: "mission-failed",
+      });
+    }
     const writeback = await appendMissionMemoryWriteback(this.record);
     if (writeback?.appended) {
       await this.queueUpdate((record) => {
