@@ -16,6 +16,7 @@ type ResolvePreferredVikiClowTmpDirOptions = {
     uid?: number;
   };
   mkdirSync?: (path: string, opts: { recursive: boolean; mode?: number }) => void;
+  rmSync?: (path: string, opts: { force: boolean; recursive: boolean }) => void;
   getuid?: () => number | undefined;
   tmpdir?: () => string;
   warn?: (message: string) => void;
@@ -39,6 +40,7 @@ export function resolvePreferredVikiClowTmpDir(
   const chmodSync = options.chmodSync ?? fs.chmodSync;
   const lstatSync = options.lstatSync ?? fs.lstatSync;
   const mkdirSync = options.mkdirSync ?? fs.mkdirSync;
+  const rmSync = options.rmSync ?? fs.rmSync;
   const warn = options.warn ?? ((message: string) => console.warn(message));
   const getuid =
     options.getuid ??
@@ -124,6 +126,24 @@ export function resolvePreferredVikiClowTmpDir(
     }
   };
 
+  const recreateTrustedFallbackDir = (candidatePath: string): boolean => {
+    try {
+      const parentPath = path.dirname(candidatePath);
+      const parent = lstatSync(parentPath);
+      if (!isTrustedTmpDir(parent)) {
+        return false;
+      }
+      rmSync(candidatePath, { force: true, recursive: true });
+      mkdirSync(candidatePath, { recursive: true, mode: 0o700 });
+      chmodSync(candidatePath, 0o700);
+      return (
+        resolveDirState(candidatePath) === "available" || tryRepairWritableBits(candidatePath)
+      );
+    } catch {
+      return false;
+    }
+  };
+
   const ensureTrustedFallbackDir = (): string => {
     const fallbackPath = fallback();
     const state = resolveDirState(fallbackPath);
@@ -145,6 +165,10 @@ export function resolvePreferredVikiClowTmpDir(
       if (tryRepairWritableBits(fallbackPath)) {
         return fallbackPath;
       }
+      if (recreateTrustedFallbackDir(fallbackPath)) {
+        warn(`[vikiclow] recreated unsafe temp dir inside trusted tmp root: ${fallbackPath}`);
+        return fallbackPath;
+      }
       throw new Error(`Unsafe fallback VikiClow temp dir: ${fallbackPath}`);
     }
     try {
@@ -153,7 +177,11 @@ export function resolvePreferredVikiClowTmpDir(
     } catch {
       throw new Error(`Unable to create fallback VikiClow temp dir: ${fallbackPath}`);
     }
-    if (resolveDirState(fallbackPath) !== "available" && !tryRepairWritableBits(fallbackPath)) {
+    if (
+      resolveDirState(fallbackPath) !== "available" &&
+      !tryRepairWritableBits(fallbackPath) &&
+      !recreateTrustedFallbackDir(fallbackPath)
+    ) {
       throw new Error(`Unsafe fallback VikiClow temp dir: ${fallbackPath}`);
     }
     return fallbackPath;
