@@ -1440,9 +1440,20 @@ describe("Cron issue regressions", () => {
     let now = dueAt;
     let activeRuns = 0;
     let peakActiveRuns = 0;
-    const bothRunsStarted = createDeferred<void>();
     const firstRun = createDeferred<{ status: "ok"; summary: string }>();
     const secondRun = createDeferred<{ status: "ok"; summary: string }>();
+    const runIsolatedAgentJob = vi.fn(async (params: { job: { id: string } }) => {
+      activeRuns += 1;
+      peakActiveRuns = Math.max(peakActiveRuns, activeRuns);
+      try {
+        const result =
+          params.job.id === first.id ? await firstRun.promise : await secondRun.promise;
+        now += 10;
+        return result;
+      } finally {
+        activeRuns -= 1;
+      }
+    });
     const state = createCronServiceState({
       cronEnabled: true,
       storePath: store.storePath,
@@ -1451,35 +1462,13 @@ describe("Cron issue regressions", () => {
       nowMs: () => now,
       enqueueSystemEvent: vi.fn(),
       requestHeartbeatNow: vi.fn(),
-      runIsolatedAgentJob: vi.fn(async (params: { job: { id: string } }) => {
-        activeRuns += 1;
-        peakActiveRuns = Math.max(peakActiveRuns, activeRuns);
-        if (peakActiveRuns >= 2) {
-          bothRunsStarted.resolve();
-        }
-        try {
-          const result =
-            params.job.id === first.id ? await firstRun.promise : await secondRun.promise;
-          now += 10;
-          return result;
-        } finally {
-          activeRuns -= 1;
-        }
-      }),
+      runIsolatedAgentJob,
     });
 
     const timerPromise = onTimer(state);
-    // Full-suite parallel runs can briefly delay both workers from starting
-    // even when `maxConcurrentRuns` is honored, so keep the assertion focused
-    // on concurrency rather than a sub-100ms scheduler race.
-    const startTimeout = setTimeout(() => {
-      bothRunsStarted.reject(new Error("timed out waiting for concurrent job starts"));
-    }, 250);
-    try {
-      await bothRunsStarted.promise;
-    } finally {
-      clearTimeout(startTimeout);
-    }
+    await vi.waitFor(() => expect(runIsolatedAgentJob).toHaveBeenCalledTimes(2), {
+      timeout: 5_000,
+    });
 
     expect(peakActiveRuns).toBe(2);
 

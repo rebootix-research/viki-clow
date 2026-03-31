@@ -2,6 +2,22 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 
 const mockReadFileSync = vi.hoisted(() => vi.fn());
 const mockSpawnSync = vi.hoisted(() => vi.fn());
+const mockLogger = vi.hoisted(() => {
+  const createLogger = () => ({
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    fatal: vi.fn(),
+    trace: vi.fn(),
+    attachTransport: vi.fn(),
+    getSubLogger: vi.fn(() => createLogger()),
+  });
+
+  return {
+    logger: createLogger(),
+  };
+});
 
 type RestartHealthSnapshot = {
   healthy: boolean;
@@ -49,14 +65,35 @@ const probeGateway = vi.fn<
 const isRestartEnabled = vi.fn<(config?: { commands?: unknown }) => boolean>(() => true);
 const loadConfig = vi.fn(() => ({}));
 
-vi.mock("node:fs", () => ({
-  default: {
+vi.mock("node:fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs")>();
+  const wrapped = {
+    ...actual,
     readFileSync: (...args: unknown[]) => mockReadFileSync(...args),
-  },
-}));
+  };
+  return { ...wrapped, default: wrapped };
+});
 
 vi.mock("node:child_process", () => ({
   spawnSync: (...args: unknown[]) => mockSpawnSync(...args),
+}));
+
+vi.mock("../../logging/logger.js", () => ({
+  getLogger: () => mockLogger.logger,
+  getChildLogger: () => mockLogger.logger,
+  getResolvedLoggerSettings: () => ({
+    level: "silent",
+    file: "/tmp/vikiclow.log",
+    maxFileBytes: 1,
+  }),
+  isFileLogLevelEnabled: () => false,
+  registerLogTransport: () => () => undefined,
+  resetLogger: vi.fn(),
+  setLoggerOverride: vi.fn(),
+  toPinoLikeLogger: () => mockLogger.logger,
+  __test__: {
+    shouldSkipLoadConfigFallback: () => true,
+  },
 }));
 
 vi.mock("../../config/config.js", () => ({
