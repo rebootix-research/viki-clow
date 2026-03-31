@@ -1,5 +1,4 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import SlackBolt from "@slack/bolt";
 import { resolveTextChunkLimit } from "../../auto-reply/chunk.js";
 import { DEFAULT_GROUP_HISTORY_LIMIT } from "../../auto-reply/reply/history.js";
 import {
@@ -109,7 +108,7 @@ function publishSlackDisconnectedStatus(
 }
 
 export async function monitorSlackProvider(opts: MonitorSlackOpts = {}) {
-  const { App, HTTPReceiver } = resolveSlackBoltConstructors(SlackBolt);
+  const { App, HTTPReceiver } = resolveSlackBoltConstructors(await import("@slack/bolt"));
   const cfg = opts.config ?? loadConfig();
   const runtime: RuntimeEnv = opts.runtime ?? createNonExitingRuntime();
 

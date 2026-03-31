@@ -29,6 +29,37 @@ const slackTestState: SlackTestState = vi.hoisted(() => ({
 
 export const getSlackTestState = (): SlackTestState => slackTestState;
 
+const slackHandlers = vi.hoisted(() => new Map<string, SlackHandler>());
+const slackClient = vi.hoisted(
+  () =>
+    ({
+      auth: { test: vi.fn().mockResolvedValue({ user_id: "bot-user" }) },
+      conversations: {
+        info: vi.fn().mockResolvedValue({
+          channel: { name: "dm", is_im: true },
+        }),
+        replies: vi.fn().mockResolvedValue({ messages: [] }),
+        history: vi.fn().mockResolvedValue({ messages: [] }),
+      },
+      users: {
+        info: vi.fn().mockResolvedValue({
+          user: { profile: { display_name: "Ada" } },
+        }),
+      },
+      assistant: {
+        threads: {
+          setStatus: vi.fn().mockResolvedValue({ ok: true }),
+        },
+      },
+      reactions: {
+        add: (...args: unknown[]) => slackTestState.reactMock(...args),
+      },
+    }) satisfies SlackClient,
+);
+
+(globalThis as { __slackHandlers?: Map<string, SlackHandler> }).__slackHandlers = slackHandlers;
+(globalThis as { __slackClient?: SlackClient }).__slackClient = slackClient;
+
 type SlackClient = {
   auth: { test: Mock<(...args: unknown[]) => Promise<Record<string, unknown>>> };
   conversations: {
@@ -189,36 +220,10 @@ vi.mock("../config/sessions.js", () => ({
 }));
 
 vi.mock("@slack/bolt", () => {
-  const handlers = new Map<string, SlackHandler>();
-  (globalThis as { __slackHandlers?: typeof handlers }).__slackHandlers = handlers;
-  const client = {
-    auth: { test: vi.fn().mockResolvedValue({ user_id: "bot-user" }) },
-    conversations: {
-      info: vi.fn().mockResolvedValue({
-        channel: { name: "dm", is_im: true },
-      }),
-      replies: vi.fn().mockResolvedValue({ messages: [] }),
-      history: vi.fn().mockResolvedValue({ messages: [] }),
-    },
-    users: {
-      info: vi.fn().mockResolvedValue({
-        user: { profile: { display_name: "Ada" } },
-      }),
-    },
-    assistant: {
-      threads: {
-        setStatus: vi.fn().mockResolvedValue({ ok: true }),
-      },
-    },
-    reactions: {
-      add: (...args: unknown[]) => slackTestState.reactMock(...args),
-    },
-  };
-  (globalThis as { __slackClient?: typeof client }).__slackClient = client;
   class App {
-    client = client;
+    client = slackClient;
     event(name: string, handler: SlackHandler) {
-      handlers.set(name, handler);
+      slackHandlers.set(name, handler);
     }
     command() {
       /* no-op */

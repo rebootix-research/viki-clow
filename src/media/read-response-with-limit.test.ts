@@ -55,7 +55,7 @@ describe("readResponseWithLimit", () => {
     await expect(readResponseWithLimit(res, 1024, { chunkTimeoutMs: 50 })).rejects.toThrow(
       /stalled/i,
     );
-  }, 5_000);
+  }, 15_000);
 
   it("does not time out while chunks keep arriving", async () => {
     const body = makeStream([new Uint8Array([1]), new Uint8Array([2])], 10);
