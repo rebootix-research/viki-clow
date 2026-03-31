@@ -28,14 +28,17 @@ vi.mock("./store.js", async (importOriginal) => {
   };
 });
 
-const { SafeOpenError } = await import("../infra/fs-safe.js");
-const { startMediaServer } = await import("./server.js");
+let SafeOpenError: typeof import("../infra/fs-safe.js").SafeOpenError;
+let startMediaServer: typeof import("./server.js").startMediaServer;
 
 describe("media server outside-workspace mapping", () => {
   let server: Awaited<ReturnType<typeof startMediaServer>>;
   let port = 0;
 
   beforeAll(async () => {
+    vi.resetModules();
+    ({ SafeOpenError } = await import("../infra/fs-safe.js"));
+    ({ startMediaServer } = await import("./server.js"));
     mediaDir = await fs.mkdtemp(path.join(os.tmpdir(), "vikiclow-media-outside-workspace-"));
     server = await startMediaServer(0, 1_000);
     port = (server.address() as AddressInfo).port;

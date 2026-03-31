@@ -31,7 +31,7 @@ vi.mock("../web/media.js", () => ({
   })),
 }));
 
-const { sendMessageSlack } = await import("./send.js");
+let sendMessageSlack: typeof import("./send.js").sendMessageSlack;
 
 type UploadTestClient = WebClient & {
   conversations: { open: ReturnType<typeof vi.fn> };
@@ -69,6 +69,11 @@ describe("sendMessageSlack file upload with user IDs", () => {
       async () => new Response("ok", { status: 200 }),
     ) as unknown as typeof fetch;
     fetchWithSsrFGuard.mockClear();
+    vi.resetModules();
+  });
+
+  beforeEach(async () => {
+    ({ sendMessageSlack } = await import("./send.js"));
   });
 
   afterEach(() => {

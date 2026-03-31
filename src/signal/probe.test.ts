@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { classifySignalCliLogLine } from "./daemon.js";
-import { probeSignal } from "./probe.js";
 
 const signalCheckMock = vi.fn();
 const signalRpcRequestMock = vi.fn();
@@ -10,9 +8,15 @@ vi.mock("./client.js", () => ({
   signalRpcRequest: (...args: unknown[]) => signalRpcRequestMock(...args),
 }));
 
+let classifySignalCliLogLine: typeof import("./daemon.js").classifySignalCliLogLine;
+let probeSignal: typeof import("./probe.js").probeSignal;
+
 describe("probeSignal", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    vi.resetModules();
+    ({ classifySignalCliLogLine } = await import("./daemon.js"));
+    ({ probeSignal } = await import("./probe.js"));
   });
 
   it("extracts version from {version} result", async () => {

@@ -38,10 +38,15 @@ vi.mock("undici", () => ({
   fetch: undiciFetch,
 }));
 
-import { makeProxyFetch, resolveProxyFetchFromEnv } from "./proxy-fetch.js";
+let makeProxyFetch: typeof import("./proxy-fetch.js").makeProxyFetch;
+let resolveProxyFetchFromEnv: typeof import("./proxy-fetch.js").resolveProxyFetchFromEnv;
 
 describe("makeProxyFetch", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    vi.resetModules();
+    ({ makeProxyFetch, resolveProxyFetchFromEnv } = await import("./proxy-fetch.js"));
+  });
 
   it("uses undici fetch with ProxyAgent dispatcher", async () => {
     const proxyUrl = "http://proxy.test:8080";
@@ -60,7 +65,11 @@ describe("makeProxyFetch", () => {
 });
 
 describe("resolveProxyFetchFromEnv", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    vi.resetModules();
+    ({ makeProxyFetch, resolveProxyFetchFromEnv } = await import("./proxy-fetch.js"));
+  });
   afterEach(() => vi.unstubAllEnvs());
 
   it("returns undefined when no proxy env vars are set", () => {

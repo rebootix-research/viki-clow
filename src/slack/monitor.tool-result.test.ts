@@ -15,7 +15,7 @@ import {
   stopSlackMonitor,
 } from "./monitor.test-helpers.js";
 
-const { monitorSlackProvider } = await import("./monitor.js");
+let monitorSlackProvider: typeof import("./monitor.js").monitorSlackProvider;
 
 const slackTestState = getSlackTestState();
 const { sendMock, replyMock, reactMock, upsertPairingRequestMock } = slackTestState;
@@ -23,6 +23,11 @@ const { sendMock, replyMock, reactMock, upsertPairingRequestMock } = slackTestSt
 beforeEach(() => {
   resetInboundDedupe();
   resetSlackTestState(defaultSlackTestConfig());
+});
+
+beforeEach(async () => {
+  vi.resetModules();
+  ({ monitorSlackProvider } = await import("./monitor.js"));
 });
 
 describe("monitorSlackProvider tool results", () => {

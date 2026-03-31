@@ -2,19 +2,26 @@ import "./isolated-agent.mocks.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
-import { createCliDeps } from "./isolated-agent.delivery.test-helpers.js";
-import { runCronIsolatedAgentTurn } from "./isolated-agent.js";
 import {
   makeCfg,
   makeJob,
   withTempCronHome,
   writeSessionStore,
 } from "./isolated-agent.test-harness.js";
-import { setupIsolatedAgentTurnMocks } from "./isolated-agent.test-setup.js";
+
+let runEmbeddedPiAgent: typeof import("../agents/pi-embedded.js").runEmbeddedPiAgent;
+let createCliDeps: typeof import("./isolated-agent.delivery.test-helpers.js").createCliDeps;
+let runCronIsolatedAgentTurn: typeof import("./isolated-agent.js").runCronIsolatedAgentTurn;
+let setupIsolatedAgentTurnMocks: typeof import("./isolated-agent.test-setup.js").setupIsolatedAgentTurnMocks;
 
 describe("runCronIsolatedAgentTurn auth profile propagation (#20624)", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.resetModules();
+    await import("./isolated-agent.mocks.js");
+    ({ runEmbeddedPiAgent } = await import("../agents/pi-embedded.js"));
+    ({ createCliDeps } = await import("./isolated-agent.delivery.test-helpers.js"));
+    ({ runCronIsolatedAgentTurn } = await import("./isolated-agent.js"));
+    ({ setupIsolatedAgentTurnMocks } = await import("./isolated-agent.test-setup.js"));
     setupIsolatedAgentTurnMocks({ fast: true });
   });
 

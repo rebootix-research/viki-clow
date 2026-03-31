@@ -1,6 +1,6 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type FakeFsEntry = { kind: "file"; content: string } | { kind: "dir" };
 
@@ -93,15 +93,13 @@ describe("resolveVikiClowPackageRoot", () => {
   let resolveVikiClowPackageRoot: typeof import("./vikiclow-root.js").resolveVikiClowPackageRoot;
   let resolveVikiClowPackageRootSync: typeof import("./vikiclow-root.js").resolveVikiClowPackageRootSync;
 
-  beforeAll(async () => {
-    ({ resolveVikiClowPackageRoot, resolveVikiClowPackageRootSync } =
-      await import("./vikiclow-root.js"));
-  });
-
-  beforeEach(() => {
+  beforeEach(async () => {
     state.entries.clear();
     state.realpaths.clear();
     state.realpathErrors.clear();
+    vi.resetModules();
+    ({ resolveVikiClowPackageRoot, resolveVikiClowPackageRootSync } =
+      await import("./vikiclow-root.js"));
   });
 
   it("resolves package root from .bin argv1", async () => {

@@ -1,13 +1,14 @@
 import "./isolated-agent.mocks.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { withTempHome as withTempHomeBase } from "../../test/helpers/temp-home.js";
-import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
-import { runSubagentAnnounceFlow } from "../agents/subagent-announce.js";
 import type { CliDeps } from "../cli/deps.js";
-import { callGateway } from "../gateway/call.js";
-import { runCronIsolatedAgentTurn } from "./isolated-agent.js";
 import { makeCfg, makeJob, writeSessionStore } from "./isolated-agent.test-harness.js";
-import { setupIsolatedAgentTurnMocks } from "./isolated-agent.test-setup.js";
+
+let runEmbeddedPiAgent: typeof import("../agents/pi-embedded.js").runEmbeddedPiAgent;
+let runSubagentAnnounceFlow: typeof import("../agents/subagent-announce.js").runSubagentAnnounceFlow;
+let callGateway: typeof import("../gateway/call.js").callGateway;
+let runCronIsolatedAgentTurn: typeof import("./isolated-agent.js").runCronIsolatedAgentTurn;
+let setupIsolatedAgentTurnMocks: typeof import("./isolated-agent.test-setup.js").setupIsolatedAgentTurnMocks;
 
 async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
   return withTempHomeBase(fn, { prefix: "vikiclow-cron-heartbeat-suite-" });
@@ -71,7 +72,14 @@ async function runTelegramAnnounceTurn(params: {
 }
 
 describe("runCronIsolatedAgentTurn", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.resetModules();
+    await import("./isolated-agent.mocks.js");
+    ({ runEmbeddedPiAgent } = await import("../agents/pi-embedded.js"));
+    ({ runSubagentAnnounceFlow } = await import("../agents/subagent-announce.js"));
+    ({ callGateway } = await import("../gateway/call.js"));
+    ({ runCronIsolatedAgentTurn } = await import("./isolated-agent.js"));
+    ({ setupIsolatedAgentTurnMocks } = await import("./isolated-agent.test-setup.js"));
     setupIsolatedAgentTurnMocks({ fast: true });
   });
 

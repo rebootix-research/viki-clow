@@ -15,7 +15,7 @@ vi.mock("../utils/fetch-timeout.js", () => ({
   fetchWithTimeout: (...args: unknown[]) => fetchWithTimeoutMock(...args),
 }));
 
-import { signalRpcRequest } from "./client.js";
+let signalRpcRequest: typeof import("./client.js").signalRpcRequest;
 
 function rpcResponse(body: unknown, status = 200): Response {
   if (typeof body === "string") {
@@ -25,9 +25,11 @@ function rpcResponse(body: unknown, status = 200): Response {
 }
 
 describe("signalRpcRequest", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    vi.resetModules();
     resolveFetchMock.mockReturnValue(vi.fn());
+    ({ signalRpcRequest } = await import("./client.js"));
   });
 
   it("returns parsed RPC result", async () => {

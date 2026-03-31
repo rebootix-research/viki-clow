@@ -1,6 +1,5 @@
 import "./isolated-agent.mocks.js";
-import { beforeEach, describe, expect, it } from "vitest";
-import { runSubagentAnnounceFlow } from "../agents/subagent-announce.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { discordOutbound } from "../channels/plugins/outbound/discord.js";
 import { imessageOutbound } from "../channels/plugins/outbound/imessage.js";
 import { signalOutbound } from "../channels/plugins/outbound/signal.js";
@@ -8,17 +7,20 @@ import { slackOutbound } from "../channels/plugins/outbound/slack.js";
 import { telegramOutbound } from "../channels/plugins/outbound/telegram.js";
 import { whatsappOutbound } from "../channels/plugins/outbound/whatsapp.js";
 import type { CliDeps } from "../cli/deps.js";
-import { setActivePluginRegistry } from "../plugins/runtime.js";
 import { createOutboundTestPlugin, createTestRegistry } from "../test-utils/channel-plugins.js";
-import { createCliDeps, mockAgentPayloads } from "./isolated-agent.delivery.test-helpers.js";
-import { runCronIsolatedAgentTurn } from "./isolated-agent.js";
 import {
   makeCfg,
   makeJob,
   withTempCronHome,
   writeSessionStore,
 } from "./isolated-agent.test-harness.js";
-import { setupIsolatedAgentTurnMocks } from "./isolated-agent.test-setup.js";
+
+let runSubagentAnnounceFlow: typeof import("../agents/subagent-announce.js").runSubagentAnnounceFlow;
+let setActivePluginRegistry: typeof import("../plugins/runtime.js").setActivePluginRegistry;
+let createCliDeps: typeof import("./isolated-agent.delivery.test-helpers.js").createCliDeps;
+let mockAgentPayloads: typeof import("./isolated-agent.delivery.test-helpers.js").mockAgentPayloads;
+let runCronIsolatedAgentTurn: typeof import("./isolated-agent.js").runCronIsolatedAgentTurn;
+let setupIsolatedAgentTurnMocks: typeof import("./isolated-agent.test-setup.js").setupIsolatedAgentTurnMocks;
 
 type ChannelCase = {
   name: string;
@@ -87,7 +89,15 @@ async function runExplicitAnnounceTurn(params: {
 }
 
 describe("runCronIsolatedAgentTurn core-channel direct delivery", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.resetModules();
+    await import("./isolated-agent.mocks.js");
+    ({ runSubagentAnnounceFlow } = await import("../agents/subagent-announce.js"));
+    ({ setActivePluginRegistry } = await import("../plugins/runtime.js"));
+    ({ createCliDeps, mockAgentPayloads } =
+      await import("./isolated-agent.delivery.test-helpers.js"));
+    ({ runCronIsolatedAgentTurn } = await import("./isolated-agent.js"));
+    ({ setupIsolatedAgentTurnMocks } = await import("./isolated-agent.test-setup.js"));
     setupIsolatedAgentTurnMocks();
     setActivePluginRegistry(
       createTestRegistry([

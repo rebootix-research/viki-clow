@@ -1,11 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { packNpmSpecToArchive, withTempDir } from "./install-source-utils.js";
 import type { NpmIntegrityDriftPayload } from "./npm-integrity.js";
-import {
-  finalizeNpmSpecArchiveInstall,
-  installFromNpmSpecArchive,
-  installFromNpmSpecArchiveWithInstaller,
-} from "./npm-pack-install.js";
 
 vi.mock("./install-source-utils.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./install-source-utils.js")>();
@@ -17,6 +11,12 @@ vi.mock("./install-source-utils.js", async (importOriginal) => {
     packNpmSpecToArchive: vi.fn(),
   };
 });
+
+let packNpmSpecToArchive: typeof import("./install-source-utils.js").packNpmSpecToArchive;
+let withTempDir: typeof import("./install-source-utils.js").withTempDir;
+let finalizeNpmSpecArchiveInstall: typeof import("./npm-pack-install.js").finalizeNpmSpecArchiveInstall;
+let installFromNpmSpecArchive: typeof import("./npm-pack-install.js").installFromNpmSpecArchive;
+let installFromNpmSpecArchiveWithInstaller: typeof import("./npm-pack-install.js").installFromNpmSpecArchiveWithInstaller;
 
 describe("installFromNpmSpecArchive", () => {
   const baseSpec = "@vikiclow/test@1.0.0";
@@ -71,6 +71,16 @@ describe("installFromNpmSpecArchive", () => {
   };
 
   beforeEach(() => {
+    vi.resetModules();
+  });
+
+  beforeEach(async () => {
+    ({ packNpmSpecToArchive, withTempDir } = await import("./install-source-utils.js"));
+    ({
+      finalizeNpmSpecArchiveInstall,
+      installFromNpmSpecArchive,
+      installFromNpmSpecArchiveWithInstaller,
+    } = await import("./npm-pack-install.js"));
     vi.mocked(packNpmSpecToArchive).mockClear();
     vi.mocked(withTempDir).mockClear();
   });

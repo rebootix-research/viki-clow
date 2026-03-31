@@ -1,22 +1,21 @@
 import "./isolated-agent.mocks.js";
 import fs from "node:fs/promises";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { runSubagentAnnounceFlow } from "../agents/subagent-announce.js";
 import type { CliDeps } from "../cli/deps.js";
-import {
-  createCliDeps,
-  expectDirectTelegramDelivery,
-  mockAgentPayloads,
-  runTelegramAnnounceTurn,
-} from "./isolated-agent.delivery.test-helpers.js";
-import { runCronIsolatedAgentTurn } from "./isolated-agent.js";
 import {
   makeCfg,
   makeJob,
   withTempCronHome as withTempHome,
   writeSessionStore,
 } from "./isolated-agent.test-harness.js";
-import { setupIsolatedAgentTurnMocks } from "./isolated-agent.test-setup.js";
+
+let runSubagentAnnounceFlow: typeof import("../agents/subagent-announce.js").runSubagentAnnounceFlow;
+let createCliDeps: typeof import("./isolated-agent.delivery.test-helpers.js").createCliDeps;
+let expectDirectTelegramDelivery: typeof import("./isolated-agent.delivery.test-helpers.js").expectDirectTelegramDelivery;
+let mockAgentPayloads: typeof import("./isolated-agent.delivery.test-helpers.js").mockAgentPayloads;
+let runTelegramAnnounceTurn: typeof import("./isolated-agent.delivery.test-helpers.js").runTelegramAnnounceTurn;
+let runCronIsolatedAgentTurn: typeof import("./isolated-agent.js").runCronIsolatedAgentTurn;
+let setupIsolatedAgentTurnMocks: typeof import("./isolated-agent.test-setup.js").setupIsolatedAgentTurnMocks;
 
 const TELEGRAM_TARGET = { mode: "announce", channel: "telegram", to: "123" } as const;
 async function runExplicitTelegramAnnounceTurn(params: {
@@ -193,7 +192,14 @@ async function assertExplicitTelegramTargetDelivery(params: {
 }
 
 describe("runCronIsolatedAgentTurn", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.resetModules();
+    await import("./isolated-agent.mocks.js");
+    ({ runSubagentAnnounceFlow } = await import("../agents/subagent-announce.js"));
+    ({ createCliDeps, expectDirectTelegramDelivery, mockAgentPayloads, runTelegramAnnounceTurn } =
+      await import("./isolated-agent.delivery.test-helpers.js"));
+    ({ runCronIsolatedAgentTurn } = await import("./isolated-agent.js"));
+    ({ setupIsolatedAgentTurnMocks } = await import("./isolated-agent.test-setup.js"));
     setupIsolatedAgentTurnMocks();
   });
 

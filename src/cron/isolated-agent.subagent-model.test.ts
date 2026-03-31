@@ -3,12 +3,13 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { withTempHome as withTempHomeHelper } from "../../test/helpers/temp-home.js";
-import { loadModelCatalog } from "../agents/model-catalog.js";
-import { runEmbeddedPiAgent } from "../agents/pi-embedded.js";
 import type { CliDeps } from "../cli/deps.js";
 import type { VikiClowConfig } from "../config/config.js";
-import { runCronIsolatedAgentTurn } from "./isolated-agent.js";
 import type { CronJob } from "./types.js";
+
+let loadModelCatalog: typeof import("../agents/model-catalog.js").loadModelCatalog;
+let runEmbeddedPiAgent: typeof import("../agents/pi-embedded.js").runEmbeddedPiAgent;
+let runCronIsolatedAgentTurn: typeof import("./isolated-agent.js").runCronIsolatedAgentTurn;
 
 async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise<T> {
   return withTempHomeHelper(fn, { prefix: "vikiclow-cron-submodel-" });
@@ -116,7 +117,12 @@ async function runSubagentModelCase(params: {
 }
 
 describe("runCronIsolatedAgentTurn: subagent model resolution (#11461)", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.resetModules();
+    await import("./isolated-agent.mocks.js");
+    ({ loadModelCatalog } = await import("../agents/model-catalog.js"));
+    ({ runEmbeddedPiAgent } = await import("../agents/pi-embedded.js"));
+    ({ runCronIsolatedAgentTurn } = await import("./isolated-agent.js"));
     vi.mocked(runEmbeddedPiAgent).mockReset();
     vi.mocked(loadModelCatalog).mockResolvedValue([]);
   });
