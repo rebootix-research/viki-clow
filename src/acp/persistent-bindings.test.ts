@@ -22,13 +22,11 @@ vi.mock("./runtime/session-meta.js", () => ({
   readAcpSessionEntry: sessionMetaMocks.readAcpSessionEntry,
 }));
 
-import {
-  buildConfiguredAcpSessionKey,
-  ensureConfiguredAcpBindingSession,
-  resetAcpSessionInPlace,
-  resolveConfiguredAcpBindingRecord,
-  resolveConfiguredAcpBindingSpecBySessionKey,
-} from "./persistent-bindings.js";
+let buildConfiguredAcpSessionKey: typeof import("./persistent-bindings.js").buildConfiguredAcpSessionKey;
+let ensureConfiguredAcpBindingSession: typeof import("./persistent-bindings.js").ensureConfiguredAcpBindingSession;
+let resetAcpSessionInPlace: typeof import("./persistent-bindings.js").resetAcpSessionInPlace;
+let resolveConfiguredAcpBindingRecord: typeof import("./persistent-bindings.js").resolveConfiguredAcpBindingRecord;
+let resolveConfiguredAcpBindingSpecBySessionKey: typeof import("./persistent-bindings.js").resolveConfiguredAcpBindingSpecBySessionKey;
 
 const baseCfg = {
   session: { mainKey: "main", scope: "per-sender" },
@@ -37,7 +35,7 @@ const baseCfg = {
   },
 } satisfies VikiClowConfig;
 
-beforeEach(() => {
+beforeEach(async () => {
   managerMocks.resolveSession.mockReset();
   managerMocks.closeSession.mockReset().mockResolvedValue({
     runtimeClosed: true,
@@ -46,6 +44,14 @@ beforeEach(() => {
   managerMocks.initializeSession.mockReset().mockResolvedValue(undefined);
   managerMocks.updateSessionRuntimeOptions.mockReset().mockResolvedValue(undefined);
   sessionMetaMocks.readAcpSessionEntry.mockReset().mockReturnValue(undefined);
+  vi.resetModules();
+  ({
+    buildConfiguredAcpSessionKey,
+    ensureConfiguredAcpBindingSession,
+    resetAcpSessionInPlace,
+    resolveConfiguredAcpBindingRecord,
+    resolveConfiguredAcpBindingSpecBySessionKey,
+  } = await import("./persistent-bindings.js"));
 });
 
 describe("resolveConfiguredAcpBindingRecord", () => {

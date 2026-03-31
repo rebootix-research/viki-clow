@@ -1,9 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { ensureBaseCapabilityPack, ensureCapabilitiesForObjective } from "./runtime.js";
-import { loadCapabilityManifest } from "./store.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { runExec } = vi.hoisted(() => ({
   runExec: vi.fn(),
@@ -12,6 +10,10 @@ const { runExec } = vi.hoisted(() => ({
 vi.mock("../process/exec.js", () => ({
   runExec,
 }));
+
+let ensureBaseCapabilityPack: typeof import("./runtime.js").ensureBaseCapabilityPack;
+let ensureCapabilitiesForObjective: typeof import("./runtime.js").ensureCapabilitiesForObjective;
+let loadCapabilityManifest: typeof import("./store.js").loadCapabilityManifest;
 
 const tempDirs: string[] = [];
 
@@ -39,6 +41,12 @@ afterEach(async () => {
   await Promise.all(
     tempDirs.splice(0, tempDirs.length).map((dir) => fs.rm(dir, { recursive: true, force: true })),
   );
+});
+
+beforeEach(async () => {
+  vi.resetModules();
+  ({ ensureBaseCapabilityPack, ensureCapabilitiesForObjective } = await import("./runtime.js"));
+  ({ loadCapabilityManifest } = await import("./store.js"));
 });
 
 describe("capability runtime", () => {

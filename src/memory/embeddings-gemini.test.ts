@@ -1,22 +1,21 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import * as authModule from "../agents/model-auth.js";
-import {
-  buildFileDataPart,
-  buildGeminiParts,
-  buildGeminiTextEmbeddingRequest,
-  buildInlineDataPart,
-  createGeminiEmbeddingProvider,
-  DEFAULT_GEMINI_EMBEDDING_MODEL,
-  GEMINI_EMBEDDING_2_MODELS,
-  isGeminiEmbedding2Model,
-  resolveGeminiOutputDimensionality,
-  type GeminiPart,
-} from "./embeddings-gemini.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { GeminiPart } from "./embeddings-gemini.js";
 
 vi.mock("../agents/model-auth.js", async () => {
   const { createModelAuthMockModule } = await import("../test-utils/model-auth-mock.js");
   return createModelAuthMockModule();
 });
+
+let authModule: typeof import("../agents/model-auth.js");
+let buildFileDataPart: typeof import("./embeddings-gemini.js").buildFileDataPart;
+let buildGeminiParts: typeof import("./embeddings-gemini.js").buildGeminiParts;
+let buildGeminiTextEmbeddingRequest: typeof import("./embeddings-gemini.js").buildGeminiTextEmbeddingRequest;
+let buildInlineDataPart: typeof import("./embeddings-gemini.js").buildInlineDataPart;
+let createGeminiEmbeddingProvider: typeof import("./embeddings-gemini.js").createGeminiEmbeddingProvider;
+let DEFAULT_GEMINI_EMBEDDING_MODEL: typeof import("./embeddings-gemini.js").DEFAULT_GEMINI_EMBEDDING_MODEL;
+let GEMINI_EMBEDDING_2_MODELS: typeof import("./embeddings-gemini.js").GEMINI_EMBEDDING_2_MODELS;
+let isGeminiEmbedding2Model: typeof import("./embeddings-gemini.js").isGeminiEmbedding2Model;
+let resolveGeminiOutputDimensionality: typeof import("./embeddings-gemini.js").resolveGeminiOutputDimensionality;
 
 const createGeminiFetchMock = (embeddingValues = [1, 2, 3]) =>
   vi.fn(async (_input?: unknown, _init?: unknown) => ({
@@ -51,6 +50,22 @@ function magnitude(values: number[]) {
 afterEach(() => {
   vi.resetAllMocks();
   vi.unstubAllGlobals();
+});
+
+beforeEach(async () => {
+  vi.resetModules();
+  authModule = await import("../agents/model-auth.js");
+  ({
+    buildFileDataPart,
+    buildGeminiParts,
+    buildGeminiTextEmbeddingRequest,
+    buildInlineDataPart,
+    createGeminiEmbeddingProvider,
+    DEFAULT_GEMINI_EMBEDDING_MODEL,
+    GEMINI_EMBEDDING_2_MODELS,
+    isGeminiEmbedding2Model,
+    resolveGeminiOutputDimensionality,
+  } = await import("./embeddings-gemini.js"));
 });
 
 function mockResolvedProviderKey(apiKey = "test-key") {

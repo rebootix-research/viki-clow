@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { VikiClowConfig } from "../../config/config.js";
 import type { AcpSessionRuntimeOptions, SessionAcpMeta } from "../../config/sessions/types.js";
-import { AcpRuntimeError } from "../runtime/errors.js";
 import type { AcpRuntime, AcpRuntimeCapabilities } from "../runtime/types.js";
 
 const hoisted = vi.hoisted(() => {
@@ -32,7 +31,8 @@ vi.mock("../runtime/registry.js", async (importOriginal) => {
   };
 });
 
-const { AcpSessionManager } = await import("./manager.js");
+let AcpSessionManager: typeof import("./manager.js").AcpSessionManager;
+let AcpRuntimeError: typeof import("../runtime/errors.js").AcpRuntimeError;
 
 const baseCfg = {
   acp: {
@@ -146,11 +146,14 @@ function extractRuntimeOptionsFromUpserts(): Array<AcpSessionRuntimeOptions | un
 }
 
 describe("AcpSessionManager", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     hoisted.listAcpSessionEntriesMock.mockReset().mockResolvedValue([]);
     hoisted.readAcpSessionEntryMock.mockReset();
     hoisted.upsertAcpSessionMetaMock.mockReset().mockResolvedValue(null);
     hoisted.requireAcpRuntimeBackendMock.mockReset();
+    vi.resetModules();
+    ({ AcpRuntimeError } = await import("../runtime/errors.js"));
+    ({ AcpSessionManager } = await import("./manager.js"));
   });
 
   it("marks ACP-shaped sessions without metadata as stale", () => {

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { VikiClowConfig } from "../config/config.js";
 
 // Mock session store so we can control what entries exist.
@@ -27,10 +27,18 @@ vi.mock("../channels/plugins/index.js", () => ({
   normalizeChannelId: vi.fn((id: string) => id),
 }));
 
-const { resolveDeliveryTarget } = await import("./isolated-agent/delivery-target.js");
+let resolveDeliveryTarget: typeof import("./isolated-agent/delivery-target.js").resolveDeliveryTarget;
 
 describe("resolveDeliveryTarget thread session lookup", () => {
   const cfg: VikiClowConfig = {};
+
+  beforeEach(async () => {
+    for (const key of Object.keys(mockStore)) {
+      delete mockStore[key];
+    }
+    vi.resetModules();
+    ({ resolveDeliveryTarget } = await import("./isolated-agent/delivery-target.js"));
+  });
 
   it("uses thread session entry when sessionKey is provided and entry exists", async () => {
     mockStore["/mock/store.json"] = {

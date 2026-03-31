@@ -35,11 +35,13 @@ vi.mock("../logging.js", () => ({
   })),
 }));
 
-const { sendFailureNotificationAnnounce } = await import("./delivery.js");
+let sendFailureNotificationAnnounce: typeof import("./delivery.js").sendFailureNotificationAnnounce;
 
 describe("sendFailureNotificationAnnounce", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    vi.resetModules();
+    ({ sendFailureNotificationAnnounce } = await import("./delivery.js"));
     mocks.resolveDeliveryTarget.mockResolvedValue({
       ok: true,
       channel: "telegram",

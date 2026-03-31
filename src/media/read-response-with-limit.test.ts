@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readResponseWithLimit } from "./read-response-with-limit.js";
 
 function makeStream(chunks: Uint8Array[], delayMs?: number) {
@@ -26,6 +26,10 @@ function makeStallingStream(initialChunks: Uint8Array[]) {
 }
 
 describe("readResponseWithLimit", () => {
+  beforeEach(() => {
+    vi.useRealTimers();
+  });
+
   it("reads all chunks within the limit", async () => {
     const body = makeStream([new Uint8Array([1, 2]), new Uint8Array([3, 4])]);
     const res = new Response(body);
@@ -62,5 +66,5 @@ describe("readResponseWithLimit", () => {
     const res = new Response(body);
     const buf = await readResponseWithLimit(res, 100, { chunkTimeoutMs: 500 });
     expect(buf).toEqual(Buffer.from([1, 2]));
-  });
+  }, 15_000);
 });

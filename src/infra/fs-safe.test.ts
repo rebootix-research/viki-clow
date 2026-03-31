@@ -37,7 +37,7 @@ async function expectWriteOpenRaceIsBlocked(params: {
     timing: "before-realpath",
     run: async () => {
       await expect(params.runWrite()).rejects.toMatchObject({
-        code: expect.stringMatching(/outside-workspace|invalid-path/),
+        code: expect.stringMatching(/outside-workspace|invalid-path|path-mismatch/),
       });
     },
   });

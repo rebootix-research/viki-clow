@@ -611,6 +611,12 @@ jobs:
         with:
           submodules: false
 
+      - name: Ensure macOS base commit
+        uses: ./.github/actions/ensure-base-commit
+        with:
+          base-sha: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
+          fetch-ref: ${{ github.event_name == 'push' && github.ref_name || github.event.pull_request.base.ref }}
+
       - name: Setup Node environment
         uses: ./.github/actions/setup-node-env
         with:
@@ -650,7 +656,12 @@ jobs:
             BASE="${{ github.event.pull_request.base.sha }}"
           fi
 
-          mapfile -t swift_files < <(git diff --name-only "$BASE" HEAD -- apps/macos | grep -E '\.swift$' || true)
+          swift_files=()
+          while IFS= read -r file; do
+            if [ -n "$file" ]; then
+              swift_files+=("$file")
+            fi
+          done < <(git diff --name-only "$BASE" HEAD -- apps/macos | grep -E '\.swift$' || true)
           if [ "${#swift_files[@]}" -eq 0 ]; then
             echo "No macOS Swift changes detected; skipping Swift lint."
             exit 0
