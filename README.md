@@ -1,139 +1,272 @@
-# VikiClow
+<div align="center">
 
-<p align="center">
-  <img src="README-header.png" alt="VikiClow" width="860">
-</p>
+<!-- BANNER SVG -->
 
-<p align="center">
-  <strong>Execution-grade AI for real work.</strong><br>
-  VikiClow turns intent into durable missions, routes work through swarms, proves what happened, and keeps improving the system it runs on.
-</p>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="280" viewBox="0 0 900 280">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#050A14"/>
+      <stop offset="100%" style="stop-color:#0A1628"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00D4FF"/>
+      <stop offset="100%" style="stop-color:#0066FF"/>
+    </linearGradient>
+    <linearGradient id="glowLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00D4FF;stop-opacity:0"/>
+      <stop offset="50%" style="stop-color:#00D4FF;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#00D4FF;stop-opacity:0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="textGlow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
 
-<p align="center">
-  <a href="https://github.com/rebootix-research/viki-clow/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/rebootix-research/viki-clow/ci.yml?branch=main&style=for-the-badge" alt="CI status"></a>
-  <a href="https://github.com/rebootix-research/viki-clow/actions/workflows/native-verification.yml"><img src="https://img.shields.io/github/actions/workflow/status/rebootix-research/viki-clow/native-verification.yml?branch=main&style=for-the-badge" alt="Native verification"></a>
-  <a href="https://github.com/rebootix-research/viki-clow/releases"><img src="https://img.shields.io/github/v/release/rebootix-research/viki-clow?include_prereleases&style=for-the-badge" alt="Release"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0f172a?style=for-the-badge" alt="License"></a>
-</p>
+  <!-- Background -->
 
-VikiClow is an operator system, not a chat wrapper.
+  <rect width="900" height="280" fill="url(#bg)" rx="12"/>
 
-It takes user intent, turns it into a mission, routes that mission through browser, shell, file, voice, memory, and verification surfaces, and writes the result back as evidence. When a task needs a capability that is not already present, Capability Foundry can discover, classify, sandbox, test, promote, and register a compatible one instead of stalling the mission.
+  <!-- Grid lines horizontal -->
 
-## What VikiClow Is
+  <line x1="0" y1="56" x2="900" y2="56" stroke="#00D4FF" stroke-width="0.3" stroke-opacity="0.15"/>
+  <line x1="0" y1="112" x2="900" y2="112" stroke="#00D4FF" stroke-width="0.3" stroke-opacity="0.15"/>
+  <line x1="0" y1="168" x2="900" y2="168" stroke="#00D4FF" stroke-width="0.3" stroke-opacity="0.15"/>
+  <line x1="0" y1="224" x2="900" y2="224" stroke="#00D4FF" stroke-width="0.3" stroke-opacity="0.15"/>
 
-VikiClow combines the parts that serious execution systems usually split across separate tools:
+  <!-- Grid lines vertical -->
 
-- a durable mission runtime with explicit terminal states
-- Viki Browser for visible browser work with managed profiles and proof
-- swarm-of-swarms orchestration with verifier and recovery routing
-- a voice-native command center with mandatory readiness checks
-- persistent memory that survives provider and model changes
-- Capability Foundry for discovery, promotion, bundling, and routing of proven capabilities
-- full PC and web execution surfaces instead of answer-only UX
-- a self-evolution engine for candidate intake, experiments, promotion, and rollback
+  <line x1="150" y1="0" x2="150" y2="280" stroke="#00D4FF" stroke-width="0.3" stroke-opacity="0.1"/>
+  <line x1="300" y1="0" x2="300" y2="280" stroke="#00D4FF" stroke-width="0.3" stroke-opacity="0.1"/>
+  <line x1="450" y1="0" x2="450" y2="280" stroke="#00D4FF" stroke-width="0.3" stroke-opacity="0.1"/>
+  <line x1="600" y1="0" x2="600" y2="280" stroke="#00D4FF" stroke-width="0.3" stroke-opacity="0.1"/>
+  <line x1="750" y1="0" x2="750" y2="280" stroke="#00D4FF" stroke-width="0.3" stroke-opacity="0.1"/>
 
-## Why It Feels Different
+  <!-- Corner brackets -->
 
-Most AI products still assume the conversation is the product.
+  <path d="M20,20 L20,50 M20,20 L50,20" stroke="#00D4FF" stroke-width="2" fill="none" filter="url(#glow)"/>
+  <path d="M880,20 L880,50 M880,20 L850,20" stroke="#00D4FF" stroke-width="2" fill="none" filter="url(#glow)"/>
+  <path d="M20,260 L20,230 M20,260 L50,260" stroke="#00D4FF" stroke-width="2" fill="none" filter="url(#glow)"/>
+  <path d="M880,260 L880,230 M880,260 L850,260" stroke="#00D4FF" stroke-width="2" fill="none" filter="url(#glow)"/>
 
-VikiClow assumes the mission is the product.
+  <!-- Top accent line -->
 
-- It keeps state instead of pretending every request starts from zero.
-- It leaves artifacts and proofs instead of vague "done" messages.
-- It treats failure, recovery, approval, and retry as first-class runtime states.
-- It is designed to keep working even if you change providers, models, or auth paths.
-- It can use browser, shell, file, channel, voice, and device surfaces as one system.
+  <rect x="0" y="0" width="900" height="3" fill="url(#accent)" rx="2"/>
 
-## Product Pillars
+  <!-- Bottom accent line -->
 
-### Universal task execution
+  <rect x="0" y="277" width="900" height="3" fill="url(#accent)" rx="2"/>
 
-Intent becomes a mission record with plan, state, checkpoints, evidence, retries, and a terminal result.
+  <!-- Left circuit decoration -->
 
-### Viki Browser
+  <path d="M60,80 L60,140 L90,140 L90,160 L120,160" stroke="#00D4FF" stroke-width="1.5" fill="none" stroke-opacity="0.5" filter="url(#glow)"/>
+  <circle cx="60" cy="80" r="3" fill="#00D4FF" fill-opacity="0.6" filter="url(#glow)"/>
+  <circle cx="120" cy="160" r="3" fill="#00D4FF" fill-opacity="0.6" filter="url(#glow)"/>
 
-VikiClow ships a branded browser surface with managed profiles, launcher packaging, browserd manifests, session vaults, evidence capture, and Playwright-compatible automation.
+  <!-- Right circuit decoration -->
 
-### Durable missions
+  <path d="M840,100 L840,160 L810,160 L810,180 L780,180" stroke="#00D4FF" stroke-width="1.5" fill="none" stroke-opacity="0.5" filter="url(#glow)"/>
+  <circle cx="840" cy="100" r="3" fill="#00D4FF" fill-opacity="0.6" filter="url(#glow)"/>
+  <circle cx="780" cy="180" r="3" fill="#00D4FF" fill-opacity="0.6" filter="url(#glow)"/>
 
-Terminal states are explicit and inspectable:
+  <!-- Rebootix logo mark — small top left -->
 
-- `completed`
-- `failed`
-- `blocked`
-- `needs_approval`
+<text x="42" y="44" font-family="monospace" font-size="10" fill="#00D4FF" fill-opacity="0.7" letter-spacing="3">REBOOTIX RESEARCH</text>
 
-### Swarm-of-swarms orchestration
+  <!-- Main title: VIKICLOW -->
 
-A sovereign orchestrator routes domain swarms for browser work, coding, research, documents, local computer control, ops, and communication.
+<text x="450" y="145" font-family="'Courier New', monospace" font-size="72" font-weight="900" text-anchor="middle" fill="url(#accent)" filter="url(#textGlow)" letter-spacing="8">VIKICLOW</text>
 
-### Voice-native command center
+  <!-- Subtitle -->
 
-Voice is not a plugin afterthought. Bootstrap, proof, and readiness are part of the setup path.
+<text x="450" y="185" font-family="monospace" font-size="14" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.75" letter-spacing="4">EXECUTION-FIRST  ·  AI RUNTIME  ·  MISSION DRIVEN</text>
 
-### Persistent memory
+  <!-- Horizontal glow line under subtitle -->
 
-Mission writeback, Graphiti-style proof paths, and Neo4j-backed graph memory surfaces keep memory outside model context alone.
+  <rect x="200" y="196" width="500" height="1" fill="url(#glowLine)" opacity="0.8"/>
 
-### Capability Foundry
+  <!-- Bottom status line -->
 
-Capability Foundry is Vikiclow’s controlled supply chain for new capability:
+<text x="450" y="240" font-family="monospace" font-size="11" text-anchor="middle" fill="#00D4FF" fill-opacity="0.6" letter-spacing="2">[ BUILD: GREEN ]  ·  [ MISSIONS: DURABLE ]  ·  [ PROOF: SHIPPED ]</text>
 
-- discover curated sources and candidate integrations
-- classify them as skills, plugins, MCP servers, repo integrations, or assets
-- fetch or install them from approved sources
-- sandbox and test them before promotion
-- promote or reject them with recorded reasons
-- bundle the winners into the shipped system
-- register them into runtime routing so Vikiclow can choose the right capability for the task
-- persist inventory, provenance, and usage knowledge so future missions learn from successful runs
+  <!-- Version tag -->
 
-Capability Foundry is exposed through the CLI, proof artifacts, the bundled capability inventory, and the runtime routing layer.
+  <rect x="768" y="32" width="110" height="22" rx="4" fill="#00D4FF" fill-opacity="0.12" stroke="#00D4FF" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="823" y="47" font-family="monospace" font-size="11" text-anchor="middle" fill="#00D4FF" letter-spacing="1">v2026.3.9</text>
+</svg>
 
-Key commands:
+<br/>
 
-- `vikiclow capabilities foundry discover`
-- `vikiclow capabilities foundry ingest <candidate-id>`
-- `vikiclow capabilities foundry test <candidate-id>`
-- `vikiclow capabilities foundry promote <candidate-id> --bundle`
-- `vikiclow capabilities foundry routes "<objective>"`
+[![CI](https://img.shields.io/github/actions/workflow/status/rebootix-research/viki-clow/ci.yml?branch=main&style=flat-square&label=CI&color=00D4FF&labelColor=050A14)](https://github.com/rebootix-research/viki-clow/actions/workflows/ci.yml)
+[![Native Verification](https://img.shields.io/github/actions/workflow/status/rebootix-research/viki-clow/native-verification.yml?branch=main&style=flat-square&label=Native+Verification&color=00D4FF&labelColor=050A14)](https://github.com/rebootix-research/viki-clow/actions/workflows/native-verification.yml)
+[![Release](https://img.shields.io/github/v/release/rebootix-research/viki-clow?include_prereleases&style=flat-square&color=0066FF&labelColor=050A14)](https://github.com/rebootix-research/viki-clow/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-00D4FF?style=flat-square&labelColor=050A14)](https://github.com/rebootix-research/viki-clow/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-87%25-0066FF?style=flat-square&labelColor=050A14)](https://github.com/rebootix-research/viki-clow)
 
-### Full PC and web execution
+</div>
 
-VikiClow can use Viki Browser, raw HTTP/web-fetch routes, local commands, file surfaces, device-linked actions, and channel-connected control.
+-----
 
-### Self-evolution engine
+<div align="center">
 
-Candidates can be ingested, benchmarked, promoted, and rolled back with provenance.
+### The AI runtime that actually finishes the job.
+
+**VikiClow doesn’t chat. It executes.**<br/>
+It takes your intent, builds a mission, runs it across browser, shell, voice, file, and device surfaces — and hands you back proof.
+
+[**Get Started →**](#install) · [**See the Architecture →**](#architecture) · [**Docs**](https://docs.vikiclow.ai) · [**Vision**](./VISION.md)
+
+</div>
+
+-----
+
+## Why VikiClow Exists
+
+Most “AI agents” are chat wrappers with a tool call bolted on. They forget what they were doing the moment you close the tab. They say “done” and leave no trace. They stall when a capability is missing.
+
+**VikiClow is the opposite.**
+
+|What others do                |What VikiClow does                                              |
+|------------------------------|----------------------------------------------------------------|
+|One-turn, stateless requests  |Durable missions with checkpoints and retries                   |
+|Vague “done” confirmations    |Proof artifacts: release, browser, memory, voice                |
+|Stalls when a tool is missing |Capability Foundry discovers, tests, and promotes new capability|
+|Chat-first UX                 |Mission-first runtime                                           |
+|Single surface (browser ext)  |Browser + shell + voice + file + device as one system           |
+|Loses context between sessions|Persistent graph memory backed by Neo4j                         |
+|Black-box agent loops         |Typed orchestration with explicit terminal states               |
+
+-----
+
+## What VikiClow Ships
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        VIKICLOW RUNTIME                         │
+├─────────────────┬───────────────────┬───────────────────────────┤
+│  Mission Engine │   Viki Browser    │   Capability Foundry      │
+│                 │                   │                           │
+│  • Durable      │  • Managed        │  • Auto-discover tools    │
+│    state        │    profiles       │  • Sandbox & test         │
+│  • Checkpoints  │  • Playwright     │  • Promote or reject      │
+│  • Retries      │    automation     │  • Runtime routing        │
+│  • Proofs       │  • Evidence       │  • Provenance tracking    │
+│  • Terminal     │    capture        │                           │
+│    states       │  • Session vaults │                           │
+├─────────────────┴───────────────────┴───────────────────────────┤
+│                     EXECUTION SURFACES                          │
+│   Browser  ·  Shell  ·  Voice  ·  File  ·  Screen  ·  Device   │
+├─────────────────────────────────────────────────────────────────┤
+│                      MEMORY LAYER                               │
+│          Neo4j Graph  ·  Graphiti Proof  ·  Mission Writeback   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+-----
+
+## Core Pillars
+
+### 🎯 Durable Missions — not conversation turns
+
+Every task becomes a **mission object** with a plan, state machine, checkpoints, retries, evidence, and a terminal result. State is explicit. Nothing is lost between runs.
+
+Terminal states you can actually inspect:
+
+```
+completed  ·  failed  ·  blocked  ·  needs_approval
+```
+
+-----
+
+### 🌐 Viki Browser — the browser that ships proof
+
+Not a Chrome extension. A **branded browser surface** with:
+
+- Managed profiles and session vaults
+- Playwright-compatible automation built in
+- `browserd` manifests for native packaging
+- Evidence capture baked into every session
+
+-----
+
+### 🧠 Capability Foundry — self-expanding capability
+
+When VikiClow hits a task it can’t handle, it doesn’t stop. **Capability Foundry** kicks in:
+
+```
+discover → classify → fetch → sandbox → test → promote → bundle → route → remember
+```
+
+Every capability that gets promoted is logged with provenance, scored, and routed automatically on future missions. The system gets smarter every run.
+
+-----
+
+### 🔊 Voice-Native — not a plugin afterthought
+
+Voice readiness is **mandatory at setup**. Bootstrap, proof, and readiness checks are part of the onboarding path — not a feature toggle buried in settings.
+
+-----
+
+### 💾 Persistent Memory — survives everything
+
+Memory isn’t context decoration. It’s infrastructure:
+
+- **Graphiti-style proof paths** for auditable recall
+- **Neo4j-backed graph memory** that outlasts model and provider swaps
+- **Mission writeback** so every run informs the next
+
+-----
+
+### 🔄 Self-Evolution Engine
+
+VikiClow improves itself. Candidates are ingested, benchmarked, promoted or rejected, and rolled back with full provenance. The system evolves without breaking what works.
+
+-----
 
 ## Architecture
 
-```text
+```
 User intent
-  -> mission object
-  -> sovereign orchestrator
-  -> domain swarms
-  -> browser / repo / research / local-computer executors
-  -> verifier / recovery
-  -> terminal state + evidence
-  -> persistent memory writeback
+    ↓
+Mission Object  (plan · state · checkpoints · evidence)
+    ↓
+Sovereign Orchestrator
+    ↓
+Domain Swarms
+    ↓
+┌─────────────┬──────────────┬───────────────┬─────────────┐
+│   Browser   │     Repo     │   Research    │   Local PC  │
+│  Executor   │   Executor   │   Executor    │   Executor  │
+└─────────────┴──────────────┴───────────────┴─────────────┘
+    ↓
+Verifier  →  Recovery (if needed)
+    ↓
+Terminal State + Evidence Artifacts
+    ↓
+Persistent Memory Writeback
 ```
 
-```text
-Capability Foundry
-  -> discover curated sources
-  -> classify and fetch candidates
-  -> sandbox / test / score
-  -> promote or reject
-  -> bundle and register
-  -> route at runtime
-  -> remember success
 ```
+Capability Foundry (parallel)
+    ↓
+Discover curated sources
+    ↓
+Classify → Fetch → Sandbox → Test → Score
+    ↓
+Promote or Reject (with recorded reason)
+    ↓
+Bundle → Register → Route at Runtime → Remember Success
+```
+
+-----
 
 ## Install
 
-### Recommended
+### Recommended — npm global
 
 ```bash
 npm install -g vikiclow@latest
@@ -148,41 +281,43 @@ cd viki-clow
 corepack enable
 corepack pnpm install
 corepack pnpm build
-node .\vikiclow.mjs onboard --install-daemon
+node ./vikiclow.mjs onboard --install-daemon
 ```
 
-Windows operators should prefer WSL2 for day-to-day runtime work. Native PowerShell is supported for build, bootstrap, launcher, and proof flows, but the broader local automation stack is more reliable under WSL2.
+> **Windows users:** WSL2 is recommended for the full local automation stack. Native PowerShell covers build, bootstrap, launcher, and proof flows.
+
+-----
 
 ## Quick Start
 
-### 1. Bootstrap VikiClow
+**1. Bootstrap**
 
 ```bash
 vikiclow onboard --install-daemon
 ```
 
-This configures the workspace, gateway, bundled capabilities, browser runtime, Capability Foundry inventory, and mandatory voice readiness.
+Configures workspace, gateway, browser runtime, Capability Foundry, and voice readiness in one shot.
 
-### 2. Start the runtime
+**2. Start the runtime**
 
 ```bash
 vikiclow gateway --port 18789
 ```
 
-### 3. Inspect the control surface
+**3. Open the dashboard**
 
 ```bash
 vikiclow dashboard --no-open
 ```
 
-### 4. Verify the browser product
+**4. Verify the browser**
 
 ```bash
 vikiclow browser package-native
 vikiclow browser verify-native --json
 ```
 
-### 5. Inspect and refresh capability inventory
+**5. Load capability inventory**
 
 ```bash
 vikiclow capabilities list
@@ -190,34 +325,42 @@ vikiclow capabilities discover "publish a browser workflow"
 vikiclow capabilities fetch playwright browser_profiles
 vikiclow capabilities bundle
 vikiclow capabilities bootstrap
-vikiclow capabilities plan "create a reusable automation skill"
-corepack pnpm capabilities:proof
 ```
 
-### 6. Run an end-to-end mission
+**6. Run your first mission**
 
 ```bash
 vikiclow agent --message "Open the browser, collect release evidence, update the docs, and finish the work end to end."
 ```
 
-## Reliability and Proof
+-----
 
-VikiClow ships proof surfaces because execution claims are cheap without artifacts.
+## Proof Surfaces
 
-- release proof: `.artifacts/release-proof/`
-- runtime stack proof: `.artifacts/runtime-stack-proof/`
-- execution surface proof: `.artifacts/execution-surface/`
-- Capability Foundry proof: `.artifacts/capability-bundle/`
-- voice proof: `.artifacts/voice-proof/`
-- browser proof: `~/.vikiclow/browserd/native-proof.json`
-- mission backbone proof: `~/.vikiclow/missions/backbone/`
-- graph memory proof: `~/.vikiclow/memory/graphiti/`
+VikiClow doesn’t say “done” and hope you believe it. Every major runtime path ships artifacts.
 
-Use `corepack pnpm capabilities:proof` to regenerate the Capability Foundry proof bundle locally.
+|Surface                 |Location                                |
+|------------------------|----------------------------------------|
+|Release proof           |`.artifacts/release-proof/`             |
+|Runtime stack proof     |`.artifacts/runtime-stack-proof/`       |
+|Execution surface proof |`.artifacts/execution-surface/`         |
+|Capability Foundry proof|`.artifacts/capability-bundle/`         |
+|Voice proof             |`.artifacts/voice-proof/`               |
+|Browser proof           |`~/.vikiclow/browserd/native-proof.json`|
+|Mission backbone proof  |`~/.vikiclow/missions/backbone/`        |
+|Graph memory proof      |`~/.vikiclow/memory/graphiti/`          |
+
+Regenerate the Capability Foundry proof bundle locally at any time:
+
+```bash
+corepack pnpm capabilities:proof
+```
+
+-----
 
 ## Runtime Stack
 
-For the strongest local runtime path supported directly by this repository:
+Validate the full Temporal + Neo4j backed runtime path locally:
 
 ```bash
 corepack pnpm runtime:stack:up
@@ -225,53 +368,120 @@ corepack pnpm runtime:stack:proof
 corepack pnpm runtime:stack:down
 ```
 
-That flow validates the live Temporal-backed mission descriptor path and the live Neo4j-backed Graphiti proof path the repo can exercise locally.
+-----
+
+## Capability Foundry — CLI Reference
+
+```bash
+vikiclow capabilities foundry discover
+vikiclow capabilities foundry ingest <candidate-id>
+vikiclow capabilities foundry test <candidate-id>
+vikiclow capabilities foundry promote <candidate-id> --bundle
+vikiclow capabilities foundry routes "<objective>"
+```
+
+-----
 
 ## Execution Surfaces
 
-VikiClow is intentionally broader than extension-style browsing:
+VikiClow operates across every surface a real operator needs:
 
-- Viki Browser for visible browser sessions
-- browserd manifests for profile/session/evidence verification
-- raw web-fetch routes for lightweight HTTP extraction
-- local command execution surfaces for controlled system work
-- file writeback and workspace memory
-- node/device-linked surfaces for screen, camera, audio, and paired-machine execution
+- **Viki Browser** — visible browser sessions with managed profiles
+- **`browserd` manifests** — profile, session, and evidence verification
+- **Raw web-fetch routes** — lightweight HTTP extraction without a browser
+- **Local shell execution** — controlled system commands and file ops
+- **File writeback** — workspace memory and artifact persistence
+- **Screen, camera, audio, paired-machine surfaces** — node/device-linked execution
 
-## What Is Finished Today
+-----
 
-This repo is already a serious operator system, not a demo shell:
+## What’s Shipped Today
 
-- build and release proof are green
-- browser launchers are shipped in `dist/`
-- mission runtime and backbone proofs are real
-- voice bootstrap is enforced in setup
-- Capability Foundry ships with inventory, provenance, routing, and proof
-- runtime stack proof exercises Temporal + Neo4j where Docker is available
+This is not a demo shell or a proof-of-concept. Here’s what’s real:
 
-What remains environment-dependent is equally explicit:
+- ✅ Build and release proof are green
+- ✅ Browser launchers shipped in `dist/`
+- ✅ Mission runtime and backbone proofs are live
+- ✅ Voice bootstrap enforced at setup
+- ✅ Capability Foundry ships with inventory, provenance, routing, and proof
+- ✅ Runtime stack proof exercises Temporal + Neo4j where Docker is available
 
-- a compiled native CEF browser app is not bundled in this repo build
-- live LangGraph proof depends on a reachable endpoint
-- native macOS and Android verification require host toolchains
+**Environment-dependent (explicit, not hidden):**
 
-## Why Teams Choose VikiClow
+- Native CEF browser app requires host toolchain — not bundled in repo build
+- Live LangGraph proof requires a reachable endpoint
+- macOS and Android native verification require host toolchains
 
-- They want execution, not demo conversation.
-- They want durable state, not single-turn magic tricks.
-- They want proof, memory, and repeatability.
-- They want one system that can browse, control, verify, discover, and recover.
+-----
 
-## Docs
+## Tech Stack
 
-- Docs hub: [https://docs.vikiclow.ai](https://docs.vikiclow.ai)
-- Product vision: [VISION.md](VISION.md)
-- Personal operator guide: [docs/start/vikiclow.md](docs/start/vikiclow.md)
-- Capability Foundry guide: [docs/tools/vikiclow-skills.md](docs/tools/vikiclow-skills.md)
-- CI and proof: [docs/ci.md](docs/ci.md)
-- Install and update: [docs/install/updating.md](docs/install/updating.md)
-- Browser surfaces: [docs/tools/browser.md](docs/tools/browser.md)
+|Layer           |Technology                         |
+|----------------|-----------------------------------|
+|Primary runtime |TypeScript (87%)                   |
+|Native surfaces |Swift (macOS/iOS), Kotlin (Android)|
+|Automation      |Playwright, browserd               |
+|Mission state   |Temporal                           |
+|Graph memory    |Neo4j + Graphiti                   |
+|Package manager |pnpm (corepack)                    |
+|Testing         |Vitest                             |
+|CI              |GitHub Actions                     |
+|Containerization|Docker / Podman                    |
+
+-----
+
+## Why VikiClow Over OpenClow
+
+|Capability          |OpenClow         |VikiClow                                |
+|--------------------|-----------------|----------------------------------------|
+|Mission durability  |❌ stateless      |✅ durable with checkpoints              |
+|Execution proof     |❌ no artifacts   |✅ proof at every surface                |
+|Capability expansion|❌ manual         |✅ Capability Foundry (auto)             |
+|Memory persistence  |❌ context only   |✅ Neo4j graph, survives provider swap   |
+|Browser surface     |❌ extension      |✅ full branded browser + browserd       |
+|Voice               |❌ optional add-on|✅ mandatory, verified at boot           |
+|Recovery routing    |❌ fail and stop  |✅ verifier + recovery as runtime states |
+|Self-evolution      |❌ none           |✅ candidate intake → benchmark → promote|
+
+-----
+
+## Documentation
+
+|Resource                  |Link                                                            |
+|--------------------------|----------------------------------------------------------------|
+|📖 Docs Hub                |[docs.vikiclow.ai](https://docs.vikiclow.ai)                    |
+|🔭 Vision                  |[VISION.md](./VISION.md)                                        |
+|🚀 Personal Operator Guide |[docs/start/vikiclow.md](./docs/start/vikiclow.md)              |
+|🔧 Capability Foundry Guide|[docs/tools/vikiclow-skills.md](./docs/tools/vikiclow-skills.md)|
+|🧪 CI and Proof            |[docs/ci.md](./docs/ci.md)                                      |
+|🔄 Install and Update      |[docs/install/updating.md](./docs/install/updating.md)          |
+|🌐 Browser Surfaces        |[docs/tools/browser.md](./docs/tools/browser.md)                |
+
+-----
+
+## Contributing
+
+The bar for merging into core is deliberately high — VikiClow is a dependable runtime, not a feature landfill.
+
+We want focused changes, strong tests and proof, product-facing clarity, and deliberate breaking changes only when the product is meaningfully better for it.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full guide.
+
+-----
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT — see [LICENSE](./LICENSE).
+
+-----
+
+<div align="center">
+
+**Built by [Rebootix Research](https://github.com/rebootix-research)**<br/>
+*Execution-grade AI for operators who need the work done, not just discussed.*
+
+<br/>
+
+[![Star on GitHub](https://img.shields.io/github/stars/rebootix-research/viki-clow?style=social)](https://github.com/rebootix-research/viki-clow)
+
+</div>
