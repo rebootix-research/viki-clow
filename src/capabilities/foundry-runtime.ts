@@ -1,15 +1,11 @@
 import path from "node:path";
 import { resolveStateDir } from "../config/paths.js";
 import { normalizeCapabilityObjective } from "./catalog.js";
-import {
-  loadCapabilityFoundryRegistry,
-  upsertCapabilityFoundryCandidates,
-} from "./store.js";
+import { loadCapabilityFoundryRegistry, upsertCapabilityFoundryCandidates } from "./store.js";
 import type {
   CapabilityFoundryApprovalStatus,
   CapabilityFoundryCandidate,
   CapabilityFoundryCompatibility,
-  CapabilityFoundryKind,
   CapabilityFoundryRegistry,
   CapabilityFoundryRoute,
   CapabilityFoundryScope,
@@ -75,7 +71,9 @@ function usageRecipeForEntry(entry: CapabilityFoundrySourceCatalogEntry): string
   return `Use ${entry.name} when ${trimmedDescription.toLowerCase()}.`;
 }
 
-function buildUsageSummary(existing?: CapabilityFoundryUsageSummary): CapabilityFoundryUsageSummary {
+function buildUsageSummary(
+  existing?: CapabilityFoundryUsageSummary,
+): CapabilityFoundryUsageSummary {
   return {
     suggested: existing?.suggested ?? 0,
     success: existing?.success ?? 0,
@@ -89,11 +87,8 @@ function materializeCandidateFromEntry(
   entry: CapabilityFoundrySourceCatalogEntry,
   catalog: CapabilityFoundrySourceCatalog,
   existing?: CapabilityFoundryCandidate,
-  objective?: string,
 ): CapabilityFoundryCandidate {
   const now = new Date().toISOString();
-  const objectiveTokens = objective ? normalizeCapabilityObjective(objective) : "";
-  const matchedHints = entry.routeHints.filter((hint) => objectiveTokens.includes(hint));
   const sourceUrl = entry.sourceUrl.trim();
   return {
     id: entry.id,
@@ -161,15 +156,14 @@ function materializeCandidateFromEntry(
 
 function materializeCandidatesFromRegistry(
   registry: CapabilityFoundryRegistry,
-  objective?: string,
 ): CapabilityFoundryCandidate[] {
-  const existingById = new Map(registry.candidates.map((candidate) => [candidate.id, candidate] as const));
+  const existingById = new Map(
+    registry.candidates.map((candidate) => [candidate.id, candidate] as const),
+  );
   const materialized: CapabilityFoundryCandidate[] = [];
   for (const catalog of registry.sourceCatalogs ?? []) {
     for (const entry of catalog.entries) {
-      materialized.push(
-        materializeCandidateFromEntry(entry, catalog, existingById.get(entry.id), objective),
-      );
+      materialized.push(materializeCandidateFromEntry(entry, catalog, existingById.get(entry.id)));
     }
   }
   for (const candidate of registry.candidates) {
@@ -234,9 +228,11 @@ function mapCandidateToRoute(
   };
 }
 
-export async function loadCuratedFoundryRegistry(params: {
-  env?: NodeJS.ProcessEnv;
-} = {}): Promise<{
+export async function loadCuratedFoundryRegistry(
+  params: {
+    env?: NodeJS.ProcessEnv;
+  } = {},
+): Promise<{
   registry: CapabilityFoundryRegistry;
   registryPath: string;
 }> {
@@ -247,16 +243,18 @@ export async function loadCuratedFoundryRegistry(params: {
   };
 }
 
-export async function discoverCuratedCapabilityFoundry(params: {
-  env?: NodeJS.ProcessEnv;
-  objective?: string;
-} = {}): Promise<{
+export async function discoverCuratedCapabilityFoundry(
+  params: {
+    env?: NodeJS.ProcessEnv;
+    objective?: string;
+  } = {},
+): Promise<{
   registry: CapabilityFoundryRegistry;
   registryPath: string;
   candidates: CapabilityFoundryCandidate[];
 }> {
   const loaded = await loadCuratedFoundryRegistry(params);
-  const candidates = materializeCandidatesFromRegistry(loaded.registry, params.objective);
+  const candidates = materializeCandidatesFromRegistry(loaded.registry);
   return {
     ...loaded,
     candidates,
@@ -297,15 +295,13 @@ export async function routeCuratedCapabilityFoundry(params: {
   };
 }
 
-export async function updateCuratedFoundryCandidates(
-  params: {
-    env?: NodeJS.ProcessEnv;
-    ids: string[];
-    decision: "inspect" | "test" | "promote" | "reject" | "bundle" | "ingest";
-    reason?: string;
-    objective?: string;
-  },
-): Promise<{
+export async function updateCuratedFoundryCandidates(params: {
+  env?: NodeJS.ProcessEnv;
+  ids: string[];
+  decision: "inspect" | "test" | "promote" | "reject" | "bundle" | "ingest";
+  reason?: string;
+  objective?: string;
+}): Promise<{
   registry: CapabilityFoundryRegistry;
   registryPath: string;
   candidates: CapabilityFoundryCandidate[];
@@ -316,94 +312,94 @@ export async function updateCuratedFoundryCandidates(
   });
   const now = new Date().toISOString();
   const ids = new Set(params.ids);
-  const next = materializeCandidatesFromRegistry(discovered.registry, params.objective).map(
-    (candidate) => {
-      if (!ids.has(candidate.id)) {
-        return candidate;
-      }
-      if (params.decision === "reject") {
-        return {
-          ...candidate,
-          state: "rejected" as CapabilityFoundryState,
-          scope: "rejected" as CapabilityFoundryScope,
-          rejectedAt: now,
-          rejectionReason: params.reason?.trim() || "Rejected by operator",
-          test: {
-            ...candidate.test,
-            status: "failed",
-            summary: params.reason?.trim() || "Rejected by operator",
-            testedAt: now,
-          },
-          notes: [...new Set([...(candidate.notes ?? []), "decision:rejected"])],
-        } as CapabilityFoundryCandidate;
-      }
-      if (params.decision === "promote" || params.decision === "bundle") {
-        return {
-          ...candidate,
-          state: (params.decision === "bundle" || candidate.scope === "bundled"
-            ? "bundled"
-            : "promoted") as CapabilityFoundryState,
-          scope: (params.decision === "bundle" || candidate.scope === "bundled"
-            ? "bundled"
-            : candidate.scope) as CapabilityFoundryScope,
-          promotedAt: now,
-          rejectedAt: undefined,
-          rejectionReason: undefined,
-          test: {
-            ...candidate.test,
-            status: "passed",
-            summary: candidate.test.summary || "Candidate promoted from curated source catalog.",
-            testedAt: candidate.test.testedAt ?? now,
-          },
-          notes: [...new Set([...(candidate.notes ?? []), "decision:promoted"])],
-        } as CapabilityFoundryCandidate;
-      }
-      if (params.decision === "inspect") {
-        return {
-          ...candidate,
-          state: "inspected",
-          test: {
-            ...candidate.test,
-            status: candidate.test.status === "failed" ? "failed" : "pending",
-            summary: "Candidate inspected from curated source catalog.",
-            testedAt: candidate.test.testedAt,
-          },
-          notes: [...new Set([...(candidate.notes ?? []), "stage:inspect"])],
-        } as CapabilityFoundryCandidate;
-      }
-      if (params.decision === "test") {
-        return {
-          ...candidate,
-          state: "tested",
-          test: {
-            ...candidate.test,
-            status: candidate.test.status === "failed" ? "failed" : "passed",
-            summary: "Candidate sandbox validation completed from curated source catalog.",
-            testedAt: now,
-          },
-          notes: [...new Set([...(candidate.notes ?? []), "stage:sandbox"])],
-        } as CapabilityFoundryCandidate;
-      }
-      if (params.decision === "ingest") {
-        return {
-          ...candidate,
-          state: "fetched",
-          lifecycleReceipt: {
-            ...(candidate.lifecycleReceipt ?? {}),
-            fetchedAt: now,
-          },
-          test: {
-            ...candidate.test,
-            status: candidate.test.status === "failed" ? "failed" : "pending",
-            summary: "Candidate fetched from curated source catalog.",
-            testedAt: candidate.test.testedAt,
-          },
-          notes: [...new Set([...(candidate.notes ?? []), "stage:ingest"])],
-        } as CapabilityFoundryCandidate;
-      }
-      return candidate as CapabilityFoundryCandidate;
-    },
-  );
+  const next: CapabilityFoundryCandidate[] = materializeCandidatesFromRegistry(
+    discovered.registry,
+  ).map((candidate) => {
+    if (!ids.has(candidate.id)) {
+      return candidate;
+    }
+    if (params.decision === "reject") {
+      return {
+        ...candidate,
+        state: "rejected" as CapabilityFoundryState,
+        scope: "rejected" as CapabilityFoundryScope,
+        rejectedAt: now,
+        rejectionReason: params.reason?.trim() || "Rejected by operator",
+        test: {
+          ...candidate.test,
+          status: "failed",
+          summary: params.reason?.trim() || "Rejected by operator",
+          testedAt: now,
+        },
+        notes: [...new Set([...(candidate.notes ?? []), "decision:rejected"])],
+      };
+    }
+    if (params.decision === "promote" || params.decision === "bundle") {
+      return {
+        ...candidate,
+        state: (params.decision === "bundle" || candidate.scope === "bundled"
+          ? "bundled"
+          : "promoted") as CapabilityFoundryState,
+        scope: (params.decision === "bundle" || candidate.scope === "bundled"
+          ? "bundled"
+          : candidate.scope) as CapabilityFoundryScope,
+        promotedAt: now,
+        rejectedAt: undefined,
+        rejectionReason: undefined,
+        test: {
+          ...candidate.test,
+          status: "passed",
+          summary: candidate.test.summary || "Candidate promoted from curated source catalog.",
+          testedAt: candidate.test.testedAt ?? now,
+        },
+        notes: [...new Set([...(candidate.notes ?? []), "decision:promoted"])],
+      };
+    }
+    if (params.decision === "inspect") {
+      return {
+        ...candidate,
+        state: "inspected",
+        test: {
+          ...candidate.test,
+          status: candidate.test.status === "failed" ? "failed" : "pending",
+          summary: "Candidate inspected from curated source catalog.",
+          testedAt: candidate.test.testedAt,
+        },
+        notes: [...new Set([...(candidate.notes ?? []), "stage:inspect"])],
+      };
+    }
+    if (params.decision === "test") {
+      return {
+        ...candidate,
+        state: "tested",
+        test: {
+          ...candidate.test,
+          status: candidate.test.status === "failed" ? "failed" : "passed",
+          summary: "Candidate sandbox validation completed from curated source catalog.",
+          testedAt: now,
+        },
+        notes: [...new Set([...(candidate.notes ?? []), "stage:sandbox"])],
+      };
+    }
+    if (params.decision === "ingest") {
+      return {
+        ...candidate,
+        state: "fetched",
+        lifecycleReceipt: {
+          ...candidate.lifecycleReceipt,
+          fetchedAt: now,
+        },
+        test: {
+          ...candidate.test,
+          status: candidate.test.status === "failed" ? "failed" : "pending",
+          summary: "Candidate fetched from curated source catalog.",
+          testedAt: candidate.test.testedAt,
+        },
+        notes: [...new Set([...(candidate.notes ?? []), "stage:ingest"])],
+      };
+    }
+    return candidate;
+  });
   const persisted = await upsertCapabilityFoundryCandidates(next, {
     env: params.env,
     supportedSources: discovered.registry.supportedSources,

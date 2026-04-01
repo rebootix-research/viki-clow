@@ -2,15 +2,8 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import {
-  loadCapabilityFoundryRegistry,
-  saveCapabilityFoundryRegistry,
-} from "./store.js";
-import type {
-  CapabilityFoundryCandidate,
-  CapabilityFoundryRegistry,
-  CapabilityFoundrySourceCatalog,
-} from "./types.js";
+import { loadCapabilityFoundryRegistry, saveCapabilityFoundryRegistry } from "./store.js";
+import type { CapabilityFoundryCandidate, CapabilityFoundryRegistry } from "./types.js";
 
 function makeCandidate(catalogPath: string): CapabilityFoundryCandidate {
   return {
@@ -171,9 +164,7 @@ describe("Capability Foundry registry persistence", () => {
     expect(loaded.sourceCatalogRevision).toHaveLength(12);
     expect(loaded.candidates[0]?.installReceipt?.status).toBe("success");
     expect(loaded.candidates[0]?.scoreReceipt?.verdict).toBe("promote");
-    expect(loaded.candidates[0]?.lifecycleReceipt?.promotedAt).toBe(
-      "2026-04-02T00:00:05.000Z",
-    );
+    expect(loaded.candidates[0]?.lifecycleReceipt?.promotedAt).toBe("2026-04-02T00:00:05.000Z");
     expect(loaded.candidates[0]?.provenance.repository).toBe("example/browser-automation");
   });
 });

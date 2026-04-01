@@ -1,6 +1,6 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { createHash } from "node:crypto";
 import type {
   CapabilityFoundryKind,
   CapabilityFoundrySourceCatalog,
@@ -39,7 +39,7 @@ function stableStringify(value: unknown): string {
     }
     if (current && typeof current === "object") {
       return Object.keys(current as Record<string, unknown>)
-        .sort()
+        .toSorted()
         .reduce<Record<string, unknown>>((accumulator, key) => {
           accumulator[key] = (current as Record<string, unknown>)[key];
           return accumulator;
@@ -50,15 +50,10 @@ function stableStringify(value: unknown): string {
 }
 
 function hashCatalogEntries(entries: CapabilityFoundrySourceCatalogEntry[]): string {
-  return createHash("sha256")
-    .update(stableStringify(entries))
-    .digest("hex")
-    .slice(0, 12);
+  return createHash("sha256").update(stableStringify(entries)).digest("hex").slice(0, 12);
 }
 
-function resolveCatalogPaths(
-  params: CapabilityFoundrySourceCatalogLoadParams = {},
-): string[] {
+function resolveCatalogPaths(params: CapabilityFoundrySourceCatalogLoadParams = {}): string[] {
   const rootDir = params.rootDir?.trim() ? path.resolve(params.rootDir) : process.cwd();
   const env = params.env ?? process.env;
   const explicit = ENV_CATALOG_PATH_KEYS.flatMap((key) => {
@@ -152,9 +147,10 @@ function normalizeCatalogEntry(
   const kind = normalizeKind(raw.kind);
   const installMethod = normalizeInstallMethod(raw.installMethod);
   const bundle = typeof raw.bundle === "boolean" ? raw.bundle : true;
-  const sourceUrl = typeof raw.sourceUrl === "string" && raw.sourceUrl.trim()
-    ? raw.sourceUrl.trim()
-    : `https://example.invalid/${fallbackId}`;
+  const sourceUrl =
+    typeof raw.sourceUrl === "string" && raw.sourceUrl.trim()
+      ? raw.sourceUrl.trim()
+      : `https://example.invalid/${fallbackId}`;
   return {
     id: typeof raw.id === "string" && raw.id.trim() ? raw.id.trim() : fallbackId,
     name: typeof raw.name === "string" && raw.name.trim() ? raw.name.trim() : fallbackId,
@@ -165,21 +161,26 @@ function normalizeCatalogEntry(
     installMethod,
     dependencies: normalizeStringArray(raw.dependencies),
     provenance: {
-      repository: typeof provenance.repository === "string" && provenance.repository.trim()
-        ? provenance.repository.trim()
-        : undefined,
-      registry: typeof provenance.registry === "string" && provenance.registry.trim()
-        ? provenance.registry.trim()
-        : undefined,
-      homepage: typeof provenance.homepage === "string" && provenance.homepage.trim()
-        ? provenance.homepage.trim()
-        : undefined,
-      license: typeof provenance.license === "string" && provenance.license.trim()
-        ? provenance.license.trim()
-        : undefined,
-      author: typeof provenance.author === "string" && provenance.author.trim()
-        ? provenance.author.trim()
-        : undefined,
+      repository:
+        typeof provenance.repository === "string" && provenance.repository.trim()
+          ? provenance.repository.trim()
+          : undefined,
+      registry:
+        typeof provenance.registry === "string" && provenance.registry.trim()
+          ? provenance.registry.trim()
+          : undefined,
+      homepage:
+        typeof provenance.homepage === "string" && provenance.homepage.trim()
+          ? provenance.homepage.trim()
+          : undefined,
+      license:
+        typeof provenance.license === "string" && provenance.license.trim()
+          ? provenance.license.trim()
+          : undefined,
+      author:
+        typeof provenance.author === "string" && provenance.author.trim()
+          ? provenance.author.trim()
+          : undefined,
     },
     routeHints: normalizeStringArray(raw.routeHints),
     approval: normalizeApproval(raw.approval),
@@ -224,9 +225,7 @@ function normalizeCatalog(
       ? raw.generatedAt.trim()
       : new Date(0).toISOString();
   const updatedAt =
-    typeof raw.updatedAt === "string" && raw.updatedAt.trim()
-      ? raw.updatedAt.trim()
-      : generatedAt;
+    typeof raw.updatedAt === "string" && raw.updatedAt.trim() ? raw.updatedAt.trim() : generatedAt;
   return {
     version: 1,
     id,
@@ -288,7 +287,8 @@ function builtinCatalogs(): CapabilityFoundrySourceCatalog[] {
       name: "Viki Skill Factory",
       family: "bundled_skill",
       kind: "skill",
-      sourceUrl: "https://github.com/rebootix-research/viki-clow/tree/main/skills/viki-skill-factory",
+      sourceUrl:
+        "https://github.com/rebootix-research/viki-clow/tree/main/skills/viki-skill-factory",
       ref: "main",
       installMethod: "workspace_copy",
       dependencies: ["node"],

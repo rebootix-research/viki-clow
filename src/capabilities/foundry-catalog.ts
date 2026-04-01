@@ -1,6 +1,6 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { createHash } from "node:crypto";
 import type {
   CapabilityFoundryApprovalStatus,
   CapabilityFoundryClassification,
@@ -203,7 +203,8 @@ export const CAPABILITY_FOUNDRY_SOURCE_FAMILIES: FoundryCatalogFamily[] = [
   {
     id: "curated_mcp",
     label: "Curated MCP servers",
-    summary: "Official or high-signal MCP servers that can be installed and sandboxed before promotion.",
+    summary:
+      "Official or high-signal MCP servers that can be installed and sandboxed before promotion.",
     sourceKind: "npm_registry",
     trustLevel: "curated",
     sources: [
@@ -406,7 +407,7 @@ function stableStringify(value: unknown): string {
     }
     if (current && typeof current === "object") {
       return Object.keys(current as Record<string, unknown>)
-        .sort()
+        .toSorted()
         .reduce<Record<string, unknown>>((accumulator, key) => {
           accumulator[key] = (current as Record<string, unknown>)[key];
           return accumulator;
@@ -417,15 +418,10 @@ function stableStringify(value: unknown): string {
 }
 
 function hashFoundryCatalogEntries(entries: FoundryApprovedCatalogEntry[]): string {
-  return createHash("sha256")
-    .update(stableStringify(entries))
-    .digest("hex")
-    .slice(0, 12);
+  return createHash("sha256").update(stableStringify(entries)).digest("hex").slice(0, 12);
 }
 
-function resolveFoundrySourceFamily(
-  familyId: string,
-): FoundryApprovedCatalogEntry["sourceFamily"] {
+function resolveFoundrySourceFamily(familyId: string): FoundryApprovedCatalogEntry["sourceFamily"] {
   switch (familyId) {
     case "bundled-skills":
       return "bundled_skill";
@@ -442,23 +438,10 @@ function resolveFoundrySourceFamily(
   }
 }
 
-function resolveSupportedSourceLabel(familyId: string): string {
-  switch (familyId) {
-    case "bundled-skills":
-      return "repo-skills";
-    case "bundled-plugins":
-      return "repo-plugins";
-    case "curated-mcp":
-      return "npm-mcp";
-    case "curated-github":
-    case "curated-assets":
-      return "github-repo";
-    default:
-      return familyId;
-  }
-}
-
-function resolveFoundrySourceKind(sourceUrl: string, installMethod: string): FoundryCatalogSourceKind {
+function resolveFoundrySourceKind(
+  sourceUrl: string,
+  installMethod: string,
+): FoundryCatalogSourceKind {
   if (installMethod === "download") {
     return "github_repo";
   }
@@ -468,7 +451,9 @@ function resolveFoundrySourceKind(sourceUrl: string, installMethod: string): Fou
   return "local_repo";
 }
 
-function resolveFoundrySourceKindForCatalog(source: FoundryCatalogSource): CapabilityFoundrySourceKind {
+function resolveFoundrySourceKindForCatalog(
+  source: FoundryCatalogSource,
+): CapabilityFoundrySourceKind {
   if (source.sourceKind === "npm_registry") {
     return "npm_registry";
   }
@@ -485,7 +470,9 @@ function resolveCompatibility(source: FoundryCatalogSource): CapabilityFoundryCo
   return source.bundled ? "compatible" : "wrapped";
 }
 
-function resolveScope(source: FoundryCatalogSource): "bundled" | "optional" | "experimental" | "rejected" {
+function resolveScope(
+  source: FoundryCatalogSource,
+): "bundled" | "optional" | "experimental" | "rejected" {
   if (source.origin === "remote") {
     return "experimental";
   }
@@ -498,8 +485,17 @@ function resolveApproval(source: FoundryCatalogSource): CapabilityFoundryApprova
 
 function buildClassification(source: FoundryCatalogSource): CapabilityFoundryClassification {
   return {
-    objectiveHints: [...new Set([source.familyId, source.kind, ...(source.notes ? [source.notes] : [])])],
-    tags: [...new Set([source.familyId, source.kind, source.origin, ...(source.notes ? [source.notes] : [])])],
+    objectiveHints: [
+      ...new Set([source.familyId, source.kind, ...(source.notes ? [source.notes] : [])]),
+    ],
+    tags: [
+      ...new Set([
+        source.familyId,
+        source.kind,
+        source.origin,
+        ...(source.notes ? [source.notes] : []),
+      ]),
+    ],
     selectionNotes: [
       `family:${source.familyId}`,
       `origin:${source.origin}`,
@@ -537,7 +533,9 @@ function buildProvenance(source: FoundryCatalogSource) {
   };
 }
 
-function buildRegistration(source: FoundryCatalogSource): CapabilityFoundryRuntimeRegistration | undefined {
+function buildRegistration(
+  source: FoundryCatalogSource,
+): CapabilityFoundryRuntimeRegistration | undefined {
   if (source.kind === "skill") {
     return {
       kind: "skill",
@@ -630,38 +628,52 @@ function mapFamilySource(
   };
 }
 
-function normalizeOverrideEntries(entries: Array<Record<string, unknown>>, catalogId: string): FoundryApprovedCatalogEntry[] {
+function normalizeOverrideEntries(
+  entries: Array<Record<string, unknown>>,
+  catalogId: string,
+): FoundryApprovedCatalogEntry[] {
   return entries.map((entry, index) => {
     const provenance = (entry.provenance ?? {}) as Record<string, unknown>;
-    const id = typeof entry.id === "string" && entry.id.trim() ? entry.id.trim() : `${catalogId}:${index + 1}`;
-    const label = typeof entry.label === "string" && entry.label.trim()
-      ? entry.label.trim()
-      : typeof entry.name === "string" && entry.name.trim()
-        ? entry.name.trim()
-        : id;
-    const familyId = typeof entry.familyId === "string" && entry.familyId.trim()
-      ? entry.familyId.trim()
-      : typeof entry.family === "string" && entry.family.trim()
-        ? entry.family.trim()
-        : "curated_repo";
-    const kind = (entry.kind === "skill" ||
+    const id =
+      typeof entry.id === "string" && entry.id.trim()
+        ? entry.id.trim()
+        : `${catalogId}:${index + 1}`;
+    const label =
+      typeof entry.label === "string" && entry.label.trim()
+        ? entry.label.trim()
+        : typeof entry.name === "string" && entry.name.trim()
+          ? entry.name.trim()
+          : id;
+    const familyId =
+      typeof entry.familyId === "string" && entry.familyId.trim()
+        ? entry.familyId.trim()
+        : typeof entry.family === "string" && entry.family.trim()
+          ? entry.family.trim()
+          : "curated_repo";
+    const kind =
+      entry.kind === "skill" ||
       entry.kind === "plugin" ||
       entry.kind === "mcp_server" ||
       entry.kind === "repo_integration" ||
-      entry.kind === "asset_dependency")
-      ? entry.kind
-      : "repo_integration";
-    const sourceUrl = typeof entry.sourceUrl === "string" && entry.sourceUrl.trim()
-      ? entry.sourceUrl.trim()
-      : `https://example.invalid/${id}`;
+      entry.kind === "asset_dependency"
+        ? entry.kind
+        : "repo_integration";
+    const sourceUrl =
+      typeof entry.sourceUrl === "string" && entry.sourceUrl.trim()
+        ? entry.sourceUrl.trim()
+        : `https://example.invalid/${id}`;
     const source: FoundryCatalogSource = {
       id,
       familyId,
       label,
       kind,
-      sourceKind: resolveFoundrySourceKind(sourceUrl, typeof entry.installMethod === "string" ? entry.installMethod : "workspace_copy"),
+      sourceKind: resolveFoundrySourceKind(
+        sourceUrl,
+        typeof entry.installMethod === "string" ? entry.installMethod : "workspace_copy",
+      ),
       sourceUrl,
-      installMethod: typeof entry.installMethod === "string" ? entry.installMethod : "workspace_copy",
+      installMethod:
+        typeof entry.installMethod === "string" ? entry.installMethod : "workspace_copy",
       dependencies: Array.isArray(entry.dependencies)
         ? entry.dependencies.filter((value): value is string => typeof value === "string")
         : [],
@@ -675,7 +687,7 @@ function normalizeOverrideEntries(entries: Array<Record<string, unknown>>, catal
         entry.origin === "bundled" || entry.origin === "remote" || entry.origin === "curated"
           ? entry.origin
           : "curated",
-      bundled: entry.bundled === false || entry.bundle === false ? false : true,
+      bundled: !(entry.bundled === false || entry.bundle === false),
       repo:
         typeof entry.repo === "string"
           ? entry.repo
@@ -732,18 +744,20 @@ export function buildApprovedFoundryCatalog(): FoundryApprovedCatalog {
   );
   return {
     catalogId,
-    supportedSources: [...new Set(entries.map((entry) => `${entry.sourceFamily}:${entry.kind}`))].sort(
-      (left, right) => left.localeCompare(right),
-    ),
+    supportedSources: [
+      ...new Set(entries.map((entry) => `${entry.sourceFamily}:${entry.kind}`)),
+    ].toSorted((left, right) => left.localeCompare(right)),
     sourceCatalogRevision: hashFoundryCatalogEntries(entries),
     entries,
   };
 }
 
-export async function loadApprovedFoundryCatalog(params: {
-  rootDir?: string;
-  env?: NodeJS.ProcessEnv;
-} = {}): Promise<FoundryApprovedCatalog> {
+export async function loadApprovedFoundryCatalog(
+  params: {
+    rootDir?: string;
+    env?: NodeJS.ProcessEnv;
+  } = {},
+): Promise<FoundryApprovedCatalog> {
   const builtin = buildApprovedFoundryCatalog();
   const rootDir = params.rootDir?.trim() ? path.resolve(params.rootDir) : process.cwd();
   const env = params.env ?? process.env;
@@ -752,16 +766,19 @@ export async function loadApprovedFoundryCatalog(params: {
     path.join(rootDir, ".vikiclow", "foundry", "catalog.json");
   try {
     const raw = await fs.readFile(overridePath, "utf8");
-    const parsed = JSON.parse(raw) as { catalogId?: string; entries?: Array<Record<string, unknown>> };
+    const parsed = JSON.parse(raw) as {
+      catalogId?: string;
+      entries?: Array<Record<string, unknown>>;
+    };
     const overrideEntries = Array.isArray(parsed.entries)
       ? normalizeOverrideEntries(parsed.entries, parsed.catalogId?.trim() || builtin.catalogId)
       : [];
     const entries = [...builtin.entries, ...overrideEntries];
     return {
       catalogId: parsed.catalogId?.trim() || builtin.catalogId,
-      supportedSources: [...new Set(entries.map((entry) => `${entry.sourceFamily}:${entry.kind}`))].sort(
-        (left, right) => left.localeCompare(right),
-      ),
+      supportedSources: [
+        ...new Set(entries.map((entry) => `${entry.sourceFamily}:${entry.kind}`)),
+      ].toSorted((left, right) => left.localeCompare(right)),
       sourceCatalogRevision: hashFoundryCatalogEntries(entries),
       entries,
     };

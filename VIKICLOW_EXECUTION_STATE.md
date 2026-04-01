@@ -331,3 +331,80 @@ Finalize the Capability Foundry upgrade by proving the shipped CLI entrypoint, b
 - `10. Total product identity replacement` - materially complete with compatibility residue blocker
 - `11. Full de-OpenClawification` - materially complete with compatibility residue blocker
 - `12. Production-grade build, tests, packaging, and release artifacts` - materially complete
+
+## Capability Foundry Expansion Pass
+
+### Starting State For This Pass
+
+- Capability Foundry discovery, curated-source normalization, sandbox/test promotion, registry persistence, bundle inventory, and CLI operator surfaces were already present on `codex/capability-foundry-expansion`.
+- PR `#17` (`codex/capability-foundry-expansion` -> `main`) was open at commit `aa0e1b8a838868fc1848b64a1c75ccd5a900fef8`.
+- The only live blocker on the branch was the red `CI` run `23875517256`, specifically the `check` job, which failed on Foundry lint/type hygiene in the newly added source-catalog/runtime/CLI files.
+
+### Exact Source Families Supported
+
+- `bundled_skill`
+- `bundled_plugin`
+- `curated_mcp`
+- `curated_repo`
+- `curated_asset`
+
+### Exact Capability Types Supported
+
+- `skill`
+- `plugin`
+- `mcp_server`
+- `repo_integration`
+- `asset_dependency`
+
+### Exact Files Changed In This Pass
+
+- `src/capabilities/bundle.ts`
+- `src/capabilities/foundry-catalog.test.ts`
+- `src/capabilities/foundry-catalog.ts`
+- `src/capabilities/foundry-evaluation.test.ts`
+- `src/capabilities/foundry-evaluation.ts`
+- `src/capabilities/foundry-format.ts`
+- `src/capabilities/foundry-runtime.ts`
+- `src/capabilities/foundry.ts`
+- `src/capabilities/runtime.ts`
+- `src/capabilities/source-catalog.ts`
+- `src/capabilities/store.test.ts`
+- `src/capabilities/store.ts`
+- `src/cli/capabilities-cli.ts`
+- `VIKICLOW_EXECUTION_STATE.md`
+
+### Completed Workstreams In This Pass
+
+- Hardened the existing Capability Foundry code paths in-place so the new curated catalog, source normalization, scoring receipts, inventory formatting, runtime routing fallback, and operator CLI surfaces pass the repo-wide `check` gate.
+- Removed dead helper code, aligned route typing with the real Foundry route shape, converted deterministic sorting to `toSorted`, and cleaned the bundle inventory module so the shipped proof path stays branch-protection compatible.
+- Revalidated the full Foundry-focused unit/integration suite and refreshed the shipped bundle proof and packaged CLI proof after the cleanup.
+
+### Tests / Proofs Run In This Pass
+
+- `corepack pnpm check`
+- `git diff --check`
+- `corepack pnpm exec vitest run --config vitest.config.ts src/capabilities/source-catalog.test.ts src/capabilities/store.test.ts src/capabilities/foundry-catalog.test.ts src/capabilities/foundry-evaluation.test.ts src/capabilities/foundry.test.ts src/capabilities/runtime.test.ts src/capabilities/bundle.test.ts src/cli/capabilities-cli.test.ts src/memory/mission-writeback.test.ts`
+- `corepack pnpm capabilities:proof`
+- `corepack pnpm build`
+- packaged CLI proof under `.artifacts/foundry-cli`:
+  - `node .\vikiclow.mjs capabilities foundry discover --workspace <artifact-workspace> --json`
+  - `node .\vikiclow.mjs capabilities foundry test --workspace <artifact-workspace> --json -- skill:viki-skill-factory`
+  - `node .\vikiclow.mjs capabilities foundry promote --workspace <artifact-workspace> --json --bundle -- skill:viki-skill-factory`
+  - `node .\vikiclow.mjs capabilities foundry routes --workspace <artifact-workspace> --json "create a reusable browser workflow skill with persistent memory"`
+
+### Artifacts Produced In This Pass
+
+- [capability-bundle-proof.json](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/capability-bundle/capability-bundle-proof.json)
+- [capability-bundle-proof.md](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/capability-bundle/capability-bundle-proof.md)
+- [foundry discover proof](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/foundry-cli/discover.json)
+- [foundry test proof](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/foundry-cli/test.json)
+- [foundry promote proof](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/foundry-cli/promote.json)
+- [foundry routes proof](C:/Users/Nabeel%20Saleem/Desktop/viki%20clow/.artifacts/foundry-cli/routes.json)
+
+### GitHub Actions Results After Push
+
+- Pending the next push from this pass.
+
+### Remaining Blockers
+
+- None at the repo/code level before the next branch push; remaining work is publish plus observing GitHub Actions on the updated branch SHA.

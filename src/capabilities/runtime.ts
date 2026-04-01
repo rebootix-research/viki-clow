@@ -6,13 +6,13 @@ import {
   buildCapabilityRouting,
   inferCapabilityIdsForObjective,
 } from "./catalog.js";
-import { buildCapabilityFoundryRoutes, refreshCapabilityFoundry } from "./foundry.js";
+import { formatFoundryRouteLine } from "./foundry-format.js";
 import {
   discoverCuratedCapabilityFoundry,
   routeCuratedCapabilityFoundry,
   loadCuratedFoundryRegistry,
 } from "./foundry-runtime.js";
-import { formatFoundryRouteLine } from "./foundry-format.js";
+import { buildCapabilityFoundryRoutes, refreshCapabilityFoundry } from "./foundry.js";
 import { loadCapabilityManifest, upsertCapabilityRecords } from "./store.js";
 import type {
   CapabilityId,
@@ -390,9 +390,11 @@ export async function resolveCapabilityFoundryRoutes(params: {
   }
 }
 
-export async function loadCapabilityFoundryInventory(params: {
-  env?: NodeJS.ProcessEnv;
-} = {}): Promise<{
+export async function loadCapabilityFoundryInventory(
+  params: {
+    env?: NodeJS.ProcessEnv;
+  } = {},
+): Promise<{
   registryPath: string;
   registry: Awaited<ReturnType<typeof loadCuratedFoundryRegistry>>["registry"];
   candidates: Awaited<ReturnType<typeof discoverCuratedCapabilityFoundry>>["candidates"];

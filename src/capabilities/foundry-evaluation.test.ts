@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { buildFoundryReceipt, scoreFoundryCandidate } from "./foundry-evaluation.js";
 import type { CapabilityFoundryCandidate } from "./types.js";
 
-function makeCandidate(overrides: Partial<CapabilityFoundryCandidate> = {}): CapabilityFoundryCandidate {
+function makeCandidate(
+  overrides: Partial<CapabilityFoundryCandidate> = {},
+): CapabilityFoundryCandidate {
   return {
     id: "skill:foundry-test",
     name: "Foundry Test Skill",

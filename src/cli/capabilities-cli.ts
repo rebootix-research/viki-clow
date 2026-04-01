@@ -1,15 +1,6 @@
 import type { Command } from "commander";
 import { resolveDefaultAgentId, resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
 import {
-  bundleSupportedCapabilities,
-  discoverCapabilitySources,
-  fetchCapabilityRecords,
-  inspectCapabilityRegistry,
-  ensureBaseCapabilityPack,
-  ensureCapabilitiesForObjective,
-  loadCapabilityManifest,
-} from "../capabilities/index.js";
-import {
   formatFoundryCandidateLines,
   formatFoundryRegistryInventoryLines,
   formatFoundryRouteLines,
@@ -18,6 +9,15 @@ import {
   discoverCuratedCapabilityFoundry,
   updateCuratedFoundryCandidates,
 } from "../capabilities/foundry-runtime.js";
+import {
+  bundleSupportedCapabilities,
+  discoverCapabilitySources,
+  fetchCapabilityRecords,
+  inspectCapabilityRegistry,
+  ensureBaseCapabilityPack,
+  ensureCapabilitiesForObjective,
+  loadCapabilityManifest,
+} from "../capabilities/index.js";
 import {
   loadCapabilityFoundryInventory,
   resolveCapabilityFoundryRoutes,
@@ -55,9 +55,7 @@ function formatPlan(plan: Awaited<ReturnType<typeof ensureCapabilitiesForObjecti
     );
     if (plan.foundry.routes.length > 0) {
       lines.push("Foundry routes:");
-      for (const line of formatFoundryRouteLines(
-        plan.foundry.routes as Parameters<typeof formatFoundryRouteLines>[0],
-      )) {
+      for (const line of formatFoundryRouteLines(plan.foundry.routes)) {
         lines.push(`- ${line}`);
       }
     }
@@ -123,22 +121,14 @@ type FoundryCandidateLine = {
   rejectionReason?: string;
 };
 
-type FoundryRouteLine = {
-  candidateId: string;
-  name: string;
-  type: string;
-  scope: string;
-  state: string;
-  score: number;
-  reasons: string[];
-};
+type FoundryRouteLine = Parameters<typeof formatFoundryRouteLines>[0][number];
 
 function formatFoundryCandidates(records: FoundryCandidateLine[]): string[] {
   return formatFoundryCandidateLines(records as Parameters<typeof formatFoundryCandidateLines>[0]);
 }
 
 function formatFoundryRoutes(routes: FoundryRouteLine[]): string[] {
-  return formatFoundryRouteLines(routes as Parameters<typeof formatFoundryRouteLines>[0]);
+  return formatFoundryRouteLines(routes);
 }
 
 function resolveWorkspaceForDefaultAgent(): string {
@@ -276,7 +266,9 @@ export function registerCapabilitiesCli(program: Command) {
         if (objective) {
           const plan = await ensureCapabilitiesForObjective({
             objective,
-            workspaceDir: opts.workspace ? String(opts.workspace) : resolveWorkspaceForDefaultAgent(),
+            workspaceDir: opts.workspace
+              ? String(opts.workspace)
+              : resolveWorkspaceForDefaultAgent(),
             autoInstall: true,
           });
           if (opts.json) {
@@ -302,7 +294,9 @@ export function registerCapabilitiesCli(program: Command) {
         for (const line of formatRegistryRecords(manifest.records)) {
           defaultRuntime.log(line);
         }
-        defaultRuntime.log(`Foundry registry: ${foundry.registry.version} @ ${foundry.registry.updatedAt}`);
+        defaultRuntime.log(
+          `Foundry registry: ${foundry.registry.version} @ ${foundry.registry.updatedAt}`,
+        );
         const inventoryRegistry =
           foundry.registry.candidates.length > 0
             ? foundry.registry
@@ -455,7 +449,9 @@ export function registerCapabilitiesCli(program: Command) {
           return;
         }
         defaultRuntime.log(`Registry updated: ${result.registry.updatedAt}`);
-        defaultRuntime.log(`Supported sources: ${result.registry.supportedSources.join(", ") || "none"}`);
+        defaultRuntime.log(
+          `Supported sources: ${result.registry.supportedSources.join(", ") || "none"}`,
+        );
         defaultRuntime.log("Foundry inventory:");
         const inventoryRegistry =
           result.registry.candidates.length > 0

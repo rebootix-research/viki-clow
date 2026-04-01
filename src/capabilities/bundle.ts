@@ -1,4 +1,4 @@
-﻿import fs from "node:fs/promises";
+import fs from "node:fs/promises";
 import path from "node:path";
 import { resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { installSkill } from "../agents/skills-install.js";
@@ -16,19 +16,18 @@ import {
 } from "../plugins/manifest-registry.js";
 import { applyExclusiveSlotSelection } from "../plugins/slots.js";
 import { resolveConfigDir } from "../utils.js";
+import { writeVoiceBootstrapProof } from "../voice/bootstrap-proof.js";
 import {
-  CAPABILITY_FOUNDRY_READY_CAPABILITIES,
+  ensureVoiceRuntimeBootstrap,
+  type VoiceRuntimeBootstrapStatus,
+} from "../voice/runtime-bootstrap.js";
+import {
   CAPABILITY_FOUNDRY_SOURCE_CATALOG_REVISION,
   CAPABILITY_FOUNDRY_SOURCE_FAMILIES,
   type FoundryCatalogFamily,
   type FoundryCatalogReadyCapability,
   loadApprovedFoundryCatalog,
 } from "./foundry-catalog.js";
-import { writeVoiceBootstrapProof } from "../voice/bootstrap-proof.js";
-import {
-  ensureVoiceRuntimeBootstrap,
-  type VoiceRuntimeBootstrapStatus,
-} from "../voice/runtime-bootstrap.js";
 import { ensureBaseCapabilityPack } from "./runtime.js";
 import type {
   CapabilityFoundryCandidate,
@@ -230,7 +229,12 @@ function buildBundleReceipts(params: {
     receipts.push({
       kind: "plugin",
       target: plugin.id,
-      status: plugin.status === "enabled" ? "enabled" : plugin.status === "skipped" ? "skipped" : "failed",
+      status:
+        plugin.status === "enabled"
+          ? "enabled"
+          : plugin.status === "skipped"
+            ? "skipped"
+            : "failed",
       summary: `${plugin.name} plugin ${plugin.status}.`,
       sourceRepo: plugin.sourceRepo,
       proofPath: plugin.path,
@@ -315,7 +319,9 @@ function buildReadyCapabilities(params: {
       familyId: "curated_repo",
       sourceUrl: route.sourceUrl,
       runtimeHint:
-        route.reasons.length > 0 ? route.reasons.join("; ") : `Route ${route.name} for ${route.type}.`,
+        route.reasons.length > 0
+          ? route.reasons.join("; ")
+          : `Route ${route.name} for ${route.type}.`,
       bundled: route.state === "bundled",
       status: route.state === "bundled" ? "bundled" : "ready",
       proof: route.registration?.entrypoint,
@@ -345,7 +351,8 @@ function buildFoundryRegistrySnapshot(params: {
     summary: entry.summary,
     compatibility: entry.compatibility,
     scope: entry.scope,
-    state: entry.scope === "bundled" ? "bundled" : entry.scope === "rejected" ? "rejected" : "promoted",
+    state:
+      entry.scope === "bundled" ? "bundled" : entry.scope === "rejected" ? "rejected" : "promoted",
     source: entry.source,
     sourceCatalogId: entry.sourceCatalogId,
     sourceCatalogEntryId: entry.sourceCatalogEntryId,
@@ -425,7 +432,9 @@ function renderSourceCatalogMarkdown(catalog: ReturnType<typeof buildSourceCatal
   return `${lines.join("\n")}\n`;
 }
 
-function renderBundleReceiptsMarkdown(receipts: CapabilityBundleInventory["bundleReceipts"]): string {
+function renderBundleReceiptsMarkdown(
+  receipts: CapabilityBundleInventory["bundleReceipts"],
+): string {
   const lines = ["# Capability Foundry Bundle Receipts", ""];
   for (const receipt of receipts) {
     lines.push(`- \`${receipt.kind}\` :: ${receipt.target} :: ${receipt.status}`);
@@ -444,27 +453,7 @@ function renderBundleReceiptsMarkdown(receipts: CapabilityBundleInventory["bundl
   return `${lines.join("\n")}\n`;
 }
 
-function renderReadyCapabilitiesMarkdown(
-  ready: CapabilityBundleInventory["readyCapabilities"],
-): string {
-  const lines = ["# Ready-to-Use Capability Catalog", ""];
-  for (const capability of ready) {
-    lines.push(`- \`${capability.id}\` :: ${capability.label}`);
-    lines.push(`  - Kind: ${capability.kind}`);
-    lines.push(`  - Status: ${capability.status}`);
-    lines.push(`  - Source: ${capability.sourceUrl}`);
-    lines.push(`  - Runtime hint: ${capability.runtimeHint}`);
-    if (capability.proof) {
-      lines.push(`  - Proof: ${capability.proof}`);
-    }
-  }
-  lines.push("");
-  return `${lines.join("\n")}\n`;
-}
-
-function renderBundleInventoryMarkdown(
-  inventory: CapabilityBundleInventory,
-): string {
+function renderBundleInventoryMarkdown(inventory: CapabilityBundleInventory): string {
   const lines = [
     "# VikiClow Bundled Capability Inventory",
     "",
@@ -538,8 +527,7 @@ function renderBundleInventoryMarkdown(
     "## Bundled Skills",
     "",
     ...inventory.skills.map(
-      (entry) =>
-        `- \`${entry.name}\` - ${entry.status}${entry.reason ? ` (${entry.reason})` : ""}`,
+      (entry) => `- \`${entry.name}\` - ${entry.status}${entry.reason ? ` (${entry.reason})` : ""}`,
     ),
     "",
   ];
@@ -990,7 +978,11 @@ export async function bundleSupportedCapabilities(params: {
   await writeJson(sourceCatalogPath, sourceCatalog);
   await writeJson(bundleReceiptsPath, bundleReceipts);
   await fs.writeFile(sourceCatalogMarkdownPath, renderSourceCatalogMarkdown(sourceCatalog), "utf8");
-  await fs.writeFile(bundleReceiptsMarkdownPath, renderBundleReceiptsMarkdown(bundleReceipts), "utf8");
+  await fs.writeFile(
+    bundleReceiptsMarkdownPath,
+    renderBundleReceiptsMarkdown(bundleReceipts),
+    "utf8",
+  );
   await fs.writeFile(markdownPath, renderBundleInventoryMarkdown(inventory), "utf8");
 
   if (params.artifactDir) {
@@ -998,9 +990,15 @@ export async function bundleSupportedCapabilities(params: {
     await copyIfPresent(manifestPath, path.join(params.artifactDir, "bundle-inventory.json"));
     await copyIfPresent(markdownPath, path.join(params.artifactDir, "bundle-inventory.md"));
     await copyIfPresent(sourceCatalogPath, path.join(params.artifactDir, "source-catalog.json"));
-    await copyIfPresent(sourceCatalogMarkdownPath, path.join(params.artifactDir, "source-catalog.md"));
+    await copyIfPresent(
+      sourceCatalogMarkdownPath,
+      path.join(params.artifactDir, "source-catalog.md"),
+    );
     await copyIfPresent(bundleReceiptsPath, path.join(params.artifactDir, "bundle-receipts.json"));
-    await copyIfPresent(bundleReceiptsMarkdownPath, path.join(params.artifactDir, "bundle-receipts.md"));
+    await copyIfPresent(
+      bundleReceiptsMarkdownPath,
+      path.join(params.artifactDir, "bundle-receipts.md"),
+    );
   }
 
   return {

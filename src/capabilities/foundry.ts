@@ -664,28 +664,20 @@ function buildPluginSeed(plugin: PluginManifestRecord): FoundrySeed {
   };
 }
 
-function buildStaticSeed(
-  seed: Omit<FoundrySeed, "classification"> & {
-    objectiveHints: string[];
-    tags: string[];
-    selectionNotes: string[];
-  },
-): FoundrySeed {
-  return {
-    ...seed,
-    classification: {
-      objectiveHints: [...new Set(seed.objectiveHints)],
-      tags: [...new Set(seed.tags)],
-      selectionNotes: [...new Set(seed.selectionNotes)],
-    },
-  };
-}
-
 async function writeFoundryProof(
   candidate: CapabilityFoundryCandidate,
   env: NodeJS.ProcessEnv = process.env,
   options: {
-    stage?: "discover" | "fetch" | "inspect" | "sandbox" | "test" | "promote" | "reject" | "bundle" | "route";
+    stage?:
+      | "discover"
+      | "fetch"
+      | "inspect"
+      | "sandbox"
+      | "test"
+      | "promote"
+      | "reject"
+      | "bundle"
+      | "route";
     outcome?: "suggested" | "success" | "failure" | "promoted" | "rejected" | "bundled" | "routed";
     objective?: string;
     route?: CapabilityFoundryRoute;
@@ -756,7 +748,9 @@ async function buildFoundrySeeds(params: FoundryDiscoverParams): Promise<{
     classification: entry.classification,
     provenance: entry.provenance,
     registration: entry.registration,
-    notes: [...new Set([...(entry.notes ?? []), `family:${entry.sourceFamily}`])],
+    notes: [entry.notes, `family:${entry.sourceFamily}`].filter(
+      (note): note is string => typeof note === "string" && note.trim().length > 0,
+    ),
   }));
   return {
     candidates: [...skillSeeds, ...pluginSeeds, ...staticSeeds],
@@ -1643,10 +1637,8 @@ export async function promoteCapabilityFoundryCandidates(params: FoundryPromoteP
         },
         scoreReceipt: {
           scoredAt: now,
-          score: scoreFoundryCandidate(
-            candidate,
-            candidate.classification.selectionNotes.join(" "),
-          ).score,
+          score: scoreFoundryCandidate(candidate, candidate.classification.selectionNotes.join(" "))
+            .score,
           verdict: params.bundle || candidate.scope === "bundled" ? "bundle" : "promote",
           reasons: scoreFoundryCandidate(
             candidate,
@@ -1706,24 +1698,24 @@ export async function rejectCapabilityFoundryCandidates(
     .filter((candidate) => ids.has(candidate.id))
     .map((candidate) => {
       const rejectedCandidate = {
-          ...candidate,
-          state: "rejected" as CapabilityFoundryState,
-          scope: "rejected" as CapabilityFoundryScope,
+        ...candidate,
+        state: "rejected" as CapabilityFoundryState,
+        scope: "rejected" as CapabilityFoundryScope,
+        rejectedAt: now,
+        rejectionReason: params.reason.trim(),
+        lifecycleReceipt: {
+          ...candidate.lifecycleReceipt,
+          discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
           rejectedAt: now,
-          rejectionReason: params.reason.trim(),
-          lifecycleReceipt: {
-            ...candidate.lifecycleReceipt,
-            discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
-            rejectedAt: now,
-          },
-          test: {
-            ...candidate.test,
-            status: (candidate.test.status === "passed"
-              ? "passed"
-              : "failed") as CapabilityFoundryTestStatus,
-            summary: params.reason.trim(),
-            testedAt: now,
-          },
+        },
+        test: {
+          ...candidate.test,
+          status: (candidate.test.status === "passed"
+            ? "passed"
+            : "failed") as CapabilityFoundryTestStatus,
+          summary: params.reason.trim(),
+          testedAt: now,
+        },
       } satisfies CapabilityFoundryCandidate;
       rejectedCandidate.notes = [
         ...new Set([...(rejectedCandidate.notes ?? []), "stage:reject", "decision:rejected"]),
@@ -1833,7 +1825,9 @@ export async function recordCapabilityFoundryRouteUsage(params: {
     params.env,
   );
   const registry = await loadCapabilityFoundryRegistry(params.env);
-  const candidateMap = new Map(registry.candidates.map((candidate) => [candidate.id, candidate] as const));
+  const candidateMap = new Map(
+    registry.candidates.map((candidate) => [candidate.id, candidate] as const),
+  );
   for (const route of params.routes) {
     const candidate = candidateMap.get(route.candidateId);
     if (!candidate) {

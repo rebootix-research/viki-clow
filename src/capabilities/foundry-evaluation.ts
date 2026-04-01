@@ -63,14 +63,18 @@ export function scoreFoundryCandidate(
   const normalized = objective.trim().toLowerCase();
   const tokens = normalized.split(/[^a-z0-9]+/u).filter(Boolean);
   const hints = candidate.classification.objectiveHints.filter((hint) =>
-    tokens.some((token) => token.includes(hint) || hint.includes(token) || normalized.includes(hint)),
+    tokens.some(
+      (token) => token.includes(hint) || hint.includes(token) || normalized.includes(hint),
+    ),
   );
   const tags = candidate.classification.tags.filter((tag) =>
     tokens.some((token) => token.includes(tag) || tag.includes(token) || normalized.includes(tag)),
   );
   const routeHints = candidate.registration?.routeHints ?? [];
   const matchedRoutes = routeHints.filter((hint) =>
-    tokens.some((token) => token.includes(hint) || hint.includes(token) || normalized.includes(hint)),
+    tokens.some(
+      (token) => token.includes(hint) || hint.includes(token) || normalized.includes(hint),
+    ),
   );
   const compatibilityScore =
     candidate.compatibility === "compatible"
@@ -103,11 +107,7 @@ export function scoreFoundryCandidate(
                 ? 2
                 : 1;
   const sourceScore =
-    candidate.source.kind === "local_repo"
-      ? 8
-      : candidate.source.kind === "github_repo"
-        ? 7
-        : 6;
+    candidate.source.kind === "local_repo" ? 8 : candidate.source.kind === "github_repo" ? 7 : 6;
   const testScore =
     candidate.test.status === "passed"
       ? 10
@@ -181,10 +181,7 @@ export function scoreFoundryCandidate(
 }
 
 function hashReceiptId(parts: string[]): string {
-  return createHash("sha256")
-    .update(parts.join("|"))
-    .digest("hex")
-    .slice(0, 16);
+  return createHash("sha256").update(parts.join("|")).digest("hex").slice(0, 16);
 }
 
 export function buildFoundryReceipt(params: {
@@ -201,7 +198,10 @@ export function buildFoundryReceipt(params: {
 }): FoundryEvaluationReceipt {
   const candidate = params.candidate;
   const evaluatedAt = params.evaluatedAt ?? new Date().toISOString();
-  const scored = scoreFoundryCandidate(candidate, params.objective ?? candidate.classification.selectionNotes.join(" "));
+  const scored = scoreFoundryCandidate(
+    candidate,
+    params.objective ?? candidate.classification.selectionNotes.join(" "),
+  );
   const score = params.score ?? scored.score;
   const reasons = params.reasons ?? scored.reasons;
   const beforeState = params.beforeState ?? candidate.state;

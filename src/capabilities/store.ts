@@ -128,17 +128,19 @@ function deriveSupportedSources(catalogs: CapabilityFoundrySourceCatalog[]): str
         catalog.entries.map((entry) => `${entry.family}:${entry.kind}`),
       ),
     ),
-  ].sort((left, right) => left.localeCompare(right));
+  ].toSorted((left, right) => left.localeCompare(right));
 }
 
 async function loadFoundrySourceCatalogs(
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<CapabilityFoundrySourceCatalog[]> {
-  return (await loadApprovedCapabilitySourceCatalogs({
-    rootDir: process.cwd(),
-    env,
-    includeBuiltins: true,
-  })).map(normalizeFoundrySourceCatalog);
+  return (
+    await loadApprovedCapabilitySourceCatalogs({
+      rootDir: process.cwd(),
+      env,
+      includeBuiltins: true,
+    })
+  ).map(normalizeFoundrySourceCatalog);
 }
 
 export async function loadCapabilityRegistry(
@@ -217,7 +219,8 @@ export async function loadCapabilityFoundryRegistry(
         sourceCatalogRevision:
           effectiveCatalogs.length > 0
             ? computeCapabilityFoundrySourceCatalogRevision(effectiveCatalogs)
-            : typeof parsed.sourceCatalogRevision === "string" && parsed.sourceCatalogRevision.trim()
+            : typeof parsed.sourceCatalogRevision === "string" &&
+                parsed.sourceCatalogRevision.trim()
               ? parsed.sourceCatalogRevision
               : CAPABILITY_CATALOG_REVISION,
         workspaceDir:

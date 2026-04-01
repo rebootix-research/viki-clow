@@ -68,7 +68,9 @@ export function formatFoundryCandidateLine(candidate: CapabilityFoundryCandidate
     ? [
         `autoBundled=${candidate.registration.autoBundled}`,
         `target=${candidate.registration.targetId}`,
-        candidate.registration.entrypoint ? `entrypoint=${candidate.registration.entrypoint}` : null,
+        candidate.registration.entrypoint
+          ? `entrypoint=${candidate.registration.entrypoint}`
+          : null,
         candidate.registration.usageRecipe ? `recipe=${candidate.registration.usageRecipe}` : null,
       ].filter(Boolean)
     : [];
@@ -89,9 +91,7 @@ export function formatFoundryCandidateLine(candidate: CapabilityFoundryCandidate
     .concat(proof, rejection);
 }
 
-export function formatFoundryCandidateLines(
-  candidates: CapabilityFoundryCandidate[],
-): string[] {
+export function formatFoundryCandidateLines(candidates: CapabilityFoundryCandidate[]): string[] {
   if (candidates.length === 0) {
     return ["No Capability Foundry candidates recorded yet."];
   }
@@ -128,9 +128,7 @@ export function formatFoundryRouteLines(routes: CapabilityFoundryRoute[]): strin
   return routes.map(formatFoundryRouteLine);
 }
 
-export function formatFoundryRegistryInventoryLines(
-  registry: CapabilityFoundryRegistry,
-): string[] {
+export function formatFoundryRegistryInventoryLines(registry: CapabilityFoundryRegistry): string[] {
   const stateCounts = formatStateCounts(registry.candidates);
   const scopeCounts = formatScopeCounts(registry.candidates);
   const sourceCounts = Array.from(
@@ -140,7 +138,7 @@ export function formatFoundryRegistryInventoryLines(
       return counts;
     }, new Map<string, number>()),
   )
-    .sort(([left], [right]) => left.localeCompare(right))
+    .toSorted(([left], [right]) => left.localeCompare(right))
     .map(([kind, count]) => `${kind}=${count}`)
     .join(", ");
   return [
