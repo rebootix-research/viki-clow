@@ -4,6 +4,8 @@ Capability Foundry is Vikiclow’s curated capability supply chain. It keeps a f
 
 The goal is simple: discover good capabilities, classify them correctly, sandbox them, test them, promote the ones that pass, bundle the safest winners, and register them so missions can route to them automatically.
 
+In practice that means Vikiclow can absorb proven external capability without turning the product into an untrusted marketplace or a blind GitHub scraper.
+
 ## What It Covers
 
 Capability Foundry supports four curated source families and their downstream inventory:

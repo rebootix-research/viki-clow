@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { buildWorkspaceSkillStatus, type SkillStatusEntry } from "../agents/skills-status.js";
@@ -18,6 +17,11 @@ import {
   inferCapabilityIdsForObjective,
   normalizeCapabilityObjective,
 } from "./catalog.js";
+import { loadApprovedFoundryCatalog } from "./foundry-catalog.js";
+import {
+  buildFoundryReceipt,
+  scoreFoundryCandidate as scoreFoundryCandidateWithEvaluation,
+} from "./foundry-evaluation.js";
 import {
   loadCapabilityFoundryRegistry,
   loadCapabilityRegistry,
@@ -77,6 +81,10 @@ type FoundrySeed = Omit<
   | "notes"
 > & {
   notes?: string[];
+  sourceCatalogId?: string;
+  sourceCatalogEntryId?: string;
+  sourceFamily?: CapabilityFoundryCandidate["sourceFamily"];
+  approval?: CapabilityFoundryCandidate["approval"];
   provenance?: CapabilityFoundryCandidate["provenance"];
   test?: CapabilityFoundryTestResult;
 };
@@ -105,13 +113,6 @@ type FoundryRouteParams = FoundryDiscoverParams & {
 type FoundryRefreshParams = FoundryDiscoverParams & {
   includeRemote?: boolean;
 };
-
-const SUPPORTED_FOUNDRY_SOURCES = [
-  "repo-skills",
-  "repo-plugins",
-  "npm-mcp",
-  "github-repo",
-] as const;
 
 function repoUrlFor(kind: "skill" | "plugin", id: string): string {
   const base = kind === "skill" ? "skills" : "extensions";
@@ -514,8 +515,17 @@ function mergeCandidate(
     scope: existing?.scope === "rejected" ? "rejected" : seed.scope,
     state: existing?.state ?? "discovered",
     source: seed.source,
+    sourceCatalogId: existing?.sourceCatalogId ?? seed.sourceCatalogId,
+    sourceCatalogEntryId: existing?.sourceCatalogEntryId ?? seed.sourceCatalogEntryId,
+    sourceFamily: existing?.sourceFamily ?? seed.sourceFamily,
+    approval: existing?.approval ?? seed.approval,
     classification: seed.classification,
     sandbox: existing?.sandbox,
+    lifecycleReceipt: existing?.lifecycleReceipt ?? {
+      discoveredAt: new Date().toISOString(),
+    },
+    installReceipt: existing?.installReceipt,
+    scoreReceipt: existing?.scoreReceipt,
     provenance: {
       dependencies: seed.provenance?.dependencies ?? seed.source.dependencies,
       version: existing?.provenance.version ?? seed.provenance?.version,
@@ -584,6 +594,10 @@ function buildSkillSeed(skill: SkillStatusEntry): FoundrySeed {
         ...skill.requirements.config,
       ],
     },
+    sourceCatalogId: "local-bundled-skill",
+    sourceCatalogEntryId: `skill:${skill.skillKey}`,
+    sourceFamily: "bundled_skill",
+    approval: "approved",
     registration: {
       kind: "skill",
       targetId: skill.skillKey,
@@ -634,6 +648,10 @@ function buildPluginSeed(plugin: PluginManifestRecord): FoundrySeed {
       dependencies: [...plugin.channels, ...plugin.providers, ...plugin.skills],
       version: plugin.version,
     },
+    sourceCatalogId: "local-bundled-plugin",
+    sourceCatalogEntryId: `plugin:${plugin.id}`,
+    sourceFamily: "bundled_plugin",
+    approval: "approved",
     registration: {
       kind: "plugin",
       targetId: plugin.id,
@@ -663,249 +681,35 @@ function buildStaticSeed(
   };
 }
 
-function buildStaticRemoteSeeds(rootDir: string): FoundrySeed[] {
-  return [
-    buildStaticSeed({
-      id: "mcp:filesystem",
-      name: "MCP Filesystem Server",
-      type: "mcp_server",
-      summary: "Curated filesystem MCP server for directory reads, writes, and file traversal.",
-      compatibility: "wrapped",
-      scope: "optional",
-      source: {
-        kind: "npm_registry",
-        sourceUrl: "https://www.npmjs.com/package/@modelcontextprotocol/server-filesystem",
-        packageName: "@modelcontextprotocol/server-filesystem",
-        installMethod: "npm_pack",
-        dependencies: ["node", "npm"],
-      },
-      provenance: {
-        dependencies: ["node", "npm"],
-      },
-      registration: {
-        kind: "mcp_server",
-        targetId: "@modelcontextprotocol/server-filesystem",
-        entrypoint: "@modelcontextprotocol/server-filesystem",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-filesystem"],
-        autoBundled: false,
-        routeHints: ["filesystem", "files", "directories", "workspace"],
-        usageRecipe: "Launch when the mission needs a standards-based MCP filesystem server.",
-      },
-      objectiveHints: ["filesystem", "files", "directories", "workspace"],
-      tags: ["mcp", "filesystem", "curated"],
-      selectionNotes: ["registry-backed MCP candidate"],
-    }),
-    buildStaticSeed({
-      id: "mcp:fetch",
-      name: "MCP Fetch Server",
-      type: "mcp_server",
-      summary: "Curated fetch MCP server for network-backed HTTP retrieval and content intake.",
-      compatibility: "wrapped",
-      scope: "optional",
-      source: {
-        kind: "npm_registry",
-        sourceUrl: "https://www.npmjs.com/package/@modelcontextprotocol/server-fetch",
-        packageName: "@modelcontextprotocol/server-fetch",
-        installMethod: "npm_pack",
-        dependencies: ["node", "npm"],
-      },
-      provenance: {
-        dependencies: ["node", "npm"],
-      },
-      registration: {
-        kind: "mcp_server",
-        targetId: "@modelcontextprotocol/server-fetch",
-        entrypoint: "@modelcontextprotocol/server-fetch",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-fetch"],
-        autoBundled: false,
-        routeHints: ["fetch", "http", "scrape", "web"],
-        usageRecipe: "Launch when the mission needs a standards-based MCP fetch surface.",
-      },
-      objectiveHints: ["fetch", "http", "scrape", "web"],
-      tags: ["mcp", "network", "curated"],
-      selectionNotes: ["registry-backed MCP candidate"],
-    }),
-    buildStaticSeed({
-      id: "mcp:github",
-      name: "MCP GitHub Server",
-      type: "mcp_server",
-      summary: "Curated GitHub MCP server for issues, pull requests, and repository metadata.",
-      compatibility: "wrapped",
-      scope: "optional",
-      source: {
-        kind: "npm_registry",
-        sourceUrl: "https://www.npmjs.com/package/@modelcontextprotocol/server-github",
-        packageName: "@modelcontextprotocol/server-github",
-        installMethod: "npm_pack",
-        dependencies: ["node", "npm", "github-token"],
-      },
-      provenance: {
-        dependencies: ["node", "npm", "github-token"],
-      },
-      registration: {
-        kind: "mcp_server",
-        targetId: "@modelcontextprotocol/server-github",
-        entrypoint: "@modelcontextprotocol/server-github",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-github"],
-        autoBundled: false,
-        routeHints: ["github", "issue", "pull request", "repository"],
-        usageRecipe: "Launch when the mission needs standards-based GitHub MCP tooling.",
-      },
-      objectiveHints: ["github", "issue", "pull request", "repository"],
-      tags: ["mcp", "github", "curated"],
-      selectionNotes: ["registry-backed MCP candidate"],
-    }),
-    buildStaticSeed({
-      id: "repo:graphiti",
-      name: "Graphiti Upstream",
-      type: "repo_integration",
-      summary: "Pinned upstream Graphiti repo for deeper memory adapter inspection and updates.",
-      compatibility: "wrapped",
-      scope: "experimental",
-      source: {
-        kind: "github_repo",
-        sourceUrl: "https://github.com/getzep/graphiti",
-        repo: "getzep/graphiti",
-        installMethod: "git_clone",
-        dependencies: ["git", "python"],
-      },
-      provenance: {
-        dependencies: ["git", "python"],
-      },
-      registration: {
-        kind: "repo_integration",
-        targetId: "getzep/graphiti",
-        entrypoint: path.join(rootDir, ".vikiclow-foundry", "graphiti"),
-        autoBundled: false,
-        routeHints: ["graphiti", "memory", "knowledge graph"],
-        usageRecipe:
-          "Vendor when the mission needs upstream Graphiti source inspection or adapter refresh.",
-      },
-      objectiveHints: ["graphiti", "memory", "knowledge graph"],
-      tags: ["repo", "memory", "graphiti"],
-      selectionNotes: ["curated upstream repo candidate"],
-    }),
-    buildStaticSeed({
-      id: "repo:langgraph",
-      name: "LangGraph Upstream",
-      type: "repo_integration",
-      summary: "Pinned upstream LangGraph repo for swarm graph runtime inspection and updates.",
-      compatibility: "wrapped",
-      scope: "experimental",
-      source: {
-        kind: "github_repo",
-        sourceUrl: "https://github.com/langchain-ai/langgraph",
-        repo: "langchain-ai/langgraph",
-        installMethod: "git_clone",
-        dependencies: ["git", "python"],
-      },
-      provenance: {
-        dependencies: ["git", "python"],
-      },
-      registration: {
-        kind: "repo_integration",
-        targetId: "langchain-ai/langgraph",
-        entrypoint: path.join(rootDir, ".vikiclow-foundry", "langgraph"),
-        autoBundled: false,
-        routeHints: ["langgraph", "swarm", "graph", "orchestration"],
-        usageRecipe:
-          "Vendor when the mission needs upstream LangGraph source inspection or adapter refresh.",
-      },
-      objectiveHints: ["langgraph", "swarm", "graph", "orchestration"],
-      tags: ["repo", "langgraph", "swarm"],
-      selectionNotes: ["curated upstream repo candidate"],
-    }),
-    buildStaticSeed({
-      id: "repo:temporal-sdk-typescript",
-      name: "Temporal TypeScript SDK",
-      type: "repo_integration",
-      summary: "Pinned upstream Temporal TypeScript SDK repo for durable runtime upgrades.",
-      compatibility: "wrapped",
-      scope: "experimental",
-      source: {
-        kind: "github_repo",
-        sourceUrl: "https://github.com/temporalio/sdk-typescript",
-        repo: "temporalio/sdk-typescript",
-        installMethod: "git_clone",
-        dependencies: ["git", "node"],
-      },
-      provenance: {
-        dependencies: ["git", "node"],
-      },
-      registration: {
-        kind: "repo_integration",
-        targetId: "temporalio/sdk-typescript",
-        entrypoint: path.join(rootDir, ".vikiclow-foundry", "temporal-sdk-typescript"),
-        autoBundled: false,
-        routeHints: ["temporal", "workflow", "durable"],
-        usageRecipe:
-          "Vendor when the mission needs upstream Temporal SDK inspection or adapter refresh.",
-      },
-      objectiveHints: ["temporal", "workflow", "durable"],
-      tags: ["repo", "temporal", "durable"],
-      selectionNotes: ["curated upstream repo candidate"],
-    }),
-    buildStaticSeed({
-      id: "asset:voice-runtime-pack",
-      name: "Voice Runtime Pack",
-      type: "asset_dependency",
-      summary: "Bundled voice runtime assets for wake word, STT, and local TTS readiness.",
-      compatibility: "compatible",
-      scope: "bundled",
-      source: {
-        kind: "local_repo",
-        sourceUrl: repoUrlFor("skill", "sherpa-onnx-tts"),
-        localPath: path.join(rootDir, "skills", "sherpa-onnx-tts"),
-        installMethod: "download",
-        dependencies: ["ffmpeg", "python"],
-      },
-      provenance: {
-        dependencies: ["ffmpeg", "python"],
-      },
-      registration: {
-        kind: "asset_dependency",
-        targetId: "voice-runtime-pack",
-        entrypoint: path.join(rootDir, "skills", "sherpa-onnx-tts"),
-        path: path.join(rootDir, "skills", "sherpa-onnx-tts"),
-        autoBundled: true,
-        routeHints: ["voice", "tts", "stt", "wakeword"],
-        usageRecipe: "Use when the mission depends on mandatory local voice runtime assets.",
-      },
-      objectiveHints: ["voice", "tts", "stt", "wakeword"],
-      tags: ["asset", "voice", "bundled"],
-      selectionNotes: ["bundled runtime dependency"],
-    }),
-  ];
-}
-
-function computeFoundryCatalogRevision(candidates: FoundrySeed[]): string {
-  return createHash("sha256")
-    .update(
-      JSON.stringify(
-        candidates.map((candidate) => ({
-          id: candidate.id,
-          type: candidate.type,
-          source: candidate.source,
-          classification: candidate.classification,
-          registration: candidate.registration,
-        })),
-      ),
-    )
-    .digest("hex")
-    .slice(0, 12);
-}
-
 async function writeFoundryProof(
   candidate: CapabilityFoundryCandidate,
   env: NodeJS.ProcessEnv = process.env,
+  options: {
+    stage?: "discover" | "fetch" | "inspect" | "sandbox" | "test" | "promote" | "reject" | "bundle" | "route";
+    outcome?: "suggested" | "success" | "failure" | "promoted" | "rejected" | "bundled" | "routed";
+    objective?: string;
+    route?: CapabilityFoundryRoute;
+  } = {},
 ): Promise<string> {
   const proofPath = resolveFoundryProofPath(candidate.id, env);
   await writeJsonAtomic(proofPath, {
     generatedAt: new Date().toISOString(),
     candidate,
+    receipt: buildFoundryReceipt({
+      candidate,
+      stage: options.stage ?? (candidate.state === "rejected" ? "reject" : "test"),
+      outcome:
+        options.outcome ??
+        (candidate.state === "rejected"
+          ? "rejected"
+          : candidate.state === "bundled"
+            ? "bundled"
+            : candidate.state === "promoted"
+              ? "promoted"
+              : "suggested"),
+      objective: options.objective,
+      route: options.route,
+    }),
   });
   return proofPath;
 }
@@ -913,6 +717,7 @@ async function writeFoundryProof(
 async function buildFoundrySeeds(params: FoundryDiscoverParams): Promise<{
   candidates: FoundrySeed[];
   supportedSources: string[];
+  sourceCatalogRevision: string;
 }> {
   const rootDir = params.rootDir ?? process.cwd();
   const config = params.config ?? loadConfig();
@@ -932,10 +737,31 @@ async function buildFoundrySeeds(params: FoundryDiscoverParams): Promise<{
         path.normalize(plugin.rootDir).startsWith(path.normalize(path.join(rootDir, "extensions"))),
     )
     .map(buildPluginSeed);
-  const staticSeeds = buildStaticRemoteSeeds(rootDir);
+  const approvedCatalog = await loadApprovedFoundryCatalog({
+    rootDir,
+    env: params.env,
+  });
+  const staticSeeds = approvedCatalog.entries.map((entry) => ({
+    id: entry.id,
+    name: entry.name,
+    type: entry.type,
+    summary: entry.summary,
+    compatibility: entry.compatibility,
+    scope: entry.scope,
+    source: entry.source,
+    sourceCatalogId: approvedCatalog.catalogId,
+    sourceCatalogEntryId: entry.id,
+    sourceFamily: entry.sourceFamily,
+    approval: entry.approval,
+    classification: entry.classification,
+    provenance: entry.provenance,
+    registration: entry.registration,
+    notes: [...new Set([...(entry.notes ?? []), `family:${entry.sourceFamily}`])],
+  }));
   return {
     candidates: [...skillSeeds, ...pluginSeeds, ...staticSeeds],
-    supportedSources: [...SUPPORTED_FOUNDRY_SOURCES],
+    supportedSources: [...approvedCatalog.supportedSources],
+    sourceCatalogRevision: approvedCatalog.sourceCatalogRevision,
   };
 }
 
@@ -1087,7 +913,7 @@ export async function discoverCapabilityFoundry(params: FoundryDiscoverParams): 
 }> {
   const existing = await loadCapabilityFoundryRegistry(params.env);
   const built = await buildFoundrySeeds(params);
-  const revision = computeFoundryCatalogRevision(built.candidates);
+  const revision = built.sourceCatalogRevision;
   const mergedCandidates = built.candidates.map((seed) =>
     mergeCandidate(
       seed,
@@ -1111,6 +937,13 @@ export async function discoverCapabilityFoundry(params: FoundryDiscoverParams): 
     usage: existing.usage,
   };
   const registryPath = await saveCapabilityFoundryRegistry(registry, params.env);
+  for (const candidate of registry.candidates) {
+    await writeFoundryProof(candidate, params.env, {
+      stage: "discover",
+      outcome: candidate.state === "rejected" ? "failure" : "suggested",
+      objective: candidate.classification.selectionNotes.join(" "),
+    });
+  }
   return { registry, registryPath };
 }
 
@@ -1119,6 +952,7 @@ async function fetchNpmCandidate(
   env: NodeJS.ProcessEnv,
 ): Promise<CapabilityFoundryCandidate> {
   const packageName = candidate.source.packageName;
+  const startedAt = new Date().toISOString();
   if (!packageName) {
     return {
       ...candidate,
@@ -1131,6 +965,11 @@ async function fetchNpmCandidate(
       rejectedAt: new Date().toISOString(),
       rejectionReason: "missing package name",
       scope: "rejected",
+      lifecycleReceipt: {
+        ...candidate.lifecycleReceipt,
+        discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? startedAt,
+        rejectedAt: new Date().toISOString(),
+      },
     };
   }
   const sandboxDir = resolveFoundrySandboxDir(candidate.id, env);
@@ -1143,6 +982,7 @@ async function fetchNpmCandidate(
   const pack = await runExec("npm", ["pack", packageName, "--pack-destination", sandboxDir], {
     timeoutMs: 180_000,
   });
+  const finishedAt = new Date().toISOString();
   const tarball = pack.stdout
     .split(/\r?\n/u)
     .map((line) => line.trim())
@@ -1152,7 +992,21 @@ async function fetchNpmCandidate(
     state: "fetched",
     sandbox: {
       path: sandboxDir,
-      fetchedAt: new Date().toISOString(),
+      fetchedAt: finishedAt,
+    },
+    lifecycleReceipt: {
+      ...candidate.lifecycleReceipt,
+      discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? startedAt,
+      fetchedAt: finishedAt,
+    },
+    installReceipt: {
+      startedAt,
+      finishedAt,
+      method: candidate.source.installMethod,
+      command: ["npm", "pack", packageName, "--pack-destination", sandboxDir],
+      artifactPath: tarball ? path.join(sandboxDir, tarball) : sandboxDir,
+      status: "success",
+      summary: `Packed ${packageName} into sandbox storage.`,
     },
     provenance: {
       ...candidate.provenance,
@@ -1169,6 +1023,7 @@ async function fetchGithubRepoCandidate(
   candidate: CapabilityFoundryCandidate,
   env: NodeJS.ProcessEnv,
 ): Promise<CapabilityFoundryCandidate> {
+  const startedAt = new Date().toISOString();
   const sandboxDir = resolveFoundrySandboxDir(candidate.id, env);
   const repoDir = path.join(sandboxDir, "repo");
   await fs.mkdir(sandboxDir, { recursive: true });
@@ -1181,12 +1036,27 @@ async function fetchGithubRepoCandidate(
     await runExec("git", cloneArgs, { timeoutMs: 180_000 });
   }
   const rev = await checkCommand("git", ["-C", repoDir, "rev-parse", "HEAD"]);
+  const finishedAt = new Date().toISOString();
   return {
     ...candidate,
     state: "fetched",
     sandbox: {
       path: repoDir,
-      fetchedAt: new Date().toISOString(),
+      fetchedAt: finishedAt,
+    },
+    lifecycleReceipt: {
+      ...candidate.lifecycleReceipt,
+      discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? startedAt,
+      fetchedAt: finishedAt,
+    },
+    installReceipt: {
+      startedAt,
+      finishedAt,
+      method: candidate.source.installMethod,
+      command: ["git", "clone", candidate.source.sourceUrl, repoDir],
+      artifactPath: repoDir,
+      status: "success",
+      summary: `Cloned ${candidate.source.sourceUrl} into sandbox.`,
     },
     provenance: {
       ...candidate.provenance,
@@ -1201,6 +1071,7 @@ async function fetchLocalCandidate(
   env: NodeJS.ProcessEnv,
 ): Promise<CapabilityFoundryCandidate> {
   const localPath = candidate.source.localPath;
+  const startedAt = new Date().toISOString();
   if (!(await pathExists(localPath))) {
     return {
       ...candidate,
@@ -1213,6 +1084,11 @@ async function fetchLocalCandidate(
       rejectedAt: new Date().toISOString(),
       rejectionReason: `missing local source: ${localPath ?? "n/a"}`,
       scope: "rejected",
+      lifecycleReceipt: {
+        ...candidate.lifecycleReceipt,
+        discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? startedAt,
+        rejectedAt: new Date().toISOString(),
+      },
     };
   }
   const sandboxDir = resolveFoundrySandboxDir(candidate.id, env);
@@ -1222,12 +1098,27 @@ async function fetchLocalCandidate(
     registration: candidate.registration,
     discoveredAt: new Date().toISOString(),
   });
+  const finishedAt = new Date().toISOString();
   return {
     ...candidate,
     state: "fetched",
     sandbox: {
       path: sandboxDir,
-      fetchedAt: new Date().toISOString(),
+      fetchedAt: finishedAt,
+    },
+    lifecycleReceipt: {
+      ...candidate.lifecycleReceipt,
+      discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? startedAt,
+      fetchedAt: finishedAt,
+    },
+    installReceipt: {
+      startedAt,
+      finishedAt,
+      method: candidate.source.installMethod,
+      command: ["copy", String(localPath)],
+      artifactPath: sandboxDir,
+      status: "success",
+      summary: `Copied local source ${localPath} into sandbox.`,
     },
     provenance: {
       ...candidate.provenance,
@@ -1256,6 +1147,18 @@ export async function ingestCapabilityFoundryCandidates(params: FoundryIngestPar
     } else if (candidate.source.kind === "github_repo") {
       next = await fetchGithubRepoCandidate(candidate, params.env ?? process.env);
     }
+    next.notes = [
+      ...new Set([
+        ...(next.notes ?? []),
+        "stage:fetch",
+        `source:${candidate.source.kind}`,
+        `state:${next.state}`,
+      ]),
+    ];
+    await writeFoundryProof(next, params.env, {
+      stage: "fetch",
+      outcome: next.state === "rejected" ? "failure" : "suggested",
+    });
     updated.push(next);
   }
   const persisted = await upsertCapabilityFoundryCandidates(updated, {
@@ -1325,6 +1228,11 @@ async function inspectFoundryCandidate(
         scope: "rejected",
         rejectedAt: now,
         rejectionReason: `plugin ${pluginId ?? candidate.id} not loadable`,
+        lifecycleReceipt: {
+          ...candidate.lifecycleReceipt,
+          discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+          rejectedAt: now,
+        },
         test: {
           status: "failed",
           summary: `plugin ${pluginId ?? candidate.id} not loadable`,
@@ -1338,6 +1246,12 @@ async function inspectFoundryCandidate(
       sandbox: {
         path: candidate.sandbox?.path ?? resolveFoundrySandboxDir(candidate.id, params.env),
         fetchedAt: candidate.sandbox?.fetchedAt,
+        inspectedAt: now,
+      },
+      lifecycleReceipt: {
+        ...candidate.lifecycleReceipt,
+        discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+        fetchedAt: candidate.lifecycleReceipt?.fetchedAt,
         inspectedAt: now,
       },
       test: {
@@ -1356,6 +1270,12 @@ async function inspectFoundryCandidate(
       sandbox: {
         path: candidate.sandbox?.path ?? resolveFoundrySandboxDir(candidate.id, params.env),
         fetchedAt: candidate.sandbox?.fetchedAt,
+        inspectedAt: now,
+      },
+      lifecycleReceipt: {
+        ...candidate.lifecycleReceipt,
+        discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+        fetchedAt: candidate.lifecycleReceipt?.fetchedAt,
         inspectedAt: now,
       },
       test: {
@@ -1386,6 +1306,12 @@ async function inspectFoundryCandidate(
         fetchedAt: candidate.sandbox?.fetchedAt,
         inspectedAt: now,
       },
+      lifecycleReceipt: {
+        ...candidate.lifecycleReceipt,
+        discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+        fetchedAt: candidate.lifecycleReceipt?.fetchedAt,
+        inspectedAt: now,
+      },
       rejectedAt: ok ? candidate.rejectedAt : now,
       rejectionReason: ok ? candidate.rejectionReason : "repo clone missing expected project files",
       test: {
@@ -1406,6 +1332,12 @@ async function inspectFoundryCandidate(
     sandbox: {
       path: candidate.sandbox?.path ?? resolveFoundrySandboxDir(candidate.id, params.env),
       fetchedAt: candidate.sandbox?.fetchedAt,
+      inspectedAt: now,
+    },
+    lifecycleReceipt: {
+      ...candidate.lifecycleReceipt,
+      discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+      fetchedAt: candidate.lifecycleReceipt?.fetchedAt,
       inspectedAt: now,
     },
     rejectedAt: ok ? candidate.rejectedAt : now,
@@ -1434,15 +1366,21 @@ export async function inspectCapabilityFoundryRegistry(
       .filter((candidate) => (ids ? ids.has(candidate.id) : true))
       .map((candidate) => inspectFoundryCandidate(candidate, params)),
   );
+  for (const candidate of inspected) {
+    candidate.notes = [
+      ...new Set([...(candidate.notes ?? []), "stage:inspect", `state:${candidate.state}`]),
+    ];
+    await writeFoundryProof(candidate, params.env, {
+      stage: "inspect",
+      outcome: candidate.state === "rejected" ? "failure" : "suggested",
+    });
+  }
   const persisted = await upsertCapabilityFoundryCandidates(inspected, {
     env: params.env,
     workspaceDir: params.workspaceDir,
     supportedSources: registry.supportedSources,
     sourceCatalogRevision: registry.sourceCatalogRevision,
   });
-  for (const candidate of inspected) {
-    await writeFoundryProof(candidate, params.env);
-  }
   return {
     registry: persisted.registry,
     registryPath: persisted.registryPath,
@@ -1468,6 +1406,11 @@ async function testFoundryCandidate(
         scope: "rejected",
         rejectedAt: now,
         rejectionReason: "skill missing local path",
+        lifecycleReceipt: {
+          ...candidate.lifecycleReceipt,
+          discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+          rejectedAt: now,
+        },
         test: { status: "failed", summary: "skill missing local path", testedAt: now, proofPath },
       };
     }
@@ -1476,6 +1419,14 @@ async function testFoundryCandidate(
     return {
       ...candidate,
       state: "tested",
+      lifecycleReceipt: {
+        ...candidate.lifecycleReceipt,
+        discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+        fetchedAt: candidate.lifecycleReceipt?.fetchedAt,
+        inspectedAt: candidate.lifecycleReceipt?.inspectedAt,
+        sandboxedAt: now,
+        testedAt: now,
+      },
       test: {
         status: passed ? "passed" : "failed",
         summary: passed
@@ -1493,6 +1444,14 @@ async function testFoundryCandidate(
     return {
       ...candidate,
       state: "tested",
+      lifecycleReceipt: {
+        ...candidate.lifecycleReceipt,
+        discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+        fetchedAt: candidate.lifecycleReceipt?.fetchedAt,
+        inspectedAt: candidate.lifecycleReceipt?.inspectedAt,
+        sandboxedAt: now,
+        testedAt: now,
+      },
       test: {
         status: "passed",
         summary: "Plugin manifest registry validation passed.",
@@ -1507,6 +1466,14 @@ async function testFoundryCandidate(
     return {
       ...candidate,
       state: "tested",
+      lifecycleReceipt: {
+        ...candidate.lifecycleReceipt,
+        discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+        fetchedAt: candidate.lifecycleReceipt?.fetchedAt,
+        inspectedAt: candidate.lifecycleReceipt?.inspectedAt,
+        sandboxedAt: now,
+        testedAt: now,
+      },
       test: {
         status: packed ? "passed" : "failed",
         summary: packed
@@ -1533,6 +1500,14 @@ async function testFoundryCandidate(
     return {
       ...candidate,
       state: "tested",
+      lifecycleReceipt: {
+        ...candidate.lifecycleReceipt,
+        discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+        fetchedAt: candidate.lifecycleReceipt?.fetchedAt,
+        inspectedAt: candidate.lifecycleReceipt?.inspectedAt,
+        sandboxedAt: now,
+        testedAt: now,
+      },
       test: {
         status: passed ? "passed" : "failed",
         summary: passed
@@ -1552,6 +1527,14 @@ async function testFoundryCandidate(
   return {
     ...candidate,
     state: "tested",
+    lifecycleReceipt: {
+      ...candidate.lifecycleReceipt,
+      discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+      fetchedAt: candidate.lifecycleReceipt?.fetchedAt,
+      inspectedAt: candidate.lifecycleReceipt?.inspectedAt,
+      sandboxedAt: now,
+      testedAt: now,
+    },
     test: {
       status: assetExists ? "passed" : "failed",
       summary: assetExists
@@ -1583,7 +1566,13 @@ export async function sandboxTestCapabilityFoundryCandidates(
       .map((candidate) => testFoundryCandidate(candidate, params)),
   );
   for (const candidate of tested) {
-    const proofPath = await writeFoundryProof(candidate, params.env);
+    candidate.notes = [
+      ...new Set([...(candidate.notes ?? []), "stage:sandbox", `test:${candidate.test.status}`]),
+    ];
+    const proofPath = await writeFoundryProof(candidate, params.env, {
+      stage: "sandbox",
+      outcome: candidate.test.status === "passed" ? "success" : "failure",
+    });
     candidate.test.proofPath = proofPath;
   }
   const persisted = await upsertCapabilityFoundryCandidates(tested, {
@@ -1611,7 +1600,7 @@ export async function promoteCapabilityFoundryCandidates(params: FoundryPromoteP
     .filter((candidate) => ids.has(candidate.id))
     .map((candidate) => {
       if (candidate.test.status !== "passed" || candidate.compatibility === "incompatible") {
-        return {
+        const rejectedCandidate = {
           ...candidate,
           state: "rejected" as CapabilityFoundryState,
           scope: "rejected" as CapabilityFoundryScope,
@@ -1621,9 +1610,18 @@ export async function promoteCapabilityFoundryCandidates(params: FoundryPromoteP
             (candidate.test.status !== "passed"
               ? "candidate did not pass sandbox validation"
               : "candidate is incompatible"),
+          lifecycleReceipt: {
+            ...candidate.lifecycleReceipt,
+            discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+            rejectedAt: now,
+          },
         } satisfies CapabilityFoundryCandidate;
+        rejectedCandidate.notes = [
+          ...new Set([...(rejectedCandidate.notes ?? []), "stage:promote", "decision:rejected"]),
+        ];
+        return rejectedCandidate;
       }
-      return {
+      const promotedCandidate = {
         ...candidate,
         state: (params.bundle || candidate.scope === "bundled"
           ? "bundled"
@@ -1634,10 +1632,50 @@ export async function promoteCapabilityFoundryCandidates(params: FoundryPromoteP
         promotedAt: now,
         rejectedAt: undefined,
         rejectionReason: undefined,
+        lifecycleReceipt: {
+          ...candidate.lifecycleReceipt,
+          discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+          promotedAt: now,
+          bundledAt:
+            params.bundle || candidate.scope === "bundled"
+              ? now
+              : candidate.lifecycleReceipt?.bundledAt,
+        },
+        scoreReceipt: {
+          scoredAt: now,
+          score: scoreFoundryCandidate(
+            candidate,
+            candidate.classification.selectionNotes.join(" "),
+          ).score,
+          verdict: params.bundle || candidate.scope === "bundled" ? "bundle" : "promote",
+          reasons: scoreFoundryCandidate(
+            candidate,
+            candidate.classification.selectionNotes.join(" "),
+          ).reasons,
+          evaluator: "vikiclow-foundry.promote",
+        },
       } satisfies CapabilityFoundryCandidate;
+      promotedCandidate.notes = [
+        ...new Set([
+          ...(promotedCandidate.notes ?? []),
+          "stage:promote",
+          `decision:${promotedCandidate.state}`,
+        ]),
+      ];
+      return promotedCandidate;
     });
   for (const candidate of promoted) {
-    await writeFoundryProof(candidate, params.env);
+    await writeFoundryProof(candidate, params.env, {
+      stage: "promote",
+      outcome:
+        candidate.state === "bundled"
+          ? "bundled"
+          : candidate.state === "promoted"
+            ? "promoted"
+            : candidate.state === "rejected"
+              ? "rejected"
+              : "suggested",
+    });
   }
   const persisted = await upsertCapabilityFoundryCandidates(promoted, {
     env: params.env,
@@ -1666,14 +1704,18 @@ export async function rejectCapabilityFoundryCandidates(
   const ids = new Set(params.ids);
   const rejected = registry.candidates
     .filter((candidate) => ids.has(candidate.id))
-    .map(
-      (candidate) =>
-        ({
+    .map((candidate) => {
+      const rejectedCandidate = {
           ...candidate,
           state: "rejected" as CapabilityFoundryState,
           scope: "rejected" as CapabilityFoundryScope,
           rejectedAt: now,
           rejectionReason: params.reason.trim(),
+          lifecycleReceipt: {
+            ...candidate.lifecycleReceipt,
+            discoveredAt: candidate.lifecycleReceipt?.discoveredAt ?? now,
+            rejectedAt: now,
+          },
           test: {
             ...candidate.test,
             status: (candidate.test.status === "passed"
@@ -1682,10 +1724,17 @@ export async function rejectCapabilityFoundryCandidates(
             summary: params.reason.trim(),
             testedAt: now,
           },
-        }) satisfies CapabilityFoundryCandidate,
-    );
+      } satisfies CapabilityFoundryCandidate;
+      rejectedCandidate.notes = [
+        ...new Set([...(rejectedCandidate.notes ?? []), "stage:reject", "decision:rejected"]),
+      ];
+      return rejectedCandidate;
+    });
   for (const candidate of rejected) {
-    await writeFoundryProof(candidate, params.env);
+    await writeFoundryProof(candidate, params.env, {
+      stage: "reject",
+      outcome: "rejected",
+    });
   }
   const persisted = await upsertCapabilityFoundryCandidates(rejected, {
     env: params.env,
@@ -1707,30 +1756,7 @@ function scoreFoundryCandidate(
   score: number;
   reasons: string[];
 } {
-  const normalized = normalizeCapabilityObjective(objective);
-  const tokens = normalized.split(/\s+/u).filter(Boolean);
-  const matchedHints = candidate.classification.objectiveHints.filter((hint) =>
-    tokens.some(
-      (token) => token.includes(hint) || hint.includes(token) || normalized.includes(hint),
-    ),
-  );
-  const matchedTags = candidate.classification.tags.filter((tag) =>
-    tokens.some((token) => token.includes(tag) || tag.includes(token) || normalized.includes(tag)),
-  );
-  const score =
-    matchedHints.length * 6 +
-    matchedTags.length * 2 +
-    candidate.usage.success * 3 +
-    candidate.usage.suggested -
-    candidate.usage.failure * 2 +
-    (candidate.state === "bundled" ? 2 : candidate.state === "promoted" ? 1 : 0);
-  const reasons = [
-    ...matchedHints.map((hint) => `hint:${hint}`),
-    ...matchedTags.map((tag) => `tag:${tag}`),
-    ...(candidate.usage.success > 0 ? [`usage:success=${candidate.usage.success}`] : []),
-    ...(candidate.usage.failure > 0 ? [`usage:failure=${candidate.usage.failure}`] : []),
-  ];
-  return { score, reasons };
+  return scoreFoundryCandidateWithEvaluation(candidate, objective);
 }
 
 export async function buildCapabilityFoundryRoutes(params: FoundryRouteParams): Promise<{
@@ -1740,9 +1766,15 @@ export async function buildCapabilityFoundryRoutes(params: FoundryRouteParams): 
 }> {
   const discovered = await discoverCapabilityFoundry(params);
   const routes = discovered.registry.candidates
-    .filter((candidate) => candidate.state === "promoted" || candidate.state === "bundled")
+    .filter(
+      (candidate) =>
+        candidate.state === "promoted" ||
+        candidate.state === "bundled" ||
+        candidate.test.status === "passed",
+    )
     .map((candidate) => {
       const scored = scoreFoundryCandidate(candidate, params.objective);
+      const scoredAt = new Date().toISOString();
       return {
         candidateId: candidate.id,
         name: candidate.name,
@@ -1754,6 +1786,13 @@ export async function buildCapabilityFoundryRoutes(params: FoundryRouteParams): 
         sourceUrl: candidate.source.sourceUrl,
         registration: candidate.registration,
         usage: candidate.usage,
+        scoreReceipt: {
+          scoredAt,
+          score: scored.score,
+          verdict: candidate.state === "bundled" ? "bundle" : "promote",
+          reasons: scored.reasons,
+          evaluator: "vikiclow-foundry.route",
+        },
       } satisfies CapabilityFoundryRoute;
     })
     .filter((route) => route.score > 0)
@@ -1793,6 +1832,28 @@ export async function recordCapabilityFoundryRouteUsage(params: {
     })),
     params.env,
   );
+  const registry = await loadCapabilityFoundryRegistry(params.env);
+  const candidateMap = new Map(registry.candidates.map((candidate) => [candidate.id, candidate] as const));
+  for (const route of params.routes) {
+    const candidate = candidateMap.get(route.candidateId);
+    if (!candidate) {
+      continue;
+    }
+    candidate.notes = [
+      ...new Set([
+        ...(candidate.notes ?? []),
+        "stage:route",
+        `outcome:${params.outcome}`,
+        `route-score:${route.score}`,
+      ]),
+    ];
+    await writeFoundryProof(candidate, params.env, {
+      stage: "route",
+      outcome: "routed",
+      objective: params.objective,
+      route,
+    });
+  }
 }
 
 export async function refreshCapabilityFoundry(params: FoundryRefreshParams): Promise<{

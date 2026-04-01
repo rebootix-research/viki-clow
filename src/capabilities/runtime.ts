@@ -7,6 +7,12 @@ import {
   inferCapabilityIdsForObjective,
 } from "./catalog.js";
 import { buildCapabilityFoundryRoutes, refreshCapabilityFoundry } from "./foundry.js";
+import {
+  discoverCuratedCapabilityFoundry,
+  routeCuratedCapabilityFoundry,
+  loadCuratedFoundryRegistry,
+} from "./foundry-runtime.js";
+import { formatFoundryRouteLine } from "./foundry-format.js";
 import { loadCapabilityManifest, upsertCapabilityRecords } from "./store.js";
 import type {
   CapabilityId,
@@ -306,26 +312,98 @@ async function resolveFoundryPlan(params: {
   env?: NodeJS.ProcessEnv;
 }): Promise<CapabilityFoundryPlan> {
   const workspaceDir = params.workspaceDir?.trim() || process.cwd();
-  const refreshed = await refreshCapabilityFoundry({
-    workspaceDir,
-    rootDir: process.cwd(),
+  try {
+    const refreshed = await refreshCapabilityFoundry({
+      workspaceDir,
+      rootDir: process.cwd(),
+      env: params.env,
+      includeRemote: false,
+    });
+    const routes = await buildCapabilityFoundryRoutes({
+      objective: params.objective,
+      workspaceDir,
+      rootDir: process.cwd(),
+      env: params.env,
+      limit: 8,
+    });
+    return {
+      registryPath: refreshed.registryPath,
+      discovered: refreshed.discovered,
+      promoted: refreshed.promoted.length,
+      bundled: refreshed.bundled.length,
+      rejected: refreshed.rejected,
+      routes: routes.routes,
+    };
+  } catch {
+    const discovered = await discoverCuratedCapabilityFoundry({
+      objective: params.objective,
+      env: params.env,
+    });
+    const routes = await routeCuratedCapabilityFoundry({
+      objective: params.objective,
+      env: params.env,
+      limit: 8,
+    });
+    return {
+      registryPath: discovered.registryPath,
+      discovered: discovered.candidates.length,
+      promoted: discovered.candidates.filter((candidate) => candidate.state === "promoted").length,
+      bundled: discovered.candidates.filter((candidate) => candidate.state === "bundled").length,
+      rejected: discovered.candidates.filter((candidate) => candidate.state === "rejected").length,
+      routes: routes.routes,
+    };
+  }
+}
+
+export async function resolveCapabilityFoundryRoutes(params: {
+  objective: string;
+  workspaceDir?: string;
+  env?: NodeJS.ProcessEnv;
+  limit?: number;
+}): Promise<{
+  registryPath: string;
+  routes: CapabilityFoundryPlan["routes"];
+}> {
+  const workspaceDir = params.workspaceDir?.trim() || process.cwd();
+  try {
+    const result = await buildCapabilityFoundryRoutes({
+      objective: params.objective,
+      workspaceDir,
+      rootDir: process.cwd(),
+      env: params.env,
+      limit: params.limit ?? 8,
+    });
+    return {
+      registryPath: result.registryPath,
+      routes: result.routes,
+    };
+  } catch {
+    const result = await routeCuratedCapabilityFoundry({
+      objective: params.objective,
+      env: params.env,
+      limit: params.limit ?? 8,
+    });
+    return {
+      registryPath: result.registryPath,
+      routes: result.routes,
+    };
+  }
+}
+
+export async function loadCapabilityFoundryInventory(params: {
+  env?: NodeJS.ProcessEnv;
+} = {}): Promise<{
+  registryPath: string;
+  registry: Awaited<ReturnType<typeof loadCuratedFoundryRegistry>>["registry"];
+  candidates: Awaited<ReturnType<typeof discoverCuratedCapabilityFoundry>>["candidates"];
+}> {
+  const discovered = await discoverCuratedCapabilityFoundry({
     env: params.env,
-    includeRemote: false,
-  });
-  const routes = await buildCapabilityFoundryRoutes({
-    objective: params.objective,
-    workspaceDir,
-    rootDir: process.cwd(),
-    env: params.env,
-    limit: 8,
   });
   return {
-    registryPath: refreshed.registryPath,
-    discovered: refreshed.discovered,
-    promoted: refreshed.promoted.length,
-    bundled: refreshed.bundled.length,
-    rejected: refreshed.rejected,
-    routes: routes.routes,
+    registryPath: discovered.registryPath,
+    registry: discovered.registry,
+    candidates: discovered.candidates,
   };
 }
 
@@ -409,10 +487,7 @@ export function formatCapabilityPlanLines(plan: CapabilityPlan): string[] {
     if (plan.foundry.routes.length > 0) {
       lines.push("Foundry routes:");
       for (const route of plan.foundry.routes) {
-        const reasons = route.reasons.length > 0 ? route.reasons.join(",") : "none";
-        lines.push(
-          `- ${route.candidateId} :: ${route.type} :: ${route.scope}/${route.state} :: score=${route.score} :: reasons=${reasons}`,
-        );
+        lines.push(`- ${formatFoundryRouteLine(route)}`);
       }
     }
   }

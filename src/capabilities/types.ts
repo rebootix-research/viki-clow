@@ -61,6 +61,44 @@ export type CapabilityFoundryInstallMethod =
   | "git_clone"
   | "download";
 
+export type CapabilityFoundrySourceFamily =
+  | "bundled_skill"
+  | "bundled_plugin"
+  | "curated_mcp"
+  | "curated_repo"
+  | "curated_asset";
+
+export type CapabilityFoundryApprovalStatus = "approved" | "experimental" | "blocked";
+
+export type CapabilityFoundryLifecycleReceipt = {
+  discoveredAt?: string;
+  fetchedAt?: string;
+  inspectedAt?: string;
+  sandboxedAt?: string;
+  testedAt?: string;
+  promotedAt?: string;
+  rejectedAt?: string;
+  bundledAt?: string;
+};
+
+export type CapabilityFoundryInstallReceipt = {
+  startedAt: string;
+  finishedAt?: string;
+  method: CapabilityFoundryInstallMethod;
+  command?: string[];
+  artifactPath?: string;
+  status: "success" | "failure";
+  summary: string;
+};
+
+export type CapabilityFoundryScoreReceipt = {
+  scoredAt: string;
+  score: number;
+  verdict: "promote" | "bundle" | "reject";
+  reasons: string[];
+  evaluator: string;
+};
+
 export type CapabilityFoundryCompatibility = "compatible" | "wrapped" | "manual" | "incompatible";
 
 export type CapabilityFoundrySource = {
@@ -73,6 +111,41 @@ export type CapabilityFoundrySource = {
   installMethod: CapabilityFoundryInstallMethod;
   dependencies: string[];
   notes?: string;
+};
+
+export type CapabilityFoundrySourceCatalogEntry = {
+  id: string;
+  name: string;
+  family: CapabilityFoundrySourceFamily;
+  kind: CapabilityFoundryKind;
+  sourceUrl: string;
+  ref?: string;
+  installMethod: CapabilityFoundryInstallMethod;
+  dependencies: string[];
+  provenance: {
+    repository?: string;
+    registry?: string;
+    homepage?: string;
+    license?: string;
+    author?: string;
+  };
+  routeHints: string[];
+  approval: CapabilityFoundryApprovalStatus;
+  bundle: boolean;
+  testCommand?: string[];
+  runtimeEntrypoint?: string;
+  notes?: string[];
+  description: string;
+};
+
+export type CapabilityFoundrySourceCatalog = {
+  version: 1;
+  id: string;
+  sourcePath: string;
+  generatedAt: string;
+  updatedAt: string;
+  catalogRevision: string;
+  entries: CapabilityFoundrySourceCatalogEntry[];
 };
 
 export type CapabilityFoundryClassification = {
@@ -127,12 +200,24 @@ export type CapabilityFoundryCandidate = {
   scope: CapabilityFoundryScope;
   state: CapabilityFoundryState;
   source: CapabilityFoundrySource;
+  sourceCatalogId?: string;
+  sourceCatalogEntryId?: string;
+  sourceFamily?: CapabilityFoundrySourceFamily;
+  approval?: CapabilityFoundryApprovalStatus;
   classification: CapabilityFoundryClassification;
   sandbox?: CapabilityFoundrySandbox;
+  lifecycleReceipt?: CapabilityFoundryLifecycleReceipt;
+  installReceipt?: CapabilityFoundryInstallReceipt;
+  scoreReceipt?: CapabilityFoundryScoreReceipt;
   provenance: {
     version?: string;
     license?: string;
     sourceRef?: string;
+    repository?: string;
+    registry?: string;
+    homepage?: string;
+    author?: string;
+    artifactDigest?: string;
     dependencies: string[];
     fetchedFrom?: string;
   };
@@ -161,6 +246,7 @@ export type CapabilityFoundryRegistry = {
   sourceCatalogRevision: string;
   workspaceDir?: string;
   supportedSources: string[];
+  sourceCatalogs?: CapabilityFoundrySourceCatalog[];
   candidates: CapabilityFoundryCandidate[];
   usage: CapabilityFoundryUsageRecord[];
 };
@@ -176,6 +262,7 @@ export type CapabilityFoundryRoute = {
   sourceUrl: string;
   registration?: CapabilityFoundryRuntimeRegistration;
   usage: CapabilityFoundryUsageSummary;
+  scoreReceipt?: CapabilityFoundryScoreReceipt;
 };
 
 export type CapabilityId =

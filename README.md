@@ -37,16 +37,16 @@ VikiClow combines the parts serious execution systems usually keep separate:
 
 If you compare VikiClow to other clow-style agent systems, the difference is not a logo refresh or a prompt tweak. It is the operating model.
 
-| Capability | VikiClow | Typical clow project |
-| --- | --- | --- |
-| Durable missions with terminal states | Yes | Often partial or implicit |
-| Browser, shell, file, voice, and memory as one execution fabric | Yes | Usually fragmented |
-| Evidence and proof artifacts | Yes | Often absent |
-| Curated capability supply chain | Yes | Usually install-later or manual |
-| Capability Foundry inventory and promotion | Yes | Rare |
-| Runtime routing from proven capabilities | Yes | Usually static or ad hoc |
-| Branch-protected release discipline | Yes | Rarely shipped with the product |
-| Reproducible runtime-stack proof | Yes | Not typically a first-class feature |
+| Capability                                                      | VikiClow | Typical clow project                |
+| --------------------------------------------------------------- | -------- | ----------------------------------- |
+| Durable missions with terminal states                           | Yes      | Often partial or implicit           |
+| Browser, shell, file, voice, and memory as one execution fabric | Yes      | Usually fragmented                  |
+| Evidence and proof artifacts                                    | Yes      | Often absent                        |
+| Curated capability supply chain                                 | Yes      | Usually install-later or manual     |
+| Capability Foundry inventory and promotion                      | Yes      | Rare                                |
+| Runtime routing from proven capabilities                        | Yes      | Usually static or ad hoc            |
+| Branch-protected release discipline                             | Yes      | Rarely shipped with the product     |
+| Reproducible runtime-stack proof                                | Yes      | Not typically a first-class feature |
 
 VikiClow is designed to be the system you trust after the novelty wears off.
 
@@ -93,6 +93,8 @@ Capability Foundry is VikiClow’s controlled supply chain for new capability:
 - bundle proven winners into the shipped system
 - register them into runtime routing so VikiClow can choose the right capability for the task
 - persist inventory, provenance, receipts, and usage knowledge so future missions learn from successful runs
+
+It is intentionally curated rather than crawler-driven. The shipped catalog favors bundled Vikiclow skills and plugins, approved MCP servers, selected upstream repo integrations, and runtime assets that have a clear place in the mission stack.
 
 Capability Foundry is exposed through the CLI, proof artifacts, the bundled capability inventory, and the runtime routing layer.
 
