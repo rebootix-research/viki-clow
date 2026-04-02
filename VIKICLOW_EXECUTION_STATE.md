@@ -512,4 +512,4 @@ Finalize the Capability Foundry upgrade by proving the shipped CLI entrypoint, b
 
 ### Remaining Blockers
 
-- None on the repo side. The only remaining step for this pass is pushing the branch and observing the GitHub runs for the updated README/docs commit.
+- None on the repo side for the README/category-positioning branch state.
