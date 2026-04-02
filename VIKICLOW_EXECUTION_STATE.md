@@ -403,8 +403,15 @@ Finalize the Capability Foundry upgrade by proving the shipped CLI entrypoint, b
 
 ### GitHub Actions Results After Push
 
-- Pending the next push from this pass.
+- Branch: `codex/capability-foundry-expansion`
+- PR: `https://github.com/rebootix-research/viki-clow/pull/17`
+- Branch head after the Foundry stabilization push: `d1b5e7f4e25305c00ebc475b8f7a96af8a6163e8`
+- `CI` run `23876417525`: `success`
+- `Native Verification` run `23876417577`: `success`
+- `Install Smoke` run `23876417535`: `success`
+- `Workflow Sanity` run `23876417522`: `success`
+- `Labeler` run `23876416773`: `success`
 
 ### Remaining Blockers
 
-- None at the repo/code level before the next branch push; remaining work is publish plus observing GitHub Actions on the updated branch SHA.
+- None for the Capability Foundry Expansion branch state.
