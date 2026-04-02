@@ -71,6 +71,9 @@ flowchart LR
   <Card title="Capability Foundry" href="/tools/vikiclow-skills" icon="package-plus">
     Curated discovery, promotion, bundling, routing, and proof for expandable capability.
   </Card>
+  <Card title="Category benchmark" href="/reference/category-benchmark" icon="bar-chart-3">
+    See how VikiClow compares with OpenClaw, NemoClaw, and Clawith on repo-visible dimensions.
+  </Card>
   <Card title="Security" href="/gateway/security" icon="shield">
     Hardening guidance for real tool-enabled execution.
   </Card>

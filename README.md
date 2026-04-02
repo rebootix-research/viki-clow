@@ -50,6 +50,8 @@ The result is a clow that compounds capability over time instead of resetting to
 
 VikiClow sits in the same public category as OpenClaw, NemoClaw, and Clawith, but it solves a different problem shape. OpenClaw positions a personal assistant across channels. NemoClaw positions a hardened OpenShell reference stack for running OpenClaw more safely. Clawith positions a multi-agent collaboration platform for teams. VikiClow positions the full execution loop: mission durability, visible execution, proof, memory, and curated capability growth in one stack.
 
+![VikiClow category benchmark](docs/assets/vikiclow-category-benchmark.svg)
+
 | Dimension                          | VikiClow                                                                                                 | [OpenClaw](https://github.com/openclaw/openclaw)                                           | [NemoClaw](https://github.com/NVIDIA/NemoClaw)                                     | [Clawith](https://github.com/dataelement/Clawith)                                       |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | Public repo positioning            | Execution-grade clow/operator system                                                                     | Personal AI assistant across channels                                                      | Hardened OpenShell reference stack for OpenClaw                                    | Multi-agent collaboration platform for teams                                            |
@@ -61,6 +63,8 @@ VikiClow sits in the same public category as OpenClaw, NemoClaw, and Clawith, bu
 | Governance and operator discipline | Protected main, green CI, release-proof surfaces, explicit terminal states                               | CI and release posture are visible                                                         | Security posture is central                                                        | Multi-tenant RBAC, approvals, audit logs, and quotas are explicit                       |
 
 Comparison is grounded in the public repository surfaces linked above as of 2026-04-02. It compares what those repos clearly present, not hidden implementation details or invented benchmark numbers.
+
+For a source-backed breakdown of the benchmark dimensions, see [docs/reference/category-benchmark.md](docs/reference/category-benchmark.md).
 
 ## Why VikiClow wins
 
