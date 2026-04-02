@@ -8,13 +8,15 @@ title: "Category Benchmark"
 
 # Category Benchmark
 
-This benchmark compares VikiClow with the most direct public clow/operator repos that materially overlap with it today:
+This benchmark compares VikiClow with the most direct public clow/operator repos
+that materially overlap with it today:
 
 - [OpenClaw](https://github.com/openclaw/openclaw)
 - [NemoClaw](https://github.com/NVIDIA/NemoClaw)
 - [Clawith](https://github.com/dataelement/Clawith)
 
-It is grounded in public repository surfaces, README positioning, published docs, and visible OSS workflow posture as of 2026-04-02.
+It is grounded in public repository surfaces, README positioning, published docs,
+and visible OSS workflow posture as of 2026-04-02.
 
 It does **not** invent synthetic performance scores.
 It compares what those repos clearly present to operators evaluating the category.
@@ -37,19 +39,26 @@ It compares what those repos clearly present to operators evaluating the categor
 
 ### OpenClaw
 
-OpenClaw is optimized for broad assistant reach. Its public surface emphasizes channels, device coverage, onboarding, and a personal-assistant identity.
+OpenClaw is optimized for broad assistant reach.
+Its public surface emphasizes channels, device coverage, onboarding, and a
+personal-assistant identity.
 
 ### NemoClaw
 
-NemoClaw is optimized for security boundaries around OpenClaw. Its public repo emphasizes sandboxing, hardened blueprints, onboarding, and a reference-stack posture.
+NemoClaw is optimized for security boundaries around OpenClaw.
+Its public repo emphasizes sandboxing, hardened blueprints, onboarding, and a
+reference-stack posture.
 
 ### Clawith
 
-Clawith is optimized for team and organization workflows. Its public repo emphasizes multi-agent collaboration, long-term identity, tool installation, triggers, approvals, and auditability.
+Clawith is optimized for team and organization workflows.
+Its public repo emphasizes multi-agent collaboration, long-term identity, tool
+installation, triggers, approvals, and auditability.
 
 ### VikiClow
 
-VikiClow is optimized for finished work with operator discipline. Its repo emphasizes:
+VikiClow is optimized for finished work with operator discipline.
+Its repo emphasizes:
 
 - durable missions instead of chat-only state
 - proof and evidence instead of vague completion
@@ -60,9 +69,11 @@ VikiClow is optimized for finished work with operator discipline. Its repo empha
 
 ## Why this matters
 
-The category is getting crowded with assistant shells, agent sandboxes, and multi-agent workspaces.
+The category is getting crowded with assistant shells, agent sandboxes, and
+multi-agent workspaces.
 
-VikiClow's bet is that operators eventually need all of these properties together:
+VikiClow's bet is that operators eventually need all of these properties
+together:
 
 - durable state
 - visible execution
