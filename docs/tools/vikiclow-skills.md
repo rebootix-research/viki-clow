@@ -114,5 +114,6 @@ That is how the system improves without becoming dependent on model memory alone
 ## Related guides
 
 - [Running VikiClow as your execution system](/start/vikiclow)
+- [Category benchmark](/reference/category-benchmark)
 - [CI and proof](/ci)
 - [Browser](/tools/browser)
