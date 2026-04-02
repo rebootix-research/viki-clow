@@ -1,0 +1,59 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="900" rx="40" fill="#F7FBFA"/>
+  <rect x="40" y="40" width="1320" height="140" rx="28" fill="#E8FFFA"/>
+  <text x="80" y="106" fill="#0B132B" font-family="IBM Plex Sans, Arial, sans-serif" font-size="24" font-weight="700">VikiClow category benchmark</text>
+  <text x="80" y="146" fill="#264653" font-family="IBM Plex Sans, Arial, sans-serif" font-size="18">Grounded in public repository positioning and docs visible on 2026-04-02.</text>
+  <text x="80" y="174" fill="#264653" font-family="IBM Plex Sans, Arial, sans-serif" font-size="18">Measures product shape, operator discipline, and capability growth rather than synthetic speed claims.</text>
+
+  <rect x="40" y="220" width="1320" height="620" rx="28" fill="white" stroke="#D7EAE6"/>
+  <rect x="40" y="220" width="1320" height="86" rx="28" fill="#0F766E"/>
+  <text x="72" y="272" fill="white" font-family="IBM Plex Sans, Arial, sans-serif" font-size="20" font-weight="700">Dimension</text>
+  <text x="410" y="272" fill="white" font-family="IBM Plex Sans, Arial, sans-serif" font-size="20" font-weight="700">VikiClow</text>
+  <text x="680" y="272" fill="white" font-family="IBM Plex Sans, Arial, sans-serif" font-size="20" font-weight="700">OpenClaw</text>
+  <text x="915" y="272" fill="white" font-family="IBM Plex Sans, Arial, sans-serif" font-size="20" font-weight="700">NemoClaw</text>
+  <text x="1150" y="272" fill="white" font-family="IBM Plex Sans, Arial, sans-serif" font-size="20" font-weight="700">Clawith</text>
+
+  <g font-family="IBM Plex Sans, Arial, sans-serif" font-size="17" fill="#0B132B">
+    <rect x="60" y="326" width="1280" height="66" rx="16" fill="#F8FCFB"/>
+    <text x="80" y="368" font-weight="700">Core story</text>
+    <text x="410" y="368">Execution-grade operator system</text>
+    <text x="680" y="368">Personal AI assistant</text>
+    <text x="915" y="368">Secure reference stack</text>
+    <text x="1150" y="368">Multi-agent collaboration</text>
+
+    <rect x="60" y="404" width="1280" height="66" rx="16" fill="#FFFFFF"/>
+    <text x="80" y="446" font-weight="700">Durable work model</text>
+    <text x="410" y="446">Missions, checkpoints, terminal states</text>
+    <text x="680" y="446">Not a public first-class story</text>
+    <text x="915" y="446">Stateful sandbox, alpha</text>
+    <text x="1150" y="446">Triggers and workspaces</text>
+
+    <rect x="60" y="482" width="1280" height="66" rx="16" fill="#F8FCFB"/>
+    <text x="80" y="524" font-weight="700">Visible execution</text>
+    <text x="410" y="524">Viki Browser plus full surfaces</text>
+    <text x="680" y="524">Channels and live Canvas</text>
+    <text x="915" y="524">Sandbox runtime focus</text>
+    <text x="1150" y="524">Workspace and control UI</text>
+
+    <rect x="60" y="560" width="1280" height="66" rx="16" fill="#FFFFFF"/>
+    <text x="80" y="602" font-weight="700">Proof posture</text>
+    <text x="410" y="602">Release, runtime, execution, mission</text>
+    <text x="680" y="602">CI and releases visible</text>
+    <text x="915" y="602">Security and architecture docs</text>
+    <text x="1150" y="602">Audit and enterprise controls</text>
+
+    <rect x="60" y="638" width="1280" height="66" rx="16" fill="#F8FCFB"/>
+    <text x="80" y="680" font-weight="700">Capability growth</text>
+    <text x="410" y="680">Foundry: test, promote, route</text>
+    <text x="680" y="680">Skills ecosystem</text>
+    <text x="915" y="680">Runtime hardening focus</text>
+    <text x="1150" y="680">Runtime tool discovery</text>
+
+    <rect x="60" y="716" width="1280" height="66" rx="16" fill="#FFFFFF"/>
+    <text x="80" y="758" font-weight="700">Governance</text>
+    <text x="410" y="758">Protected main plus release proof</text>
+    <text x="680" y="758">Strong OSS release posture</text>
+    <text x="915" y="758">Security-first sandboxing</text>
+    <text x="1150" y="758">RBAC, approvals, audit logs</text>
+  </g>
+</svg>
