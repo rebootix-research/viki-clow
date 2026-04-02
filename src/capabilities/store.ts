@@ -2,10 +2,15 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { resolveStateDir } from "../config/paths.js";
 import { CAPABILITY_CATALOG_REVISION } from "./catalog.js";
+import {
+  computeCapabilityFoundrySourceCatalogRevision,
+  loadApprovedCapabilitySourceCatalogs,
+} from "./source-catalog.js";
 import type {
   CapabilityFoundryCandidate,
   CapabilityFoundryRegistry,
   CapabilityFoundryUsageRecord,
+  CapabilityFoundrySourceCatalog,
   CapabilityRecord,
   CapabilityRegistry,
 } from "./types.js";
@@ -58,6 +63,25 @@ function normalizeFoundryCandidate(
       ...candidate.provenance,
       dependencies: [...new Set(candidate.provenance.dependencies ?? [])],
     },
+    lifecycleReceipt: candidate.lifecycleReceipt
+      ? {
+          ...candidate.lifecycleReceipt,
+        }
+      : undefined,
+    installReceipt: candidate.installReceipt
+      ? {
+          ...candidate.installReceipt,
+          command: candidate.installReceipt.command
+            ? [...new Set(candidate.installReceipt.command)]
+            : undefined,
+        }
+      : undefined,
+    scoreReceipt: candidate.scoreReceipt
+      ? {
+          ...candidate.scoreReceipt,
+          reasons: [...new Set(candidate.scoreReceipt.reasons ?? [])],
+        }
+      : undefined,
     registration: candidate.registration
       ? {
           ...candidate.registration,
@@ -73,6 +97,50 @@ function normalizeFoundryCandidate(
     },
     notes: candidate.notes ? [...new Set(candidate.notes)] : undefined,
   };
+}
+
+function normalizeFoundrySourceCatalog(
+  catalog: CapabilityFoundrySourceCatalog,
+): CapabilityFoundrySourceCatalog {
+  return {
+    ...catalog,
+    entries: catalog.entries
+      .map((entry) => ({
+        ...entry,
+        dependencies: [...new Set(entry.dependencies ?? [])],
+        routeHints: [...new Set(entry.routeHints ?? [])],
+        testCommand: entry.testCommand ? [...new Set(entry.testCommand)] : undefined,
+        notes: entry.notes ? [...new Set(entry.notes)] : undefined,
+      }))
+      .toSorted((left, right) => {
+        if (left.kind !== right.kind) {
+          return left.kind.localeCompare(right.kind);
+        }
+        return left.id.localeCompare(right.id);
+      }),
+  };
+}
+
+function deriveSupportedSources(catalogs: CapabilityFoundrySourceCatalog[]): string[] {
+  return [
+    ...new Set(
+      catalogs.flatMap((catalog) =>
+        catalog.entries.map((entry) => `${entry.family}:${entry.kind}`),
+      ),
+    ),
+  ].toSorted((left, right) => left.localeCompare(right));
+}
+
+async function loadFoundrySourceCatalogs(
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<CapabilityFoundrySourceCatalog[]> {
+  return (
+    await loadApprovedCapabilitySourceCatalogs({
+      rootDir: process.cwd(),
+      env,
+      includeBuiltins: true,
+    })
+  ).map(normalizeFoundrySourceCatalog);
 }
 
 export async function loadCapabilityRegistry(
@@ -129,10 +197,15 @@ export async function loadCapabilityFoundryRegistry(
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<CapabilityFoundryRegistry> {
   const registryPath = resolveFoundryRegistryPath(env);
+  const sourceCatalogs = await loadFoundrySourceCatalogs(env);
   try {
     const raw = await fs.readFile(registryPath, "utf8");
     const parsed = JSON.parse(raw) as Partial<CapabilityFoundryRegistry>;
     if (parsed.version === 1 && Array.isArray(parsed.candidates) && Array.isArray(parsed.usage)) {
+      const persistedCatalogs = Array.isArray(parsed.sourceCatalogs)
+        ? parsed.sourceCatalogs.map(normalizeFoundrySourceCatalog)
+        : [];
+      const effectiveCatalogs = sourceCatalogs.length > 0 ? sourceCatalogs : persistedCatalogs;
       return {
         version: 1,
         generatedAt:
@@ -144,22 +217,27 @@ export async function loadCapabilityFoundryRegistry(
             ? parsed.updatedAt
             : new Date(0).toISOString(),
         sourceCatalogRevision:
-          typeof parsed.sourceCatalogRevision === "string" && parsed.sourceCatalogRevision.trim()
-            ? parsed.sourceCatalogRevision
-            : CAPABILITY_CATALOG_REVISION,
+          effectiveCatalogs.length > 0
+            ? computeCapabilityFoundrySourceCatalogRevision(effectiveCatalogs)
+            : typeof parsed.sourceCatalogRevision === "string" &&
+                parsed.sourceCatalogRevision.trim()
+              ? parsed.sourceCatalogRevision
+              : CAPABILITY_CATALOG_REVISION,
         workspaceDir:
           typeof parsed.workspaceDir === "string" && parsed.workspaceDir.trim()
             ? parsed.workspaceDir
             : undefined,
-        supportedSources: Array.isArray(parsed.supportedSources)
-          ? [
-              ...new Set(
-                parsed.supportedSources.filter(
-                  (value): value is string => typeof value === "string",
+        supportedSources:
+          Array.isArray(parsed.supportedSources) && parsed.supportedSources.length > 0
+            ? [
+                ...new Set(
+                  parsed.supportedSources.filter(
+                    (value): value is string => typeof value === "string",
+                  ),
                 ),
-              ),
-            ]
-          : [],
+              ]
+            : deriveSupportedSources(effectiveCatalogs),
+        sourceCatalogs: effectiveCatalogs,
         candidates: parsed.candidates.map(normalizeFoundryCandidate),
         usage: parsed.usage.filter(
           (entry): entry is CapabilityFoundryUsageRecord =>
@@ -176,8 +254,12 @@ export async function loadCapabilityFoundryRegistry(
     version: 1,
     generatedAt: new Date(0).toISOString(),
     updatedAt: new Date(0).toISOString(),
-    sourceCatalogRevision: CAPABILITY_CATALOG_REVISION,
-    supportedSources: [],
+    sourceCatalogRevision:
+      sourceCatalogs.length > 0
+        ? computeCapabilityFoundrySourceCatalogRevision(sourceCatalogs)
+        : CAPABILITY_CATALOG_REVISION,
+    supportedSources: deriveSupportedSources(sourceCatalogs),
+    sourceCatalogs,
     candidates: [],
     usage: [],
   };
@@ -197,8 +279,20 @@ export async function saveCapabilityFoundryRegistry(
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<string> {
   const registryPath = resolveFoundryRegistryPath(env);
+  const sourceCatalogs = registry.sourceCatalogs?.length
+    ? registry.sourceCatalogs.map(normalizeFoundrySourceCatalog)
+    : await loadFoundrySourceCatalogs(env);
   await writeJsonAtomic(registryPath, {
     ...registry,
+    sourceCatalogs,
+    sourceCatalogRevision:
+      sourceCatalogs.length > 0
+        ? computeCapabilityFoundrySourceCatalogRevision(sourceCatalogs)
+        : registry.sourceCatalogRevision,
+    supportedSources:
+      registry.supportedSources.length > 0
+        ? [...new Set(registry.supportedSources)]
+        : deriveSupportedSources(sourceCatalogs),
     candidates: registry.candidates.map(normalizeFoundryCandidate),
   });
   return registryPath;
@@ -251,6 +345,9 @@ export async function upsertCapabilityFoundryCandidates(
 ): Promise<{ registry: CapabilityFoundryRegistry; registryPath: string }> {
   const env = params.env ?? process.env;
   const existing = await loadCapabilityFoundryRegistry(env);
+  const sourceCatalogs = existing.sourceCatalogs?.length
+    ? existing.sourceCatalogs
+    : await loadFoundrySourceCatalogs(env);
   const next = new Map(existing.candidates.map((candidate) => [candidate.id, candidate] as const));
   for (const candidate of candidates) {
     next.set(candidate.id, normalizeFoundryCandidate(candidate));
@@ -262,12 +359,19 @@ export async function upsertCapabilityFoundryCandidates(
         ? existing.generatedAt
         : new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    sourceCatalogRevision: params.sourceCatalogRevision ?? existing.sourceCatalogRevision,
+    sourceCatalogRevision:
+      params.sourceCatalogRevision ??
+      (sourceCatalogs.length > 0
+        ? computeCapabilityFoundrySourceCatalogRevision(sourceCatalogs)
+        : existing.sourceCatalogRevision),
     workspaceDir: params.workspaceDir ?? existing.workspaceDir,
     supportedSources:
       params.supportedSources && params.supportedSources.length > 0
         ? [...new Set(params.supportedSources)]
-        : existing.supportedSources,
+        : existing.supportedSources.length > 0
+          ? [...new Set(existing.supportedSources)]
+          : deriveSupportedSources(sourceCatalogs),
+    sourceCatalogs,
     candidates: Array.from(next.values()),
     usage: existing.usage,
   };

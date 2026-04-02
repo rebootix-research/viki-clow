@@ -83,7 +83,13 @@ describe("Capability Foundry", () => {
       });
 
       expect(result.registry.supportedSources).toEqual(
-        expect.arrayContaining(["repo-skills", "repo-plugins", "npm-mcp", "github-repo"]),
+        expect.arrayContaining([
+          "bundled_skill:skill",
+          "bundled_plugin:plugin",
+          "curated_mcp:mcp_server",
+          "curated_repo:repo_integration",
+          "curated_asset:asset_dependency",
+        ]),
       );
       expect(result.registry.candidates.some((candidate) => candidate.type === "skill")).toBe(true);
       expect(
@@ -96,7 +102,14 @@ describe("Capability Foundry", () => {
         result.registry.candidates.some((candidate) => candidate.id === "repo:langgraph"),
       ).toBe(true);
       expect(
-        result.registry.candidates.some((candidate) => candidate.id === "asset:voice-runtime-pack"),
+        result.registry.candidates.some((candidate) => candidate.id === "asset:sherpa-onnx"),
+      ).toBe(true);
+      expect(
+        result.registry.candidates.some(
+          (candidate) =>
+            candidate.sourceCatalogId === "vikiclow.foundry.approved" &&
+            Boolean(candidate.lifecycleReceipt?.discoveredAt),
+        ),
       ).toBe(true);
 
       const persisted = await loadCapabilityFoundryRegistry();
@@ -157,6 +170,11 @@ describe("Capability Foundry", () => {
         env: process.env,
       });
       expect(routes.routes.some((route) => route.candidateId === skillCandidate!.id)).toBe(true);
+      expect(
+        routes.routes.find((route) => route.candidateId === skillCandidate!.id)?.scoreReceipt,
+      ).toMatchObject({
+        evaluator: "vikiclow-foundry.route",
+      });
 
       await recordCapabilityFoundryRouteUsage({
         objective: routeObjective,
@@ -265,8 +283,11 @@ describe("Capability Foundry", () => {
         env: process.env,
       });
 
-      expect(rejected.candidates[0]?.state).toBe("rejected");
-      expect(rejected.candidates[0]?.rejectionReason).toBe("manual provenance review pending");
+      const rejectedCandidate = rejected.candidates.find(
+        (candidate) => candidate.id === "repo:temporal-sdk-typescript",
+      );
+      expect(rejectedCandidate?.state).toBe("rejected");
+      expect(rejectedCandidate?.rejectionReason).toBe("manual provenance review pending");
 
       const persisted = await loadCapabilityFoundryRegistry();
       const candidate = persisted.candidates.find(

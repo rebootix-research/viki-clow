@@ -1,48 +1,35 @@
 # Capability Foundry
 
-VikiClow ships with a controlled capability supply chain so a fresh install is useful immediately instead of sending you off to hunt for integrations.
+Capability Foundry is Vikiclow’s curated capability supply chain. It keeps a fresh install useful immediately, but it does so with gates, provenance, and proof instead of blind trust.
 
-Capability Foundry is how VikiClow discovers, classifies, inspects, tests, and promotes capabilities before they become part of the runtime.
+The goal is simple: discover good capabilities, classify them correctly, sandbox them, test them, promote the ones that pass, bundle the safest winners, and register them so missions can route to them automatically.
 
-## What It Includes
+In practice that means Vikiclow can absorb proven external capability without turning the product into an untrusted marketplace or a blind GitHub scraper.
 
-- bundled local skills under [`skills/`](https://github.com/rebootix-research/viki-clow/tree/main/skills)
-- auto-enabled product plugins for browser, voice, memory, workflow, phone control, diffs, and thread ownership
-- curated MCP server candidates and selected repo integrations
-- capability inventory under `~/.vikiclow/capabilities/`
-- Capability Foundry proof artifacts under `.artifacts/capability-bundle/`
-- provisioning-aware bootstrap through `vikiclow capabilities bundle`, `vikiclow capabilities bootstrap`, and `vikiclow capabilities plan`
+## What It Covers
 
-## How It Works
+Capability Foundry supports four curated source families and their downstream inventory:
 
-Capability Foundry follows a controlled promotion pipeline:
+- bundled local Vikiclow skills
+- bundled Vikiclow plugins
+- curated MCP servers
+- curated GitHub integrations and runtime assets
 
-```text
-discover
-  -> classify
-  -> fetch / inspect
-  -> sandbox
-  -> test
-  -> score
-  -> promote or reject
-  -> register for runtime routing
-  -> remember successful usage
-```
+Those source families are recorded in:
 
-That means a capability is not treated as "available" just because it was downloaded.
+- `~/.vikiclow/capabilities/source-catalog.json`
+- `~/.vikiclow/capabilities/source-catalog.md`
 
-It must be:
+And the shipped inventory is tracked in:
 
-- recognized as the right kind of asset
-- compatible with the current workspace and platform
-- safe enough to sandbox
-- testable enough to prove value
-- promotable into the registry
-- routable at runtime when the mission needs it
+- `~/.vikiclow/capabilities/bundle-inventory.json`
+- `~/.vikiclow/capabilities/bundle-inventory.md`
+- `~/.vikiclow/capabilities/bundle-receipts.json`
+- `~/.vikiclow/capabilities/bundle-receipts.md`
 
 ## Capability Types
 
-Capability Foundry understands several capability shapes:
+Capability Foundry understands these capability shapes:
 
 - `skill`
 - `plugin`
@@ -50,9 +37,52 @@ Capability Foundry understands several capability shapes:
 - `repo_integration`
 - `asset_dependency`
 
-Each candidate keeps source metadata, provenance, compatibility, test status, promotion status, and runtime registration hints.
+Each candidate keeps source metadata, provenance, compatibility, test status, promotion status, bundle status, and runtime registration hints.
 
-## Use It
+## The Foundry Pipeline
+
+Capability Foundry uses a controlled promotion flow:
+
+```text
+discover
+  -> classify
+  -> fetch / install / vendor / wrap
+  -> inspect
+  -> sandbox
+  -> test
+  -> score
+  -> promote or reject
+  -> bundle if appropriate
+  -> register for runtime routing
+  -> remember successful usage
+```
+
+That means a capability is not treated as available just because it was found.
+
+It must be:
+
+- curated from an approved source family
+- normalized into Vikiclow’s manifest model
+- safe enough to sandbox
+- testable enough to prove value
+- promotable into the registry
+- routable at runtime when the mission needs it
+
+## Ready-to-Use Bundle
+
+Fresh installs bundle the strongest safe capabilities that are already proven in the repo.
+
+The shipped bundle currently emphasizes:
+
+- mission skill generation and workspace automation
+- browser and desktop control
+- voice readiness and transcription helpers
+- workflow and memory routing
+- curated runtime assets for local speech and operator flows
+
+Bundle state is recorded as both inventory and receipts so you can see what was installed, what was enabled, what was promoted, and what was skipped.
+
+## How To Use It
 
 ```bash
 vikiclow capabilities list
@@ -70,31 +100,28 @@ vikiclow capabilities plan "create a reusable automation skill"
 corepack pnpm capabilities:proof
 ```
 
-## What the Proof Shows
+## What The Proof Shows
 
 The proof bundle records:
 
 - discovered candidates
+- normalized source families
 - bundled capabilities
+- bundle receipts
 - provenance and source origin
 - sandbox/test/promotion state
 - runtime routing hints
-- bundled inventory and voice/browser readiness
+- ready-to-use capability inventory
 
 This is the evidence trail the repo uses to show that Capability Foundry is real, not aspirational.
 
-## Bundling Notes
+## Why It Matters At Runtime
 
-Fresh installs automatically bundle the strongest safe capabilities that are already proven in the repo.
+Capability Foundry is not a library catalog. It is part of mission selection.
 
-The shipped inventory typically includes:
+When a task arrives, Vikiclow can route to a proven skill, plugin, MCP server, or repo integration that already knows how to do the work. Successful usage is written back so the next mission can pick the right capability faster.
 
-- browser and web automation capabilities
-- voice bootstrap and TTS/runtime helpers
-- workflow and memory surfaces
-- commonly used operator skills such as browser control, summarization, and capability creation
-
-Capabilities that require missing credentials, unsupported platforms, or unavailable external services are recorded explicitly as skipped or rejected instead of pretending to work.
+That is how the system improves without becoming dependent on model memory alone.
 
 ## Related Guides
 

@@ -114,6 +114,8 @@ describe("mission memory writeback", () => {
       expect(contents).toContain("Capability Foundry:");
       expect(contents).toContain("browser_profiles");
       expect(contents).toContain("skill:viki-skill-factory");
+      expect(contents).toContain("entrypoint=");
+      expect(contents).toContain("autoBundled=true");
 
       const second = await appendMissionMemoryWriteback(record, {
         nowMs: Date.UTC(2026, 2, 24, 12, 0, 0),

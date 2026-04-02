@@ -97,6 +97,18 @@ describe("registerCapabilitiesCli", () => {
     );
   });
 
+  it("shows the capability inventory and persisted foundry registry", async () => {
+    await withTempDirs(async ({ workspaceDir }) => {
+      await runCli(["capabilities", "inventory", "--workspace", workspaceDir]);
+    });
+
+    const output = runtime.log.mock.calls.flat().join("\n");
+    expect(output).toContain("Manifest catalog revision:");
+    expect(output).toContain("Foundry registry:");
+    expect(output).toContain("State counts:");
+    expect(output).toContain("Supported sources:");
+  });
+
   it("fetches capabilities through the CLI and persists the registry", async () => {
     let playwrightVersionChecks = 0;
     runExec.mockImplementation(async (command: string, args: string[]) => {
@@ -145,13 +157,54 @@ describe("registerCapabilitiesCli", () => {
     expect(output).toContain("mcp:filesystem");
   });
 
+  it("queries Foundry routes and prints registration metadata", async () => {
+    runExec.mockResolvedValue({ stdout: "ready", stderr: "" });
+
+    await withTempDirs(async ({ workspaceDir }) => {
+      await runCli([
+        "capabilities",
+        "query",
+        "Create a reusable browser automation skill",
+        "--workspace",
+        workspaceDir,
+      ]);
+    });
+
+    const output = runtime.log.mock.calls.flat().join("\n");
+    expect(output).toContain("Query objective:");
+    expect(output).toContain("Foundry routes:");
+    expect(output).toContain("skill:viki-skill-factory");
+    expect(output).toContain("recipe=");
+  });
+
+  it("shows foundry inventory and bundles promoted candidates", async () => {
+    runExec.mockResolvedValue({ stdout: "ready", stderr: "" });
+
+    await withTempDirs(async ({ workspaceDir }) => {
+      await runCli(["capabilities", "foundry", "inventory", "--workspace", workspaceDir]);
+      await runCli([
+        "capabilities",
+        "foundry",
+        "bundle",
+        "plugin:workflow",
+        "--workspace",
+        workspaceDir,
+      ]);
+    });
+
+    const output = runtime.log.mock.calls.flat().join("\n");
+    expect(output).toContain("State counts:");
+    expect(output).toContain("plugin:workflow");
+    expect(output).toContain("Registry:");
+  });
+
   it("promotes a local Foundry candidate and exposes it through routes", async () => {
     await withTempDirs(async ({ workspaceDir }) => {
       await runCli([
         "capabilities",
         "foundry",
         "promote",
-        "skill:viki-skill-factory",
+        "plugin:workflow",
         "--bundle",
         "--workspace",
         workspaceDir,
@@ -160,14 +213,14 @@ describe("registerCapabilitiesCli", () => {
         "capabilities",
         "foundry",
         "routes",
-        "Use the viki skill factory to build a reusable browser automation workflow",
+        "Use the workflow plugin to build a reusable browser automation workflow",
         "--workspace",
         workspaceDir,
       ]);
     });
 
     const output = runtime.log.mock.calls.flat().join("\n");
-    expect(output).toContain("skill:viki-skill-factory");
+    expect(output).toContain("plugin:workflow");
     expect(output).toContain("score=");
   });
 

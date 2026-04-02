@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <strong>Execution-grade AI for real work.</strong><br>
-  VikiClow turns intent into durable missions, routes work through swarms, proves what happened, and keeps improving the system it runs on.
+  <strong>The execution system for people who are done with chat wrappers.</strong><br>
+  VikiClow turns intent into durable missions, routes work through browser, shell, voice, memory, and verification surfaces, and writes back proof instead of vague completion claims.
 </p>
 
 <p align="center">
@@ -16,34 +16,39 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0f172a?style=for-the-badge" alt="License"></a>
 </p>
 
-VikiClow is an operator system, not a chat wrapper.
+VikiClow is not a chat assistant with a few plugins bolted on.
 
-It takes user intent, turns it into a mission, routes that mission through browser, shell, file, voice, memory, and verification surfaces, and writes the result back as evidence. When a task needs a capability that is not already present, Capability Foundry can discover, classify, sandbox, test, promote, and register a compatible one instead of stalling the mission.
+It is an operator system for real work: you give it an objective, it turns that objective into a mission, routes the mission through swarms and executors, verifies the result, and records the evidence. When a mission needs a capability that is not already present, Capability Foundry can discover, classify, sandbox, test, promote, and register a compatible one instead of stalling.
 
 ## What VikiClow Is
 
-VikiClow combines the parts that serious execution systems usually split across separate tools:
+VikiClow combines the parts serious execution systems usually keep separate:
 
 - a durable mission runtime with explicit terminal states
 - Viki Browser for visible browser work with managed profiles and proof
 - swarm-of-swarms orchestration with verifier and recovery routing
 - a voice-native command center with mandatory readiness checks
 - persistent memory that survives provider and model changes
-- Capability Foundry for discovery, promotion, bundling, and routing of proven capabilities
+- Capability Foundry for curated discovery, promotion, bundling, and routing of proven capabilities
 - full PC and web execution surfaces instead of answer-only UX
 - a self-evolution engine for candidate intake, experiments, promotion, and rollback
 
-## Why It Feels Different
+## Why VikiClow Wins
 
-Most AI products still assume the conversation is the product.
+If you compare VikiClow to other clow-style agent systems, the difference is not a logo refresh or a prompt tweak. It is the operating model.
 
-VikiClow assumes the mission is the product.
+| Capability                                                      | VikiClow | Typical clow project                |
+| --------------------------------------------------------------- | -------- | ----------------------------------- |
+| Durable missions with terminal states                           | Yes      | Often partial or implicit           |
+| Browser, shell, file, voice, and memory as one execution fabric | Yes      | Usually fragmented                  |
+| Evidence and proof artifacts                                    | Yes      | Often absent                        |
+| Curated capability supply chain                                 | Yes      | Usually install-later or manual     |
+| Capability Foundry inventory and promotion                      | Yes      | Rare                                |
+| Runtime routing from proven capabilities                        | Yes      | Usually static or ad hoc            |
+| Branch-protected release discipline                             | Yes      | Rarely shipped with the product     |
+| Reproducible runtime-stack proof                                | Yes      | Not typically a first-class feature |
 
-- It keeps state instead of pretending every request starts from zero.
-- It leaves artifacts and proofs instead of vague "done" messages.
-- It treats failure, recovery, approval, and retry as first-class runtime states.
-- It is designed to keep working even if you change providers, models, or auth paths.
-- It can use browser, shell, file, channel, voice, and device surfaces as one system.
+VikiClow is designed to be the system you trust after the novelty wears off.
 
 ## Product Pillars
 
@@ -74,20 +79,22 @@ Voice is not a plugin afterthought. Bootstrap, proof, and readiness are part of 
 
 ### Persistent memory
 
-Mission writeback, Graphiti-style proof paths, and Neo4j-backed graph memory surfaces keep memory outside model context alone.
+Mission writeback, Graphiti-style proof paths, and Neo4j-backed graph memory keep memory outside model context alone.
 
 ### Capability Foundry
 
-Capability Foundry is Vikiclow’s controlled supply chain for new capability:
+Capability Foundry is VikiClow’s controlled supply chain for new capability:
 
-- discover curated sources and candidate integrations
-- classify them as skills, plugins, MCP servers, repo integrations, or assets
+- discover curated source families and candidate integrations
+- classify them as skills, plugins, MCP servers, repo integrations, or asset dependencies
 - fetch or install them from approved sources
 - sandbox and test them before promotion
 - promote or reject them with recorded reasons
-- bundle the winners into the shipped system
-- register them into runtime routing so Vikiclow can choose the right capability for the task
-- persist inventory, provenance, and usage knowledge so future missions learn from successful runs
+- bundle proven winners into the shipped system
+- register them into runtime routing so VikiClow can choose the right capability for the task
+- persist inventory, provenance, receipts, and usage knowledge so future missions learn from successful runs
+
+It is intentionally curated rather than crawler-driven. The shipped catalog favors bundled Vikiclow skills and plugins, approved MCP servers, selected upstream repo integrations, and runtime assets that have a clear place in the mission stack.
 
 Capability Foundry is exposed through the CLI, proof artifacts, the bundled capability inventory, and the runtime routing layer.
 
@@ -98,6 +105,14 @@ Key commands:
 - `vikiclow capabilities foundry test <candidate-id>`
 - `vikiclow capabilities foundry promote <candidate-id> --bundle`
 - `vikiclow capabilities foundry routes "<objective>"`
+- `corepack pnpm capabilities:proof`
+
+The shipped inventory is explicit and inspectable:
+
+- source catalog: `~/.vikiclow/capabilities/source-catalog.json`
+- bundle receipts: `~/.vikiclow/capabilities/bundle-receipts.json`
+- ready capability inventory: `~/.vikiclow/capabilities/bundle-inventory.json`
+- proof bundle: `.artifacts/capability-bundle/`
 
 ### Full PC and web execution
 
@@ -148,7 +163,7 @@ cd viki-clow
 corepack enable
 corepack pnpm install
 corepack pnpm build
-node .\vikiclow.mjs onboard --install-daemon
+node .\\vikiclow.mjs onboard --install-daemon
 ```
 
 Windows operators should prefer WSL2 for day-to-day runtime work. Native PowerShell is supported for build, bootstrap, launcher, and proof flows, but the broader local automation stack is more reliable under WSL2.
@@ -246,7 +261,8 @@ This repo is already a serious operator system, not a demo shell:
 - browser launchers are shipped in `dist/`
 - mission runtime and backbone proofs are real
 - voice bootstrap is enforced in setup
-- Capability Foundry ships with inventory, provenance, routing, and proof
+- Capability Foundry ships with inventory, provenance, routing, proof, and bundle receipts
+- the bundled catalog distinguishes curated local skills, bundled plugins, MCP server candidates, GitHub integrations, and runtime assets
 - runtime stack proof exercises Temporal + Neo4j where Docker is available
 
 What remains environment-dependent is equally explicit:
