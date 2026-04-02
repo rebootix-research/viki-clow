@@ -470,3 +470,46 @@ Finalize the Capability Foundry upgrade by proving the shipped CLI entrypoint, b
 ### Remaining Blockers
 
 - None for the Capability Foundry Expansion branch state.
+
+## Capability Foundry README Positioning Pass
+
+### Starting State For This Pass
+
+- `main` was green and protected.
+- Capability Foundry Expansion was already implemented and branch-protection compatible.
+- The remaining gap for this upgrade was product-surface sharpness: the README and Foundry guide needed a grounded category comparison against the direct public clow/operator set and a stronger premium operator positioning.
+
+### Exact Comparison Set Used
+
+- `https://github.com/openclaw/openclaw`
+- `https://github.com/NVIDIA/NemoClaw`
+- `https://github.com/dataelement/Clawith`
+
+### Exact Files Changed In This Pass
+
+- `README.md`
+- `docs/tools/vikiclow-skills.md`
+- `VIKICLOW_EXECUTION_STATE.md`
+
+### Completed Workstreams In This Pass
+
+- Rewrote the README hero, one-screen explanation, and competitive positioning so VikiClow reads as an execution-grade clow/operator system instead of a generic assistant repo.
+- Added a grounded comparison table covering public repo positioning, durable runtime signals, visible execution surface, proof discipline, capability growth, persistent memory, and governance/operator posture across VikiClow, OpenClaw, NemoClaw, and Clawith.
+- Tightened the Capability Foundry guide so the discover -> sandbox -> promote -> route loop reads as a controlled operator supply chain rather than an install-later skill list.
+
+### Tests / Proofs Run In This Pass
+
+- `corepack pnpm check:docs`
+- `git diff --check`
+
+### Artifacts Produced In This Pass
+
+- No new artifact bundle was required; this pass changed the public product surface and passed the repo docs/link checks.
+
+### GitHub Actions Results After Push
+
+- Pending branch push for this pass.
+
+### Remaining Blockers
+
+- None on the repo side. The only remaining step for this pass is pushing the branch and observing the GitHub runs for the updated README/docs commit.

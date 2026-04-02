@@ -68,6 +68,9 @@ flowchart LR
   <Card title="Memory" href="/concepts/memory" icon="database">
     Durable memory, writeback, graph proof, and search.
   </Card>
+  <Card title="Capability Foundry" href="/tools/vikiclow-skills" icon="package-plus">
+    Curated discovery, promotion, bundling, routing, and proof for expandable capability.
+  </Card>
   <Card title="Security" href="/gateway/security" icon="shield">
     Hardening guidance for real tool-enabled execution.
   </Card>

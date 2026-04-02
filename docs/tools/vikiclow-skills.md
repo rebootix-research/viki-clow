@@ -1,17 +1,19 @@
 # Capability Foundry
 
-Capability Foundry is Vikiclow’s curated capability supply chain. It keeps a fresh install useful immediately, but it does so with gates, provenance, and proof instead of blind trust.
+Capability Foundry is VikiClow's curated capability supply chain. It keeps a fresh install useful immediately, but it does so with gates, provenance, and proof instead of blind trust.
 
-The goal is simple: discover good capabilities, classify them correctly, sandbox them, test them, promote the ones that pass, bundle the safest winners, and register them so missions can route to them automatically.
+The operating model is simple:
 
-In practice that means Vikiclow can absorb proven external capability without turning the product into an untrusted marketplace or a blind GitHub scraper.
+discover -> classify -> fetch or wrap -> inspect -> sandbox -> test -> score -> promote or reject -> bundle -> register -> route -> remember
 
-## What It Covers
+That is the difference between an operator system that compounds capability and a project that sends users to hunt for skills after install.
 
-Capability Foundry supports four curated source families and their downstream inventory:
+## What Foundry covers
 
-- bundled local Vikiclow skills
-- bundled Vikiclow plugins
+Capability Foundry supports four curated source families and the inventory they produce:
+
+- bundled local VikiClow skills
+- bundled VikiClow plugins
 - curated MCP servers
 - curated GitHub integrations and runtime assets
 
@@ -27,9 +29,9 @@ And the shipped inventory is tracked in:
 - `~/.vikiclow/capabilities/bundle-receipts.json`
 - `~/.vikiclow/capabilities/bundle-receipts.md`
 
-## Capability Types
+## Capability types
 
-Capability Foundry understands these capability shapes:
+Capability Foundry understands these normalized shapes:
 
 - `skill`
 - `plugin`
@@ -37,52 +39,38 @@ Capability Foundry understands these capability shapes:
 - `repo_integration`
 - `asset_dependency`
 
-Each candidate keeps source metadata, provenance, compatibility, test status, promotion status, bundle status, and runtime registration hints.
+Each candidate keeps source metadata, provenance, compatibility, lifecycle state, test status, promotion status, bundle status, route hints, and runtime registration metadata.
 
-## The Foundry Pipeline
+## Why this matters
 
-Capability Foundry uses a controlled promotion flow:
+VikiClow does not treat a discovered capability as trusted just because it exists.
 
-```text
-discover
-  -> classify
-  -> fetch / install / vendor / wrap
-  -> inspect
-  -> sandbox
-  -> test
-  -> score
-  -> promote or reject
-  -> bundle if appropriate
-  -> register for runtime routing
-  -> remember successful usage
-```
-
-That means a capability is not treated as available just because it was found.
-
-It must be:
+It has to be:
 
 - curated from an approved source family
-- normalized into Vikiclow’s manifest model
+- normalized into VikiClow's capability manifest
 - safe enough to sandbox
-- testable enough to prove value
+- testable enough to score
 - promotable into the registry
 - routable at runtime when the mission needs it
 
-## Ready-to-Use Bundle
+This is how VikiClow stays expandable without becoming a blind marketplace.
+
+## Ready-to-use bundle
 
 Fresh installs bundle the strongest safe capabilities that are already proven in the repo.
 
-The shipped bundle currently emphasizes:
+The shipped bundle emphasizes:
 
 - mission skill generation and workspace automation
 - browser and desktop control
-- voice readiness and transcription helpers
 - workflow and memory routing
+- voice readiness and transcription helpers
 - curated runtime assets for local speech and operator flows
 
-Bundle state is recorded as both inventory and receipts so you can see what was installed, what was enabled, what was promoted, and what was skipped.
+Bundle state is recorded as both inventory and receipts so the operator can see what was installed, what was enabled, what was promoted, and what was skipped.
 
-## How To Use It
+## Operator commands
 
 ```bash
 vikiclow capabilities list
@@ -100,7 +88,7 @@ vikiclow capabilities plan "create a reusable automation skill"
 corepack pnpm capabilities:proof
 ```
 
-## What The Proof Shows
+## What the proof shows
 
 The proof bundle records:
 
@@ -109,21 +97,21 @@ The proof bundle records:
 - bundled capabilities
 - bundle receipts
 - provenance and source origin
-- sandbox/test/promotion state
+- sandbox, test, and promotion state
 - runtime routing hints
 - ready-to-use capability inventory
 
-This is the evidence trail the repo uses to show that Capability Foundry is real, not aspirational.
+This is the evidence trail VikiClow uses to show that Capability Foundry is real, not aspirational.
 
-## Why It Matters At Runtime
+## Runtime effect
 
-Capability Foundry is not a library catalog. It is part of mission selection.
+Capability Foundry is not a library catalog. It is part of mission routing.
 
-When a task arrives, Vikiclow can route to a proven skill, plugin, MCP server, or repo integration that already knows how to do the work. Successful usage is written back so the next mission can pick the right capability faster.
+When a task arrives, VikiClow can route to a proven skill, plugin, MCP server, or repo integration that already knows how to do the work. Successful usage is written back so the next mission can pick the right capability faster and with more confidence.
 
 That is how the system improves without becoming dependent on model memory alone.
 
-## Related Guides
+## Related guides
 
 - [Running VikiClow as your execution system](/start/vikiclow)
 - [CI and proof](/ci)
