@@ -25,15 +25,15 @@ It compares what those repos clearly present to operators evaluating the categor
 
 ## Comparison table
 
-| Dimension | VikiClow | OpenClaw | NemoClaw | Clawith |
-| --- | --- | --- | --- | --- |
-| Core product story | Execution-grade clow/operator system | Personal AI assistant | Hardened OpenShell reference stack for OpenClaw | Multi-agent collaboration platform |
-| Durable work model | Mission runtime with checkpoints, retries, and terminal states | Broad assistant surface, not a mission-first public story | Stateful hardened stack, but not mission-first | Agent triggers and workspaces, not a mission backbone |
-| Visible execution | Browser, shell, file, voice, device, and web surfaces | Channels plus a live Canvas | Sandbox and runtime surface | Multi-agent workspace and control UI |
-| Proof posture | Release proof, runtime-stack proof, execution-surface proof, mission proof | CI and release surface visible | Security and architecture emphasis, alpha posture | Audit and enterprise controls are visible |
-| Capability growth | Capability Foundry with curated discovery, testing, promotion, bundling, and routing | Skills ecosystem is visible | Runtime hardening is the focus | Runtime tool discovery and install are visible |
-| Persistent memory | Mission writeback and graph-memory proof paths | Always-on assistant framing | Stateful stack around deployment | Persistent memory and workspace-per-agent model |
-| Governance | Protected main, green CI, release-proof discipline | OSS release and CI posture | Security-first sandboxing | RBAC, approvals, quotas, and audit logs |
+| Dimension          | VikiClow                                                                             | OpenClaw                                                  | NemoClaw                                          | Clawith                                               |
+| ------------------ | ------------------------------------------------------------------------------------ | --------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------- |
+| Core product story | Execution-grade clow/operator system                                                 | Personal AI assistant                                     | Hardened OpenShell reference stack for OpenClaw   | Multi-agent collaboration platform                    |
+| Durable work model | Mission runtime with checkpoints, retries, and terminal states                       | Broad assistant surface, not a mission-first public story | Stateful hardened stack, but not mission-first    | Agent triggers and workspaces, not a mission backbone |
+| Visible execution  | Browser, shell, file, voice, device, and web surfaces                                | Channels plus a live Canvas                               | Sandbox and runtime surface                       | Multi-agent workspace and control UI                  |
+| Proof posture      | Release proof, runtime-stack proof, execution-surface proof, mission proof           | CI and release surface visible                            | Security and architecture emphasis, alpha posture | Audit and enterprise controls are visible             |
+| Capability growth  | Capability Foundry with curated discovery, testing, promotion, bundling, and routing | Skills ecosystem is visible                               | Runtime hardening is the focus                    | Runtime tool discovery and install are visible        |
+| Persistent memory  | Mission writeback and graph-memory proof paths                                       | Always-on assistant framing                               | Stateful stack around deployment                  | Persistent memory and workspace-per-agent model       |
+| Governance         | Protected main, green CI, release-proof discipline                                   | OSS release and CI posture                                | Security-first sandboxing                         | RBAC, approvals, quotas, and audit logs               |
 
 ## What each project optimizes for
 

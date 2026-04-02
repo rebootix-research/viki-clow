@@ -513,3 +513,51 @@ Finalize the Capability Foundry upgrade by proving the shipped CLI entrypoint, b
 ### Remaining Blockers
 
 - None on the repo side. The only remaining step for this pass is pushing the branch and observing the GitHub runs for the updated README/docs commit.
+
+## Capability Foundry README Positioning Clean-Branch Pass
+
+### Starting State For This Pass
+
+- PR `#19` on `codex/readme-category-positioning` had the right README/category-positioning content but carried an unrelated workflow-file delta (`.github/workflows/native-verification.yml`) from an earlier branch hop.
+- That stale workflow delta made the PR stop qualifying as docs-only, which pulled the full CI matrix and produced unrelated red jobs during the README benchmark pass.
+
+### Exact Files Changed In This Pass
+
+- `README.md`
+- `docs/index.md`
+- `docs/tools/vikiclow-skills.md`
+- `docs/reference/category-benchmark.md`
+- `docs/assets/vikiclow-category-benchmark.svg`
+- `VIKICLOW_EXECUTION_STATE.md`
+
+### Completed Workstreams In This Pass
+
+- Moved the competitive README/product-surface update onto a clean branch from `main` so the pass inherits the already-green protected baseline without the stale workflow delta.
+- Added a source-backed benchmark page at `docs/reference/category-benchmark.md`.
+- Added a light-theme benchmark asset at `docs/assets/vikiclow-category-benchmark.svg`.
+- Linked the benchmark surface from the README, docs index, and the Capability Foundry guide.
+- Revalidated the docs formatting, markdown lint, and link graph on the clean branch after normalizing the benchmark page through the repo formatter.
+
+### Exact Comparison Set Used
+
+- `https://github.com/openclaw/openclaw`
+- `https://github.com/NVIDIA/NemoClaw`
+- `https://github.com/dataelement/Clawith`
+
+### Tests / Proofs Run In This Pass
+
+- `corepack pnpm check:docs`
+- `git diff --check`
+
+### Artifacts Produced In This Pass
+
+- `docs/assets/vikiclow-category-benchmark.svg`
+- `docs/reference/category-benchmark.md`
+
+### GitHub Actions Results After Push
+
+- Pending push of the clean branch created from this pass.
+
+### Remaining Blockers
+
+- None on the repo side. The only remaining work is pushing the clean branch and observing the GitHub runs for that branch head.
